@@ -1,0 +1,29 @@
+# — LaTeX intermediate files
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+
+# — Output files
+*.pdf
+*.dvi
+*.ps
+
+# — Backup and swap files
+*~
+*.bak
+*.swp
+*.tmp
+
+# — VS Code workspace settings
+.vscode/
