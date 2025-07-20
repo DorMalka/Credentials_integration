@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{cite}
 \usepackage{geometry}
+\usepackage{amsmath}
 
 \title{Integrating Continuous Credentials in Authentication
 Mechanisms}
@@ -13,6 +14,9 @@ Mechanisms}
 \maketitle
 
 \section{Abstract}
+%%%
+%%%
+%%%
 Authentication is a fundamental aspect of security that can be viewed from two main perspectives: credentials and protocols. The credentials aspect is familiar to most of us through username and password, or OTPs used when accessing personal bank account or authenticating into services such as Google/Apple ID. While these discrete credentials, which rely on simply having or knowing something are widely used, there remains a largely unexplored space: continuous credentials.
 
 Continuous credentials appear in several applications such as biometric authentication (fingerprints, eigenface or iris) and SSO mechanisms that rely on behavioral or environmental signals like GPS location etc. These credentials are not evaluated in a discrete way. Rather, they are measured by a mechanism that determines whether there are enough similarities above a predetermined threshold between an input and a stored figure.
@@ -31,7 +35,40 @@ Eyal et al.~\cite{Eyal2021} designed and formulated a foundational wallet model,
 %%%
 %%%
 %%%
-\section{Symmetric Distribution Function}
+\section{Authentication Model}
+We analyzed the authentication model as a wallet $w$ based on continuous credentials, each defined by a distinct probabilistic distribution functions. Then, We formalized the systems success and identified the optimal operating point for both single or multiple credentials.
+\subsection{Model Details}
+We follow the definitions given by Eyal~\cite{Eyal2021}. A wallet $w$ is defined by predicate of availability of N keys. Each key can be in one of the following states. Safe: only the user has access to the key. Loss: neither the user nor the attacker has access to the key. Leak: both the user and the attacker have access to the key. Theft: only the attacker has access to the key.
+
+We define the probability associated with each state as follows: $P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and $P_{\text{theft}}$ corresponding respectively to the states of safe, loss, leak, and theft. Furthermore, the confidence associated with different decisions may be characterized by the genuine distribution and the impostor distribution, which are used to establish two error rates: false acceptance rate (FAR), which is defined as the probability of an impostor being accepted as a genuine individual and false rejection rate (FRR), which is defined as the probability of a genuine individual being rejected as an impostor.
+\subsection{Single Credential}
+We’ve built $\mathrm{FAR}$ vs $\mathrm{FRR}$ curves for Uniform, Triangle, Parabolic and Gaussian probabilistic
+distribution functions and defined each one of the states as follows:
+
+\[
+P_{\text{loss}} = \mathrm{FRR} \cdot (1 - \mathrm{FAR})
+\]
+\[
+P_{\text{leak}} = \mathrm{FAR} \cdot (1 - \mathrm{FRR})
+\]
+\[
+P_{\text{theft}}=\mathrm{FRR} \cdot \mathrm{FAR}
+\]
+\[
+P_{{\text{safe}}}=1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{theft}}}
+\]
+
+\[
+P_{\text{Success\_AND}} = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2}}} + \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{leak2}}} + \mathrm{P_{\text{safe2}}} \cdot \mathrm{P_{\text{leak1}}}
+\]
+
+\[
+P_{\text{Success\_OR}} = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2}}} + \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{loss2}}} + \mathrm{P_{\text{safe2}}} \cdot \mathrm{P_{\text{loss1}}}
+\]
+
+%%%
+%%%
+%%%
 \subsection{Symmetric Gaussian Distribution Function}
 \subsection{Symmetric Uniform Distribution Function}
 \subsection{Symmetric Parabolic Distribution Function}
