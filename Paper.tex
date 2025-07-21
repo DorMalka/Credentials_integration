@@ -36,14 +36,20 @@ Eyal et al.~\cite{Eyal2021} designed and formulated a foundational wallet model,
 %%%
 %%%
 \section{Authentication Model}
-We analyzed the authentication model as a wallet $w$ based on continuous credentials, each defined by a distinct probabilistic distribution functions. Then, We formalized the systems success and identified the optimal operating point for both single or multiple credentials.
+An authentication mechanism $M$ is built on at least one credential $c_i$ and two players: a user $U$ and attacker $A$. Both players, try to satisfy the system with their own key $k_i$ in order to reach the asset. Each key $k_i$ can be either discrete or continuously distributed. In this paper, we will look on continuously distributed keys. We will formalize the systems success and identify the optimal operating point for both single and multiple credentials.
 \subsection{Model Details}
 We follow the definitions given by Eyal~\cite{Eyal2021}. A wallet $w$ is defined by predicate of availability of N keys. Each key can be in one of the following states. Safe: only the user has access to the key. Loss: neither the user nor the attacker has access to the key. Leak: both the user and the attacker have access to the key. Theft: only the attacker has access to the key.
 
 We define the probability associated with each state as follows: $P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and $P_{\text{theft}}$ corresponding respectively to the states of safe, loss, leak, and theft. Furthermore, the confidence associated with different decisions may be characterized by the genuine distribution and the impostor distribution, which are used to establish two error rates: false acceptance rate (FAR), which is defined as the probability of an impostor being accepted as a genuine individual and false rejection rate (FRR), which is defined as the probability of a genuine individual being rejected as an impostor.
+
+A wallet $w$ is comprised of a set of credentials $\{c_1, c_2, \ldots, c_n\}$ clasified as one of previously defined states.
+
+Denoted $S$, i.e., $\{c_1, c_2, \ldots, c_n\} \in S = \{ \text{safe}, \text{loss}, \text{leak}, \text{theft} \}$.
+
+An availability vector represents the availability of all credentials to a player. Each entry i in the vector indicates the availability of credential i. Denote by $\sigma^U$,$\sigma^A$ the availability vector of the user and the attacker respectively~\cite{mouallem2024}.
+
 \subsection{Single Credential}
-We’ve built $\mathrm{FAR}$ vs $\mathrm{FRR}$ curves for Uniform, Triangle, Parabolic and Gaussian probabilistic
-distribution functions and defined each one of the states as follows:
+For a wallet $w$ comprised of a single credential $c_1$, $w^\text{single}(c_1)=c_1$ we have built $\mathrm{FAR}$ vs $\mathrm{FRR}$ curves for Uniform, Parabolic and Gaussian probabilistic distribution functions and defined each one of the states as follows:
 
 \[
 P_{\text{loss}} = \mathrm{FRR} \cdot (1 - \mathrm{FAR})
@@ -58,6 +64,15 @@ P_{\text{theft}}=\mathrm{FRR} \cdot \mathrm{FAR}
 P_{{\text{safe}}}=1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{theft}}}
 \]
 
+The probability for success of the wallet $w$, is defined as the probability of users successfully defend their wallets. In a single credential wallet, this is simply the probability that the key is neither theft,loss or leaked. i.e.,
+\[
+P_{\text{success}}(w^{\text{single}}) = P_{{\text{safe}}}.
+\]
+%%%
+%%%
+%%%
+\subsection{2 Credentials}
+$\{c_1, c_2, \ldots, c_n\}$
 \[
 P_{\text{Success\_AND}} = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2}}} + \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{leak2}}} + \mathrm{P_{\text{safe2}}} \cdot \mathrm{P_{\text{leak1}}}
 \]
@@ -65,11 +80,6 @@ P_{\text{Success\_AND}} = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2
 \[
 P_{\text{Success\_OR}} = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2}}} + \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{loss2}}} + \mathrm{P_{\text{safe2}}} \cdot \mathrm{P_{\text{loss1}}}
 \]
-
-%%%
-%%%
-%%%
-\subsection{Symmetric Gaussian Distribution Function}
 \subsection{Symmetric Uniform Distribution Function}
 \subsection{Symmetric Parabolic Distribution Function}
 %%%
