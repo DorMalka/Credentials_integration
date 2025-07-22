@@ -3,6 +3,9 @@
 \usepackage{cite}
 \usepackage{geometry}
 \usepackage{amsmath}
+\usepackage{pythontex}
+\usepackage{graphicx}
+
 
 \title{Integrating Continuous Credentials in Authentication
 Mechanisms}
@@ -36,7 +39,7 @@ Eyal et al.~\cite{Eyal2021} designed and formulated a foundational wallet model,
 %%%
 %%%
 \section{Authentication Model}
-An authentication mechanism $M$ is built on at least one credential $c_i$ and two players: a user $U$ and attacker $A$. Both players, try to satisfy the system with their own key $k_i$ in order to reach the asset. Each key $k_i$ can be either discrete or continuously distributed. In this paper, we will look on continuously distributed keys. We will formalize the systems success and identify the optimal operating point for both single and multiple credentials.
+An authentication mechanism $M$ is built on a set of credentials $\{c_1, c_2, \ldots, c_n\}$ and two players: a user $U$ and an attacker $A$. Both players, try to satisfy the system with their own set of credentials $\{c_1, c_2, \ldots, c_n\}$ in order to reach the asset. Each credential $c_i$ can be either discrete or continuously distributed. In this paper, we will focus on continuously distributed credentials. We will formalize the systems success and identify the optimal operating point for both single and multiple credentials.
 \subsection{Model Details}
 We follow the definitions given by Eyal~\cite{Eyal2021}. A wallet $w$ is defined by predicate of availability of N keys. Each key can be in one of the following states. Safe: only the user has access to the key. Loss: neither the user nor the attacker has access to the key. Leak: both the user and the attacker have access to the key. Theft: only the attacker has access to the key.
 
@@ -44,9 +47,7 @@ We define the probability associated with each state as follows: $P_{\text{safe}
 
 A wallet $w$ is comprised of a set of credentials $\{c_1, c_2, \ldots, c_n\}$ clasified as one of previously defined states.
 
-Denoted $S$, i.e., $\{c_1, c_2, \ldots, c_n\} \in S = \{ \text{safe}, \text{loss}, \text{leak}, \text{theft} \}$.
-
-An availability vector represents the availability of all credentials to a player. Each entry i in the vector indicates the availability of credential i. Denote by $\sigma^U$,$\sigma^A$ the availability vector of the user and the attacker respectively~\cite{mouallem2024}.
+Denoted $S$, i.e., $\{c_1, c_2, \ldots, c_n\} \in S = \{ \text{safe}, \text{loss}, \text{leak}, \text{theft} \}$ the state of each credential. A scenario $\sigma$ is defined as a vector of states of each credential in the wallet. Denote $\sigma_i$ the state of credential $c_i$ in scenario $\sigma$. An availability vector represents the availablity of all credentials to a user $U$ or an attacker $A$. Denote by $\sigma^U$,$\sigma^A$ the availability vector of the user and the attacker respectively.
 
 \subsection{Single Credential}
 For a wallet $w$ comprised of a single credential $c_1$, $w^\text{single}(c_1)=c_1$ we have built $\mathrm{FAR}$ vs $\mathrm{FRR}$ curves for Uniform, Parabolic and Gaussian probabilistic distribution functions and defined each one of the states as follows:
@@ -64,10 +65,25 @@ P_{\text{theft}}=\mathrm{FRR} \cdot \mathrm{FAR}
 P_{{\text{safe}}}=1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{theft}}}
 \]
 
-The probability for success of the wallet $w$, is defined as the probability of users successfully defend their wallets. In a single credential wallet, this is simply the probability that the key is neither theft,loss or leaked. i.e.,
+The probability for success of the wallet $w$, is defined as the probability of users successfully defend their wallets. In a single credential wallet, this is simply the probability that the key is neither theft, loss or leaked. i.e.,
 \[
 P_{\text{success}}(w^{\text{single}}) = P_{{\text{safe}}}.
 \]
+
+\subsubsection{Uniformly Distributed Credential}
+At first we analyzed the simple case of a single credential uniformly distributed. Sarkar et al. claimed "The operating point is that point where the FAR is equal to the FRR and known as Equal Error Rate (EER).~\cite{sarkar2020}. We found that the operating point is not the EER point, but rather the point which maximizes the probability of success and depends on the variance of the PDFs.
+
+We defined two probability distribution functions (PDFs) for the user and the attacker, $P_U$ and $P_A$ respectively.
+\[
+P_U(t) = \frac{1}{u2-u1} \quad \text{for } u1 \leq t \leq u2
+\]
+\[
+P_A(t) = \frac{1}{a2-a1} \quad \text{for } a1 \leq t \leq a2
+\]
+Where $u1, u2$ are the user PDFs' bounds and $a1, a2$ are the attacker PDFs' bounds.
+
+Figure 1a illustrates the case where a user and an attacker PDF's are symmetric while Figure 1b illustrates asymmetric PDFs.
+
 %%%
 %%%
 %%%
