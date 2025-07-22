@@ -23,6 +23,6 @@
 *.bak
 *.swp
 *.tmp
-
+*.pytxcode
 # — VS Code workspace settings
 .vscode/

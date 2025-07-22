@@ -75,15 +75,46 @@ At first we analyzed the simple case of a single credential uniformly distribute
 
 We defined two probability distribution functions (PDFs) for the user and the attacker, $P_U$ and $P_A$ respectively.
 \[
-P_U(t) = \frac{1}{u2-u1} \quad \text{for } u1 \leq t \leq u2
+P_U(t) = \frac{1}{u_2-u_1} \quad \text{for } u_1 \leq t \leq u_2
 \]
 \[
-P_A(t) = \frac{1}{a2-a1} \quad \text{for } a1 \leq t \leq a2
+P_A(t) = \frac{1}{a_2-a_1} \quad \text{for } a_1 \leq t \leq a_2
 \]
-Where $u1, u2$ are the user PDFs' bounds and $a1, a2$ are the attacker PDFs' bounds.
+Where $u_1, u_2$ are the user PDFs' bounds and $a_1, a_2$ are the attacker PDFs' bounds.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{fig_uniforms.pdf}
+    \caption{Symmetric and Asymmetric Uniform PDFs}
+\end{figure}
 
-Figure 1a illustrates the case where a user and an attacker PDF's are symmetric while Figure 1b illustrates asymmetric PDFs.
+Figure 1a illustrates the case where the user and attacker PDF's are symmetric, while Figure 1b illustrates asymmetric PDFs.
+The probability of success for a single credential wallet is defined as:
+\[
+P_{\text{success}}(w^{\text{single}}) = P_{{\text{safe}}} = 1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{theft}}}=1-\mathrm{FRR} - \mathrm{FAR} + \mathrm{FRR} \cdot \mathrm{FAR}
+\]
 
+Let $T$ denote the threshold. Then the False Acceptance Rate (FAR) and False Rejection Rate (FRR) are defined as:
+\[
+\text{FAR}(T) = \int_{a_1}^{T} \frac{1}{a_2-a_1} dt =
+\left\{
+\begin{array}{ll}
+0 & \text{if } T \le a_1 \\
+\frac{T-a_2}{a_2 - a_1} & \text{if } a_1 < T \le a_2 \\
+1 & \text{if } T > a_2
+\end{array}
+\right.
+\]
+
+\[
+\text{FAR}(T) = \int_{T}^{u_2} \frac{1}{u_2-u_1} dt =
+\left\{
+\begin{array}{ll}
+1 & \text{if } T \le u_1 \\
+\frac{u_2-T}{u_2 - u_1} & \text{if } u_1 < T \le u_2 \\
+0 & \text{if } T > u_2
+\end{array}
+\right.
+\]
 %%%
 %%%
 %%%
