@@ -5,7 +5,7 @@
 \usepackage{amsmath}
 \usepackage{pythontex}
 \usepackage{graphicx}
-
+\usepackage{float}
 
 \title{Integrating Continuous Credentials in Authentication
 Mechanisms}
@@ -70,9 +70,10 @@ The probability for success of the wallet $w$, is defined as the probability of 
 P_{\text{success}}(w^{\text{single}}) = P_{{\text{safe}}}.
 \]
 
-\subsubsection{Uniformly Distributed Credential}
-At first we analyzed the simple case of a single credential uniformly distributed. Sarkar et al. claimed "The operating point is that point where the FAR is equal to the FRR and known as Equal Error Rate (EER).~\cite{sarkar2020}. We found that the operating point is not the EER point, but rather the point which maximizes the probability of success and depends on the variance of the PDFs.
+This approach led us to observe that $P_{\text{safe}}$ is not maximized when $\mathrm{FAR}$ = $\mathrm{FRR}$ as conntray to Sarkar claim "The operating point is that point where the FAR is equal to the FRR and known as Equal Error Rate (EER).~\cite{sarkar2020}. Insted, We found that the operating point is not the EER point, but rather the point which maximizes the probability of success and depends on the variance of the PDFs. We will further explore this in the following sections for different distributions.
 
+\subsubsection{Uniformly Distributed Credential}
+At first we analyzed the simple case of a single credential uniformly distributed. 
 We defined two probability distribution functions (PDFs) for the user and the attacker, $P_U$ and $P_A$ respectively.
 \[
 P_U(t) = \frac{1}{u_2-u_1} \quad \text{for } u_1 \leq t \leq u_2
@@ -80,14 +81,14 @@ P_U(t) = \frac{1}{u_2-u_1} \quad \text{for } u_1 \leq t \leq u_2
 \[
 P_A(t) = \frac{1}{a_2-a_1} \quad \text{for } a_1 \leq t \leq a_2
 \]
-Where $u_1, u_2$ are the user PDFs' bounds and $a_1, a_2$ are the attacker PDFs' bounds.
-\begin{figure}[ht]
+Where $u_1, u_2$ are the user PDFs' bounds and $a_1, a_2$ are the attacker PDFs' bounds. 
+\begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{fig_uniforms.pdf}
+    \includegraphics[width=0.995\textwidth]{fig_uniforms.pdf}
     \caption{Symmetric and Asymmetric Uniform PDFs}
 \end{figure}
 
-Figure 1a illustrates the case where the user and attacker PDF's are symmetric, while Figure 1b illustrates asymmetric PDFs.
+Without loss of generality, we assume that $u_1 < a_1$ and $u_2 < a_2$. Furthemore, we assume there is an overlaping region between the distributions; otherwise the scenario reduces to a trivial case. We also assume that the user and attacker PDFs are do not fully contain one another, as such cases would render them non-separable. Figure 1a illustrates the case where the user and attacker PDF's are symmetric, while Figure 1b illustrates asymmetric PDFs.
 The probability of success for a single credential wallet is defined as:
 \[
 P_{\text{success}}(w^{\text{single}}) = P_{{\text{safe}}} = 1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{theft}}}=1-\mathrm{FRR} - \mathrm{FAR} + \mathrm{FRR} \cdot \mathrm{FAR}
@@ -115,9 +116,62 @@ Let $T$ denote the threshold. Then the False Acceptance Rate (FAR) and False Rej
 \end{array}
 \right.
 \]
+
+We defined the probability of success as a function of the threshold $T$ by setting the $FAR(T)$ $FRR(T)$ into the equation and received:
+\[
+P_{\text{success}}(T) = 
+\left\{
+\begin{array}{ll}
+    0 & \text{if } T \le u_1 \\
+    1 - \frac{u_2-T}{u_2-u_1} & \text{if } u_1 < T \le u_1 \\
+    1 - \frac{T-a_1}{a_2-a_1} - \frac{u_2-T}{u_2-u_1} + \frac{(T-a_1)(u_2-T)}{(a_2-a_1)(u_2-u_1)} & \text{if } a_1 < T \le u_2 \\
+    1 - \frac{T-a_1}{a_2-a_1} & \text{if } u_2 < T \le a_2 \\
+    0 & \text{if } T > a_2
+    \end{array}
+\right.
+\]
+
+$P_{\text{success}}(T)$ is a continuous function in $[u_1,a_2]$ ,differentiable in $(u_1,a_2)$ and maintains 
+
+$P_{\text{success}}(u_1) = P_{\text{success}}(a_2)$ thus by Rolle's Theorem, there exists at least one point in $(u_1,a_2)$ such that:
+\[\frac{d}{dT} P_{\text{success}}(T) = 0.\] 
+
+The horizontal tangent point is:
+
+\[
+T = \frac{a_2+u_1}{2} \quad \text{for } a_1 \leq T \leq u_2
+\]
+
+\[\frac{d}{dt} P_{\text{success}}(T) > 0 \text{, For every } T \in (u_1, \frac{a_2+u_1}{2}) \]
+
+\[\frac{d}{dt} P_{\text{success}}(T) < 0 \text{, For every } T \in (\frac{a_2+u_1}{2}, a_2) \]
+
+Thus, by the First Derivative Test the maximum point is at $T = \frac{a_2+u_1}{2}$.
+\[
+P_{\text{success}}(T_{\text{opt}}) = \frac{(a_2 - u_1)^2}{4(u_2 - u_1) \cdot(a_2 - a_1)} 
+\]
+To refute Sarkar's claim, we will calculate the EER point and show it is not equal to the optimal point:
+\[
+T_{\text{EER}} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{u_2 - u_1 + a_2 - a_1} \neq \frac{a_2 + u_1}{2}
+\] 
+The maximum point represnents the optimal threshold of the wallet. By selecting the threshold value, we influnce the wallet's security sensetivity by adjusting the probability associated with each state in $S$. The optimal point indicates that increasing the offset between the two uniform distributions is likely to improve the wallet's success. This optimal point suggest an asymmetry between the user’s and the attacker’s distribution intervals.. Figure 2 illustrates the probability of success for a single credential wallet depends on the threshold $T$. Figure 3 illustrated the FAR vs FRR curve.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{fig_success_uniform.pdf}
+    \caption{Probability of success for a single credential wallet}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{fig_FARvFRR_uniform.pdf}
+    \caption{FAR vs FRR curve}
+\end{figure}
+
+\subsubsection{Parabolic Distributed Credential}
 %%%
 %%%
 %%%
+
 \subsection{2 Credentials}
 $\{c_1, c_2, \ldots, c_n\}$
 \[
