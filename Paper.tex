@@ -70,7 +70,7 @@ The probability for success of the wallet $w$, is defined as the probability of 
 P_{\text{success}}(w^{\text{single}}) = P_{{\text{safe}}}.
 \]
 
-This approach led us to observe that $P_{\text{safe}}$ is not maximized when $\mathrm{FAR}$ = $\mathrm{FRR}$ as conntray to Sarkar claim "The operating point is that point where the FAR is equal to the FRR and known as Equal Error Rate (EER).~\cite{sarkar2020}. Insted, We found that the operating point is not the EER point, but rather the point which maximizes the probability of success and depends on the variance of the PDFs. We will further explore this in the following sections for different distributions.
+Until now, it has been common practice to select the operating point at the Equal Error Rate (EER), where $\mathrm{FAR} = \mathrm{FRR}$ following Sarkar's claim: "The operating point is that point where the FAR is equal to the FRR and known as Equal Error Rate (EER)"~\cite{sarkar2020}. Our findings indicate that a different operating point can yield a higher $P_{\text{safe}}$, thereby enhancing the system’s overall security. Furthermore, We found that the operating point depends on the variance of the PDFs. We will further explore this in the following sections for different distributions.
 
 \subsubsection{Uniformly Distributed Credential}
 At first we analyzed the simple case of a single credential uniformly distributed. 
@@ -107,7 +107,7 @@ Let $T$ denote the threshold. Then the False Acceptance Rate (FAR) and False Rej
 \]
 
 \[
-\text{FAR}(T) = \int_{T}^{u_2} \frac{1}{u_2-u_1} dt =
+\text{FRR}(T) = \int_{T}^{u_2} \frac{1}{u_2-u_1} dt =
 \left\{
 \begin{array}{ll}
 1 & \text{if } T \le u_1 \\
@@ -150,7 +150,7 @@ Thus, by the First Derivative Test the maximum point is at $T = \frac{a_2+u_1}{2
 \[
 P_{\text{success}}(T_{\text{opt}}) = \frac{(a_2 - u_1)^2}{4(u_2 - u_1) \cdot(a_2 - a_1)} 
 \]
-To refute Sarkar's claim, we will calculate the EER point and show it is not equal to the optimal point:
+We calculated the EER point and showed it is not equal to the optimal point:
 \[
 T_{\text{EER}} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{u_2 - u_1 + a_2 - a_1} \neq \frac{a_2 + u_1}{2}
 \] 
@@ -159,7 +159,7 @@ The maximum point represnents the optimal threshold of the wallet. By selecting 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{fig_success_uniform.pdf}
-    \caption{Probability of success for a single credential wallet}
+    \caption{Probability of success for a single credential wallet asymmetric uniformly distributed}
 \end{figure}
 \begin{figure}[H]
     \centering
