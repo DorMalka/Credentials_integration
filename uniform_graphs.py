@@ -23,12 +23,12 @@ plt.plot(x, user_pdf_sym, label="User PDF", color='blue', linewidth=2)
 plt.plot(x, attacker_pdf_sym, label="Attacker PDF", color='red', linewidth=2)
 plt.title("a. Symmetric PDFs")
 plt.xlabel("t")
-plt.ylabel("Probability Density")
+plt.ylabel("Probability Density",labelpad = -60)
 plt.legend(loc='upper left')
 plt.grid(True)
 plt.xticks(
-    ticks=[0.0, uq, uw, a1_sym, a2_sym, 1.0],
-    labels=["0", r"$u_1$", r"$u_2$", r"$a_1$", r"$a_2$", "1"]
+    ticks=[0.0, uq, uw, a1_sym, a2_sym],
+    labels=["0", r"$u_1$", r"$u_2$", r"$a_1$", r"$a_2$"]
 )
 plt.yticks(
     ticks=[0.0, max_u],
@@ -43,12 +43,12 @@ plt.plot(x, user_pdf_sym, label="User PDF", color='blue', linewidth=2)
 plt.plot(x, attacker_pdf_asym, label="Attacker PDF", color='red', linewidth=2)
 plt.title("b. Asymmetric PDFs")
 plt.xlabel("t")
-plt.ylabel("Probability Density")
+plt.ylabel("Probability Density",labelpad = -20)
 plt.legend(loc='upper left')
 plt.grid(True)
 plt.xticks(
-    ticks=[0.0, uq, uw, a1_asym, a2_asym, 1.0],
-    labels=["0", r"$u_1$", r"$u_2$", r"$a_1$", r"$a_2$", "1"]
+    ticks=[0.0, uq, uw, a1_asym, a2_asym],
+    labels=["0", r"$u_1$", r"$u_2$", r"$a_1$", r"$a_2$"]
 )
 plt.yticks(
     ticks=[0.0, max_u, map_a],
@@ -90,8 +90,8 @@ plt.xlabel("Threshold T")
 plt.ylabel("Success",labelpad=-100)
 plt.legend()
 plt.xticks(
-    ticks=[0.0, uq, uw, a1_asym , best_T, a2_asym, 1.0],
-    labels=["0", r"$u_1$", r"$u_2$",r"$a_1$",r"$T_\text{opt}$", r"$a_2$", "1"]
+    ticks=[0.0, uq, uw, a1_asym , best_T, a2_asym],
+    labels=["0", r"$u_1$", r"$u_2$",r"$a_1$",r"$T_\text{opt}$", r"$a_2$"]
 )
 plt.yticks(
     ticks=[safe_1.item(), safe[max_idx], safe_2.item()],
@@ -116,6 +116,13 @@ FAR_root = FAR[FAR_idx_r]
 FRR_root = FRR[FRR_idx_r]
 plt.figure(figsize=(8, 4))
 plt.plot(FRR, FAR, label="FAR vs FRR", color='purple', linewidth=2)
+plt.scatter(FRR_opt, FAR_opt, color='black', s=80, zorder=5, label='Optimal Point')
+plt.annotate(
+    r'$(FRR_{opt}, FAR_{opt})$',
+    xy=(FRR_opt, FAR_opt),
+    xytext=(FRR_opt + 0.025, FAR_opt + 0.025),
+    fontsize=12
+)
 plt.title("FAR vs FRR Curve")
 plt.xlabel("FRR")
 plt.ylabel("FAR",labelpad=-55)

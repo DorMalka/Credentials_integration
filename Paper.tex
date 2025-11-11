@@ -154,13 +154,18 @@ We calculated the EER point and showed it is not equal to the optimal point:
 \[
 T_{\text{EER}} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{u_2 - u_1 + a_2 - a_1} \neq \frac{a_2 + u_1}{2}
 \] 
-The maximum point represnents the optimal threshold of the wallet. By selecting the threshold value, we influnce the wallet's security sensetivity by adjusting the probability associated with each state in $S$. The optimal point indicates that increasing the offset between the two uniform distributions is likely to improve the wallet's success. This optimal point suggest an asymmetry between the user’s and the attacker’s distribution intervals.. Figure 2 illustrates the probability of success for a single credential wallet depends on the threshold $T$. Figure 3 illustrated the FAR vs FRR curve.
+The maximum point represnents the optimal threshold of the wallet. By selecting the threshold value, we influnce the wallet's security sensetivity by adjusting the probability associated with each state in $S$. The optimal point indicates that increasing the offset between the two uniform distributions is likely to improve the wallet's success. This optimal point suggest an asymmetry between the user’s and the attacker’s distribution intervals.. Figure 2 illustrates the probability of success for a single credential wallet depends on the threshold $T$. 
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{fig_success_uniform.pdf}
     \caption{Probability of success for a single credential wallet asymmetric uniformly distributed}
 \end{figure}
+
+We can define the FAR and FRR at the optimal point as follows:
+\[\text{FAR}(T_{\text{opt}}) = \frac{\frac{a_2}{2}+\frac{u_1}{2}-a_1}{a_2-a_1}\]
+\[\text{FRR}(T_{\text{opt}}) = \frac{u_2-\frac{a_2}{2}-\frac{u_1}{2}}{u_2-u_1}\]
+Figure 3 illustrated the FAR vs FRR curve.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\textwidth]{fig_FARvFRR_uniform.pdf}
@@ -171,16 +176,31 @@ The maximum point represnents the optimal threshold of the wallet. By selecting 
 %%%
 %%%
 %%%
+Our goal is to modelize credentials that are distributed closely to real measured credentials. We choose to anaylze a parabolic distribution function as it can modelize credentials that are more likely to be close to the Gaussian distribution and that are close to Slobodan findings on Eigenfinger and Eigenpalms distribution~\cite{Slob2005}. We defined two probability distribution functions (PDFs) for the user and the attacker, $P_U$ and $P_A$ respectively.
 
-\subsection{2 Credentials}
-$\{c_1, c_2, \ldots, c_n\}$
+
+
+
+
+\subsection{Two Credentials}
+For a wallet $w$ comprised of two independently and identically distributed credentials, derived from either the same or different PDF’s, we defined the integrated system success as the probability of users successfully defend their wallets under two scenarios:
+
+a. \textbf{AND} Require both credentials to be satisfied. For success, we need both credentials to be either in safe state, or one in safe state and the other in leak state. If one of the credentials is either loss ot theft, the owner cannot satisfy the wallet and thus the wallet fails.
+
 \[
-P_{\text{Success\_AND}} = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2}}} + \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{leak2}}} + \mathrm{P_{\text{safe2}}} \cdot \mathrm{P_{\text{leak1}}}
+P_{\text{Success}}(w^{\text{AND}}) = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2}}} + \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{leak2}}} + \mathrm{P_{\text{safe2}}} \cdot \mathrm{P_{\text{leak1}}}
 \]
 
+b. \textbf{OR} Require at least one credential to be satisfied. For success, we need both credential to be either in safe state, or one in safe state and the other in loss state. If one of the credentials is either leak ot theft, the attacker can satisfy the wallet and thus the wallet fails.
+
 \[
-P_{\text{Success\_OR}} = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2}}} + \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{loss2}}} + \mathrm{P_{\text{safe2}}} \cdot \mathrm{P_{\text{loss1}}}
+P_{\text{Success}}(w^{\text{OR}}) = \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{safe2}}} + \mathrm{P_{\text{safe1}}} \cdot \mathrm{P_{\text{loss2}}} + \mathrm{P_{\text{safe2}}} \cdot \mathrm{P_{\text{loss1}}}
 \]
+
+
+
+
+
 \subsection{Symmetric Uniform Distribution Function}
 \subsection{Symmetric Parabolic Distribution Function}
 %%%
@@ -233,6 +253,11 @@ CCS 2024 - Proceedings of the 2024 ACM SIGSAC Conference on Computer and Communi
 Ittay Eyal.\\
 \textit{On cryptocurrency wallet design.}.\\
 Cryptology ePrint Archive, Paper 2021/1522,2021. https://eprint.iacr.org/2021/1522.
+
+\bibitem{Slob2005}
+Slobodan Ribaric and Ivan Fratric.\\
+\textit{A Biometric Identification System Based on Eigenpalm and Eigenfinger Features}.\\
+IEEE Transactions on Pattern Analysis and Machine Intelligence, Volume: 27, Issue: 11, November 2005.
 \end{thebibliography}
 
 \end{document}
