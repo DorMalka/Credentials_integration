@@ -178,32 +178,32 @@ Figure 3 illustrated the FAR vs FRR curve.
 %%%
 Our goal is to modelize credentials that are distributed closely to real measured credentials. We chose to anaylze a parabolic distribution function as it can modelize credentials that are more likely to be close to the Gaussian distribution and that are close to Slobodan findings on Eigenfinger and Eigenpalms distributions~\cite{Slob2005}. We defined two probability distribution functions (PDFs) for the user and the attacker, $P_U$ and $P_A$ respectively.
 \[
-P_U(t) = 
+P_U(x) = 
 \left\{
 \begin{array}{ll}
-    a \cdot x^2+b \cdot x+c & \text{for } \alpha_1 \leq x \leq \alpha_2 \\
-    0 & \text{for } x > \alpha_2 || x < \alpha_1
+    a \cdot x^2+b \cdot x+c & \alpha_1 \leq x \leq \alpha_2 \\
+    0 & x > \alpha_2 \lor x < \alpha_1
     \end{array}
 \right.
 \]
 \[
-P_A(t) =
+P_A(x) =
 \left\{
 \begin{array}{ll}
-    d \cdot x^2+e \cdot x+f & \text{for } \beta_1 \leq x \leq \beta_2 \\
-    0 & \text{for } x > \beta_2 || x < \beta_1
+    d \cdot x^2+e \cdot x+f & \beta_1 \leq x \leq \beta_2 \\
+    0 & x > \beta_2 \lor x < \beta_1
     \end{array}
 \right.
 \]
 
-Where $a,b,c,d,e,f$ are the parabolic coefficients for the user and attacker respectively. $\alpha_1, \alpha_2$ are the user PDFs' roots and $\beta_1, \beta_2$ are the attacker PDFs' roots as shown in Figure 4.
+Here $a,b,c,d,e,f$ are the parabolic coefficients for the user and attacker, respectively. $\alpha_1, \alpha_2$ are the user PDFs' roots and $\beta_1, \beta_2$ are the attacker PDFs' roots. In case $\alpha_2 < \beta_1$, the scenario reduces to trivial case. On the other hand, if $\alpha_1  > \beta_1 \land \beta_2 < \alpha_2$ the scenario reduces to a non-separable case. Without loss of generality, we will assume that $\alpha_1 \le \beta_1 \le \alpha_2 \le \beta_2$, as shown in Figure 4
 \begin{figure}[H]  
     \centering
     \includegraphics[width=0.995\textwidth]{Parabola_figure.pdf}
     \caption{Parabolic PDFs}
 \end{figure}
 
-To reduce the freedom degrees of the parabolic functions while keeping it symbolic anlysis, we defined the coeefficients based on the roots and the assumption that the integral of each PDF between its roots is equal to 1. Thus, we defined the coefficients as follows:
+To reduce the freedom degrees of the parabolic functions while keeping it symbolic analysis, we defined the coefficients based on the roots and the assumption that the integral of each PDF between its roots is equal to 1. Thus, we define the coefficients as follows.
 \[
 \begin{array}{ll}
     \alpha_1 \cdot \alpha_2 = \frac{c}{a} \rightarrow a = \frac{c}{\alpha_1 \cdot \alpha_2} \\
@@ -222,43 +222,100 @@ To reduce the freedom degrees of the parabolic functions while keeping it symbol
 \]
 Therefore, we can write the parabolic PDFs as follows:
 \[
-P_U(t) =
+P_U(x) =
 \left\{
 \begin{array}{ll}
-     \frac{6}{(\alpha_1 - \alpha_2)^2} \cdot x^2 - \frac{6 \cdot (\alpha_1 + \alpha_2)}{(\alpha_1 - \alpha_2)^3} \cdot x + \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3} & \text{for } \alpha_1 \leq x \leq \alpha_2 \\
-    0 & \text{for } x > \alpha_2 || x < \alpha_1
+     \frac{6}{(\alpha_1 - \alpha_2)^2} \cdot x^2 - \frac{6 \cdot (\alpha_1 + \alpha_2)}{(\alpha_1 - \alpha_2)^3} \cdot x + \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3} & \alpha_1 \leq x \leq \alpha_2 \\
+    0 & x > \alpha_2 \lor x < \alpha_1
     \end{array}
 \right.
 \]
 \[
-P_A(t) =
+P_A(x) =
 \left\{
 \begin{array}{ll}
-     \frac{6}{(\beta_1 - \beta_2)^2} \cdot x^2 - \frac{6 \cdot (\beta_1 + \beta_2)}{(\beta_1 - \beta_2)^3} \cdot x + \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} & \text{for } \beta_1 \leq x \leq \beta_2 \\
-    0 & \text{for } x > \beta_2 || x < \beta_1
+     \frac{6}{(\beta_1 - \beta_2)^2} \cdot x^2 - \frac{6 \cdot (\beta_1 + \beta_2)}{(\beta_1 - \beta_2)^3} \cdot x + \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} & \beta_1 \leq x \leq \beta_2 \\
+    0 & x > \beta_2 \lor x < \beta_1
     \end{array}
 \right.
 \]
 
-We will find FAR and FRR as a function of the threshold $T$ and define the probability of success based on single credential wallet as shown in section 3.2:
-\[\text{FAR}(T) = \int_{\beta_1}^{T} P_A(t) dt =
+We will find FAR and FRR as a function of the threshold $T$ and define the probability of success based on the single credential wallet as shown in section 3.2:
+\[\text{FAR}(T) = \int_{\beta_1}^{T} P_A(x) dx =
 \left\{
 \begin{array}{ll}
-0 & \text{if } T \le \beta_1 \\
-\frac{6 \left(\frac{T^3}{3}-\frac{\beta_1^3}{3}\right)}{(\beta_1-\beta_2)^3} -\frac{6 \left(\frac{T^2}{2}-\frac{\beta_1^2}{2}\right) (\beta_1+\beta_2)}{(\beta_1-\beta_2)^3}+\frac{6 \beta_1 \beta_2 (T-\beta_1)}{(\beta_1-\beta_2)^3} & \text{if } \beta_1 < T \le \beta_2 \\
-1 & \text{if } T > \beta_2
+0 & T \le \beta_1 \\
+\frac{6 \left(\frac{T^3}{3}-\frac{\beta_1^3}{3}\right)}{(\beta_1-\beta_2)^3} -\frac{6 \left(\frac{T^2}{2}-\frac{\beta_1^2}{2}\right) (\beta_1+\beta_2)}{(\beta_1-\beta_2)^3}+\frac{6 \beta_1 \beta_2 (T-\beta_1)}{(\beta_1-\beta_2)^3} & \beta_1 < T \le \beta_2 \\
+1 & T > \beta_2
 \end{array}
 \right.
 \]
-\[\text{FRR}(T) = \int_{T}^{\alpha_2} P_U(t) dt =
+\[\text{FRR}(T) = \int_{T}^{\alpha_2} P_U(x) dx =
 \left\{
 \begin{array}{ll}
-1 & \text{if } T \le \alpha_1 \\
-\frac{6 \left(\frac{\alpha_2^3}{3}-\frac{T^3}{3}\right)}{(\alpha_1-\alpha_2)^3}-\frac{6 \left(\frac{\alpha_2^2}{2}-\frac{T^2}{2}\right) (\alpha_1+\alpha_2)}{(\alpha_1-\alpha_2)^3}+\frac{6 \alpha_1 \alpha_2 (\alpha_2-T)}{(\alpha_1-\alpha_2)^3}& \text{if } \alpha_1 < T \le \alpha_2 \\
-0 & \text{if } T > \alpha_2
+1 & T \le \alpha_1 \\
+\frac{6 \left(\frac{\alpha_2^3}{3}-\frac{T^3}{3}\right)}{(\alpha_1-\alpha_2)^3}-\frac{6 \left(\frac{\alpha_2^2}{2}-\frac{T^2}{2}\right) (\alpha_1+\alpha_2)}{(\alpha_1-\alpha_2)^3}+\frac{6 \alpha_1 \alpha_2 (\alpha_2-T)}{(\alpha_1-\alpha_2)^3}& \alpha_1 < T \le \alpha_2 \\
+0 & T > \alpha_2
 \end{array}
 \right.
 \]
+\[P_{{\text{safe}}} =
+\left\{
+\begin{array}{cc}
+\ &
+\begin{array}{cc}
+0 & T < \alpha_1 \lor T > \beta_2 \\
+\\
+\frac{(T-\alpha_1)^2\,(2T+\alpha_1-3\alpha_2)}{(\alpha_1-\alpha_2)^3} 
+&  \alpha_1 \le T \le \beta_1 \\
+\\
+-\frac{(T-\alpha_1)^2\,(T-\beta_2)^2\,(2T+\alpha_1-3\alpha_2)\,(2T-3\beta_1+\beta_2)}
+{(\alpha_1-\alpha_2)^3\,(\beta_1-\beta_2)^3}
+& \beta_1 \le T \le \alpha_2 \\
+\\
+-\frac{(T-\beta_2)^2\,(2T-3\beta_1+\beta_2)}{(\beta_1-\beta_2)^3} 
+& \alpha_2 \le T \le \beta_2  \\
+\end{array}
+\end{array}
+\right.
+\]
+We derivative $P_{\text{safe}}$ and find the critical points of it in each interval and then, compare between them to find the global maxima that represents the optimal threshold $T_{\text{opt}}$. 
+\[
+\frac{dP_{\text{safe}}}{dT} =
+\begin{cases}
+0, & T < \alpha_1 \;\lor\; T > \beta_2, \\[6pt]
+\displaystyle
+\frac{6 (T-\alpha_1)(T-\alpha_2)}{(\alpha_1-\alpha_2)^3},
+& \alpha_1 \le T \le \beta_1, \\[10pt]
+\displaystyle
+-\frac{6 (T-\alpha_1)(T-\beta_2)}{(\alpha_1-\alpha_2)^3 (\beta_1-\beta_2)^3}
+\bigl(qT^3 + mT^2 + nT + s\bigr),
+& \beta_1 \le T \le \alpha_2, \\[10pt]
+\displaystyle
+-\frac{6 (T-\beta_1)(T-\beta_2)}{(\beta_1-\beta_2)^3},
+& \alpha_2 \le T \le \beta_2.
+\end{cases}
+\]
+Where:
+\[
+\begin{aligned}
+q &= 4, \\[8pt]
+m &= -\alpha_{1} - 5\alpha_{2} - 5\beta_{1} - \beta_{2}, \\[8pt]
+n &= -\alpha_{1}^{2}
+     + 3\alpha_{1}\alpha_{2}
+     + \alpha_{1}\beta_{1}
+     + 6\alpha_{2}\beta_{1}
+     + \alpha_{2}\beta_{2}
+     + 3\beta_{1}\beta_{2}
+     - \beta_{2}^{2}, \\[8pt]
+s &= \alpha_{1}^{2}\beta_{1}
+     - 3\alpha_{1}\alpha_{2}\beta_{1}
+     - 3\alpha_{2}\beta_{1}\beta_{2}
+     + \alpha_{2}\beta_{2}^{2}.
+\end{aligned}
+\]
+
+In the 2nd interval, 
 
 \subsection{Two Credentials}
 For a wallet $w$ comprised of two independently and identically distributed credentials, derived from either the same or different PDF’s, we defined the integrated system success as the probability of users successfully defend their wallets under two scenarios:
