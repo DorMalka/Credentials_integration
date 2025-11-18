@@ -259,7 +259,7 @@ We will find FAR and FRR as a function of the threshold $T$ and define the proba
 \end{array}
 \right.
 \]
-\[P_{{\text{safe}}} =
+\[P_{{\text{success}}} =
 \left\{
 \begin{array}{cc}
 \ &
@@ -279,9 +279,9 @@ We will find FAR and FRR as a function of the threshold $T$ and define the proba
 \end{array}
 \right.
 \]
-We derivative $P_{\text{safe}}$ and find the critical points of it in each interval and then, compare between them to find the global maxima that represents the optimal threshold $T_{\text{opt}}$. 
+We derivative $P_{\text{success}}$ and find the critical points of it in each interval and then, compare between them to find the global maxima that represents the optimal threshold $T_{\text{opt}}$. 
 \[
-\frac{dP_{\text{safe}}}{dT} =
+\frac{dP_{\text{success}}}{dT} =
 \begin{cases}
 0, & T < \alpha_1 \;\lor\; T > \beta_2, \\[6pt]
 \displaystyle
@@ -315,7 +315,22 @@ s &= \alpha_{1}^{2}\beta_{1}
 \end{aligned}
 \]
 
-In the 2nd interval, 
+In the 2nd interval, we can notice that the only critical point is at $T = \alpha_1$. In addition, for every $T > \alpha_1$, the derivative is positive, thus the critical point is a local minimum. In the 4th interval, the only critical point is at $T = \beta_2$. For every $T < \beta_2$, the derivative is negative, thus there is no maximum point in this interval either.
+We will examine the 3rd interval, where the derivative is a multiplication of a cubic polynomial and two linear polynomials. The linear polynomials have roots at $T = \alpha_1$ and $T = \beta_2$, which are outside the interval, thus we will focus on the cubic polynomial:
+The solution of the cubic polynomial can be found by various methods. Using mathematica tool by Wolfram, we found that there is one real root and two complex roots(TODO: Appendix).
+
+Thus, there is only one critical point in the 3rd interval. By examining the sign of the derivative before and after the critical point, we can determine it is a global maximum. 
+To prove this critical point, that represents the optimal threshold $T_{\text{opt}}$, is different than the EER point, we calculated the EER point as follows:
+\[T_{\text{EER}} = \frac{\alpha_{1}\,\beta_{1} - \alpha_{2}\,\beta_{2}}
+           {\alpha_{1} - \alpha_{2} + \beta_{1} - \beta_{2}} \neq T_{\text{opt}}
+\]
+
+We illustrated the probability of success for a credential parabolic distributed depends on the threshold $T$ in Figure 5.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{fig_success_parabola.pdf}
+    \caption{Probability of success for a single credential wallet parabolic distributed}
+\end{figure}
 
 \subsection{Two Credentials}
 For a wallet $w$ comprised of two independently and identically distributed credentials, derived from either the same or different PDF’s, we defined the integrated system success as the probability of users successfully defend their wallets under two scenarios:
