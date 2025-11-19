@@ -159,7 +159,7 @@ ax2.set_yticklabels(["0", r"$P_{\text{success}}(\text{opt})$"],
                     fontsize=14)
 
 ax2.set_xlabel(r"$T$")
-ax2.set_ylabel(r"$P_{\text{success}}$", labelpad=-40)
+ax2.set_ylabel(r"$P_{\text{success}}$", labelpad=-80)
 
 ax2.grid(True, linestyle=":", zorder=0)
 ax2.set_xlim(x_min, x_max)
@@ -168,3 +168,96 @@ ax2.set_ylim(0, y_success_max * 1.3)
 ax2.legend()
 plt.tight_layout()
 plt.savefig("fig_success_parabola.pdf", format="pdf")
+
+# ----------------------------------------------------------------------
+# === PLOT 3: FAR vs FRR curve, including optimal point
+# ----------------------------------------------------------------------
+
+# Numerical integrals of PU and PA
+PU_vals = y_alpha.copy()
+PA_vals = y_beta.copy()
+
+# Precompute cumulative integrals
+dx = x[1] - x[0]
+
+# Integral of PA from beta1 to t
+PA_cum = np.cumsum(PA_vals) * dx
+PA_total = PA_cum[-1]
+
+def FAR(T):
+    """Integral from beta1 to T of P_A."""
+    T = np.atleast_1d(T)          # FIX: ensure array input
+    out = np.zeros_like(T)
+
+    for i, t in enumerate(T):
+        if t <= beta1:
+            out[i] = 0.0
+        elif t >= beta2:
+            out[i] = PA_total
+        else:
+            idx = np.argmin(np.abs(x - t))
+            idx_b1 = np.argmin(np.abs(x - beta1))
+            out[i] = max(PA_cum[idx] - PA_cum[idx_b1], 0)
+
+    return out
+
+# Integral of PU from T to alpha2
+PU_cum = np.cumsum(PU_vals[::-1]) * dx
+PU_cum = PU_cum[::-1]
+PU_total = PU_cum[0]
+
+def FRR(T):
+    """Integral from T to alpha2 of P_U."""
+    T = np.atleast_1d(T)          # FIX: ensure array input
+    out = np.zeros_like(T)
+
+    for i, t in enumerate(T):
+        if t >= alpha2:
+            out[i] = 0.0
+        elif t <= alpha1:
+            out[i] = PU_total
+        else:
+            idx = np.argmin(np.abs(x - t))
+            idx_a2 = np.argmin(np.abs(x - alpha2))
+            out[i] = max(PU_cum[idx] - PU_cum[idx_a2], 0)
+
+    return out
+
+# Compute entire curve
+FAR_vals = FAR(x)
+FRR_vals = FRR(x)
+
+# Compute FAR/FRR at optimal T
+far_opt = FAR(x_opt)[0]     # now works because FAR returns array
+frr_opt = FRR(x_opt)[0]
+
+# Plot FAR vs FRR curve
+fig3, ax3 = plt.subplots(figsize=(6, 6))
+
+ax3.plot(FRR_vals, FAR_vals, color="purple", linewidth=2.5,
+         label=r"FAR(FRR) curve")
+
+# Mark the optimal point
+ax3.scatter([frr_opt], [far_opt], color="black", zorder=6,
+            label="Optimal point")
+ax3.annotate(
+    r"$(\mathrm{FRR}_{opt},\, \mathrm{FAR}_{opt})$",
+    xy=(frr_opt, far_opt),
+    xytext=(frr_opt + 0.01, far_opt + 0.01),   # offset
+    fontsize=14,
+    ha='left',
+    va='bottom'
+)
+
+# Axis labels
+ax3.set_xlabel(r"FRR(T)")
+ax3.set_ylabel(r"FAR(T)")
+
+# Grid + limits
+ax3.grid(True, linestyle=":")
+ax3.set_xlim(0, max(FRR_vals) * 1.05)
+ax3.set_ylim(0, max(FAR_vals) * 1.05)
+
+ax3.legend()
+plt.tight_layout()
+plt.savefig("fig_FARvFRR_parabola.pdf", format="pdf")
