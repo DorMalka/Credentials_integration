@@ -176,7 +176,7 @@ Figure 3 illustrated the FAR vs FRR curve.
 %%%
 %%%
 %%%
-Our goal is to modelize credentials that are distributed closely to real measured credentials. We chose to anaylze a parabolic distribution function as it can modelize credentials that are more likely to be close to the Gaussian distribution and that are close to Slobodan findings on Eigenfinger and Eigenpalms distributions~\cite{Slob2005}. We defined two probability distribution functions (PDFs) for the user and the attacker, $P_U$ and $P_A$ respectively.
+Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a parabolic probability distribution function, which provides a flexible approximation of credential distributions that are often near-Gaussian. This choice is also consistent with the findings of Slobodan et al.\ on Eigenfinger and Eigenpalm feature distributions~\cite{Slob2005}. Accordingly, we define two probability density functions (PDFs) for the user and the attacker, denoted by $P_U$ and $P_A$, respectively.
 \[
 P_U(x) = 
 \left\{
@@ -196,14 +196,22 @@ P_A(x) =
 \right.
 \]
 
-Here $a,b,c,d,e,f$ are the parabolic coefficients for the user and attacker, respectively. $\alpha_1, \alpha_2$ are the user PDFs' roots and $\beta_1, \beta_2$ are the attacker PDFs' roots. In case $\alpha_2 < \beta_1$, the scenario reduces to trivial case. On the other hand, if $\alpha_1  > \beta_1 \land \beta_2 < \alpha_2$ the scenario reduces to a non-separable case. Without loss of generality, we will assume that $\alpha_1 \le \beta_1 \le \alpha_2 \le \beta_2$, as shown in Figure 4
+Here, $a, b, c$ and $d, e, f$ denote the parabolic coefficients of the user and attacker distributions, respectively. The parameters $\alpha_{1}, \alpha_{2}$ are the roots of the user's PDF, while $\beta_{1}, \beta_{2}$ are the roots of the attacker's PDF. 
+If $\alpha_{2} < \beta_{1}$, the two distributions do not overlap, and the problem becomes trivial. Conversely, if $\alpha_{1} > \beta_{1}$ and $\beta_{2} < \alpha_{2}$, the attacker's distribution is fully contained within the user's, resulting in a non-separable scenario. 
+Without loss of generality, we therefore focus on the intermediate and most meaningful configuration, where
+\[
+    \alpha_{1} \le \beta_{1} \le \alpha_{2} \le \beta_{2},
+\]
+as illustrated in Figure~4.
+
 \begin{figure}[H]  
     \centering
     \includegraphics[width=0.995\textwidth]{Parabola_figure.pdf}
     \caption{Parabolic PDFs}
 \end{figure}
 
-To reduce the freedom degrees of the parabolic functions while keeping it symbolic analysis, we defined the coefficients based on the roots and the assumption that the integral of each PDF between its roots is equal to 1. Thus, we define the coefficients as follows.
+To reduce the degrees of freedom of the parabolic functions while maintaining a symbolic analysis, we express the coefficients directly in terms of their roots. Under the additional assumption that the integral of each PDF over its roots interval equals~1, the coefficients become fully determined. Accordingly, we define the coefficients as follows.
+
 \[
 \begin{array}{ll}
     \alpha_1 \cdot \alpha_2 = \frac{c}{a} \rightarrow a = \frac{c}{\alpha_1 \cdot \alpha_2} \\
@@ -220,7 +228,7 @@ To reduce the freedom degrees of the parabolic functions while keeping it symbol
     \\
     \end{array}
 \]
-Therefore, we can write the parabolic PDFs as follows:
+Therefore, we can write the parabolic PDFs as:
 \[
 P_U(x) =
 \left\{
@@ -314,13 +322,14 @@ s &= \alpha_{1}^{2}\beta_{1}
      + \alpha_{2}\beta_{2}^{2}.
 \end{aligned}
 \]
+In the second interval, the derivative has a single critical point at $T=\alpha_{1}$. Since the derivative is strictly positive for all $T>\alpha_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $T=\beta_{2}$, and the derivative is strictly negative for all $T<\beta_{2}$. Therefore, this interval also contains no maximum either.
 
-In the 2nd interval, we can notice that the only critical point is at $T = \alpha_1$. In addition, for every $T > \alpha_1$, the derivative is positive, thus the critical point is a local minimum. In the 4th interval, the only critical point is at $T = \beta_2$. For every $T < \beta_2$, the derivative is negative, thus there is no maximum point in this interval either.
-We will examine the 3rd interval, where the derivative is a multiplication of a cubic polynomial and two linear polynomials. The linear polynomials have roots at $T = \alpha_1$ and $T = \beta_2$, which are outside the interval, thus we will focus on the cubic polynomial:
-The solution of the cubic polynomial can be found by various methods. Using mathematica tool by Wolfram, we found that there is one real root and two complex roots(TODO: Appendix).
+We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at $T=\alpha_{1}$ and $T=\beta_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic (Appendix),reveals exactly one real root with the remaining two roots being complex.
 
-Thus, there is only one critical point in the 3rd interval. By examining the sign of the derivative before and after the critical point, we can determine it is a global maximum. 
-To prove this critical point, that represents the optimal threshold $T_{\text{opt}}$, is different than the EER point, we calculated the EER point as follows:
+By examining the sign of the derivative on both sides of the critical point, we verify that it constitutes a global maximum of $P_{\text{safe}}(T)$. We denote this maximizing point by $T_{\text{opt}}$.
+
+To demonstrate that this optimal threshold differs from the Equal Error Rate (EER) threshold, we computed the EER point separately as follows:
+
 \[T_{\text{EER}} = \frac{\alpha_{1}\,\beta_{1} - \alpha_{2}\,\beta_{2}}
            {\alpha_{1} - \alpha_{2} + \beta_{1} - \beta_{2}} \neq T_{\text{opt}}
 \]
