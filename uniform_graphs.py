@@ -260,13 +260,13 @@ plt.savefig("fig_FARvFRR_uniform.pdf")
 #       GAP vs VARIANCE (attacker always LEFT & overlapping)
 # ============================================================
 
-beta1 = 0.05
+beta2 = 0.65
 # attacker expands to the right but stays overlapping & mostly left of user
-beta2_values = np.linspace(0.45, 0.7, 30)
+beta1_values = np.linspace(0.0, 0.25, 30)
 gaps = []
 vars_ = []
 
-for beta2 in beta2_values:
+for beta1 in beta1_values:
     Topt, Teer, gap, var = compute_Topt_Teer(u1, u2, beta1, beta2)
     gaps.append(gap)
     vars_.append(var)
@@ -291,9 +291,9 @@ plt.figure(figsize=(10, 5))
 # Plot user PDF once
 plt.plot(x, user_pdf_sym, label="User PDF $U[u_1,u_2]$", color="blue", linewidth=3)
 
-colors = plt.cm.Reds(np.linspace(0.3, 1, len(beta2_values)))
+colors = plt.cm.Reds(np.linspace(0.3, 1, len(beta1_values)))
 
-for (beta2, c) in zip(beta2_values, colors):
+for (beta1, c) in zip(beta1_values, colors):
     att_pdf = uniform_pdf(x, beta1, beta2)
     plt.plot(x, att_pdf, color=c, linewidth=1.5)
 
