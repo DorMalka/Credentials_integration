@@ -1,0 +1,3447 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[    139132,       3439]
+NotebookOptionsPosition[    134802,       3364]
+NotebookOutlinePosition[    135201,       3380]
+CellTagsIndexPosition[    135158,       3377]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"$Assumptions", "=", 
+   RowBox[{
+    RowBox[{"0", "<", "s1"}], "&&", 
+    RowBox[{"s1", "<", "1"}], "&&", 
+    RowBox[{"0", "<", "s2"}], "&&", 
+    RowBox[{"s2", "<", "1"}], "&&", 
+    RowBox[{"0", "<", "u1"}], "&&", 
+    RowBox[{"0", "<", "a1"}], "&&", 
+    RowBox[{"0", "<", "u2"}], "&&", 
+    RowBox[{"0", "<", "a2"}], "&&", 
+    RowBox[{"a1", "<", "u1"}], "&&", 
+    RowBox[{"a1", "<", "u2"}], "&&", 
+    RowBox[{"a1", "<", "a2"}], "&&", 
+    RowBox[{"u1", "<", "u2"}], "&&", 
+    RowBox[{"u1", "<", "a2"}], "&&", 
+    RowBox[{"a2", "<", "u2"}], "&&", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"u1", ",", "u2", ",", "a1", ",", "a2", ",", "T"}], "}"}], "\[Element]",
+      "Reals"}]}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"FAR", "[", 
+    RowBox[{"T_", ",", "a1_", ",", "a2_"}], "]"}], ":=", 
+   RowBox[{"Piecewise", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"1", ",", 
+        RowBox[{"T", "<=", "a1"}]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"a2", "-", "T"}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"a2", "-", "a1"}], ")"}]}], ",", 
+        RowBox[{"a1", "<", "T", "<=", "a2"}]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", 
+        RowBox[{"T", ">", "a2"}]}], "}"}]}], "}"}], "]"}]}], ";"}], "\n", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"FRR", "[", 
+    RowBox[{"T_", ",", "u1_", ",", "u2_"}], "]"}], ":=", 
+   RowBox[{"Piecewise", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"0", ",", 
+        RowBox[{"T", "<=", "u1"}]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"T", "-", "u1"}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"u2", "-", "u1"}], ")"}]}], ",", 
+        RowBox[{"u1", "<", "T", "<=", "u2"}]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"1", ",", 
+        RowBox[{"T", ">", "u2"}]}], "}"}]}], "}"}], "]"}]}], ";"}]}], "Input",\
+
+ CellChangeTimes->{{3.974949976453227*^9, 3.974949980028339*^9}},
+ CellLabel->
+  "In[183]:=",ExpressionUUID->"8b501c40-dc77-46ba-87a4-e2d51028c9a8"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"safe1", "=", 
+  RowBox[{"1", "-", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"a2", "-", "T"}], ")"}], "/", 
+     RowBox[{"(", 
+      RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "+", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"a2", "-", "T"}], ")"}], "/", 
+      RowBox[{"(", 
+       RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "*", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"T", "-", "u1"}], ")"}], "/", 
+      RowBox[{"(", 
+       RowBox[{"u2", "-", "u1"}], ")"}]}], ")"}]}], "-", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"T", "-", "u1"}], ")"}], "/", 
+     RowBox[{"(", 
+      RowBox[{"u2", "-", "u1"}], ")"}]}], ")"}]}]}], "\[IndentingNewLine]", 
+ RowBox[{"safe2", " ", "=", " ", "s1"}], "\[IndentingNewLine]", 
+ RowBox[{"leak1", " ", "=", " ", 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"a2", "-", "T"}], ")"}], "/", 
+     RowBox[{"(", 
+      RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "*", 
+   RowBox[{"(", 
+    RowBox[{"1", "-", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"T", "-", "u1"}], ")"}], "/", 
+       RowBox[{"(", 
+        RowBox[{"u2", "-", "u1"}], ")"}]}], ")"}]}], ")"}]}]}], "\[IndentingNewLine]", 
+ RowBox[{"leak2", " ", "=", " ", "s3"}], "\[IndentingNewLine]", 
+ RowBox[{"FullSimplify", "[", 
+  RowBox[{
+   RowBox[{"safe1", "*", "safe2"}], "+", 
+   RowBox[{"safe1", "*", "leak2"}], "+", 
+   RowBox[{"safe2", "*", "leak1"}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.97496669253036*^9, 3.974966833161276*^9}, {
+  3.974967309133967*^9, 3.974967351729294*^9}},
+ CellLabel->
+  "In[309]:=",ExpressionUUID->"2fac414d-4bc9-43aa-9abf-54c95c6758c2"],
+
+Cell[BoxData[
+ RowBox[{"1", "-", 
+  FractionBox[
+   RowBox[{"a2", "-", "T"}], 
+   RowBox[{
+    RowBox[{"-", "a1"}], "+", "a2"}]], "-", 
+  FractionBox[
+   RowBox[{"T", "-", "u1"}], 
+   RowBox[{
+    RowBox[{"-", "u1"}], "+", "u2"}]], "+", 
+  FractionBox[
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{"a2", "-", "T"}], ")"}], " ", 
+    RowBox[{"(", 
+     RowBox[{"T", "-", "u1"}], ")"}]}], 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"-", "a1"}], "+", "a2"}], ")"}], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"-", "u1"}], "+", "u2"}], ")"}]}]]}]], "Output",
+ CellChangeTimes->{3.97496683570632*^9, 3.974967363405061*^9},
+ CellLabel->
+  "Out[309]=",ExpressionUUID->"60cbdd5b-53ee-41ae-ac7a-d20c93e0d274"],
+
+Cell[BoxData["s1"], "Output",
+ CellChangeTimes->{3.97496683570632*^9, 3.974967363405848*^9},
+ CellLabel->
+  "Out[310]=",ExpressionUUID->"52b4a997-4366-4089-a787-4f4c0d524a42"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"a2", "-", "T"}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{"1", "-", 
+     FractionBox[
+      RowBox[{"T", "-", "u1"}], 
+      RowBox[{
+       RowBox[{"-", "u1"}], "+", "u2"}]]}], ")"}]}], 
+  RowBox[{
+   RowBox[{"-", "a1"}], "+", "a2"}]]], "Output",
+ CellChangeTimes->{3.97496683570632*^9, 3.9749673634064093`*^9},
+ CellLabel->
+  "Out[311]=",ExpressionUUID->"52132ac6-1cfb-4585-8e77-043a5e149592"],
+
+Cell[BoxData["s3"], "Output",
+ CellChangeTimes->{3.97496683570632*^9, 3.974967363406948*^9},
+ CellLabel->
+  "Out[312]=",ExpressionUUID->"9efbf26c-d194-4e08-b822-bbff59e3134d"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"-", "a2"}], " ", "s1"}], "+", 
+     RowBox[{"a1", " ", 
+      RowBox[{"(", 
+       RowBox[{"s1", "+", "s3"}], ")"}]}], "-", 
+     RowBox[{"s3", " ", "T"}]}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{"T", "-", "u2"}], ")"}]}], 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"a1", "-", "a2"}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{"u1", "-", "u2"}], ")"}]}]]], "Output",
+ CellChangeTimes->{3.97496683570632*^9, 3.97496736342595*^9},
+ CellLabel->
+  "Out[313]=",ExpressionUUID->"f69ac909-40bc-4050-bdd7-780a214eda51"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Psuccess", "[", 
+   RowBox[{
+   "T_", ",", "u1_", ",", "u2_", ",", "a1_", ",", "a2_", ",", "s1_", ",", 
+    "s2_"}], "]"}], ":=", 
+  RowBox[{"Piecewise", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"0", ",", 
+       RowBox[{"T", "<=", "a1"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"T", "-", "a1"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "*", 
+        RowBox[{"(", 
+         RowBox[{"s1", "+", "s2"}], ")"}]}], ",", 
+       RowBox[{"a1", "<", "T", "<=", "u1"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"T", "-", "a1"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "*", 
+        RowBox[{"(", 
+         RowBox[{"s1", "+", "s2", "-", 
+          RowBox[{"s2", "*", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"T", "-", "u1"}], ")"}], "/", 
+            RowBox[{"(", 
+             RowBox[{"u2", "-", "u1"}], ")"}]}]}]}], ")"}]}], ",", 
+       RowBox[{"u1", "<", "T", "<=", "a2"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"s1", "+", "s2", "-", 
+        RowBox[{"s2", "*", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"T", "-", "u1"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"u2", "-", "u1"}], ")"}]}]}]}], ",", 
+       RowBox[{"a2", "<", "T", "<=", "u2"}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"s1", ",", 
+       RowBox[{"T", ">", "u2"}]}], "}"}]}], "}"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.974951209321498*^9, 3.974951213038121*^9}},
+ CellLabel->
+  "In[186]:=",ExpressionUUID->"274e8b46-aa37-4c0f-89bd-a741d98aaa01"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"P1", "[", "T_", "]"}], ":=", "0"}], ";"}], "\n", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"D", "[", 
+    RowBox[{
+     RowBox[{"P1", "[", "T", "]"}], ",", "T"}], "]"}], "//", "FullSimplify"}],
+   "\[IndentingNewLine]"}], "\n", 
+ RowBox[{
+  RowBox[{"T1opt", "=", "a1"}], ";"}], "\n", 
+ RowBox[{"P1opt", "=", 
+  RowBox[{"Simplify", "[", 
+   RowBox[{
+    RowBox[{"P1", "[", "T1opt", "]"}], ",", "$Assumptions"}], 
+   "]"}]}]}], "Input",
+ CellChangeTimes->{
+  3.9749514414782248`*^9, 3.974951615966058*^9, {3.974951805871787*^9, 
+   3.974951829309359*^9}, {3.974951864249877*^9, 3.974951927509182*^9}},
+ CellLabel->
+  "In[271]:=",ExpressionUUID->"9b3d8676-b78c-4f80-84c6-a5bf21074d2f"],
+
+Cell[BoxData["0"], "Output",
+ CellChangeTimes->{3.9749516243248787`*^9, 3.9749518317556477`*^9, 
+  3.9749518656614447`*^9, 3.974951943489809*^9},
+ CellLabel->
+  "Out[272]=",ExpressionUUID->"36a50f77-4c27-4ac5-840c-a8fcff199b60"],
+
+Cell[BoxData["0"], "Output",
+ CellChangeTimes->{3.9749516243248787`*^9, 3.9749518317556477`*^9, 
+  3.9749518656614447`*^9, 3.97495194349058*^9},
+ CellLabel->
+  "Out[274]=",ExpressionUUID->"ee3457b0-31b1-4b8d-814f-bc42a82cb6af"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"--", 
+      RowBox[{"--", 
+       RowBox[{"--", 
+        RowBox[{"--", 
+         RowBox[{"--", 
+          RowBox[{"--", 
+           RowBox[{"--", 
+            RowBox[{"--", 
+             RowBox[{"--", 
+              RowBox[{"--", 
+               RowBox[{"--", 
+                RowBox[{"--", 
+                 RowBox[{"-", "Region"}]}]}]}]}]}]}]}]}]}]}]}]}], " ", "2"}], 
+    ":", 
+    RowBox[{"a1", "<", "T", "<=", 
+     RowBox[{
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{
+              RowBox[{
+               RowBox[{
+                RowBox[{
+                 RowBox[{"u1", "--"}], "--"}], "--"}], "--"}], "--"}], "--"}],
+             "--"}], "--"}], "--"}], "--"}], "--"}], "--"}], "-"}]}]}], 
+   "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"P2", "[", "T_", "]"}], ":=", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"T", "-", "a1"}], ")"}], "/", 
+        RowBox[{"(", 
+         RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "*", 
+      RowBox[{"(", 
+       RowBox[{"s1", "+", "s2"}], ")"}]}]}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{"D", "[", 
+     RowBox[{
+      RowBox[{"P2", "[", "T", "]"}], ",", "T"}], "]"}], "//", 
+    "FullSimplify"}], "\[IndentingNewLine]", "\n", 
+   RowBox[{
+    RowBox[{"T2opt", "=", "u1"}], ";"}], "\n", 
+   RowBox[{"P2opt", "=", 
+    RowBox[{"Simplify", "[", 
+     RowBox[{
+      RowBox[{"P2", "[", "T2opt", "]"}], ",", "$Assumptions"}], 
+     "]"}]}]}]}]], "Input",
+ FontWeight->"Plain",
+ CellLabel->
+  "In[258]:=",ExpressionUUID->"def257c7-3431-4f4f-9e88-00e182d15c87"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{"s1", "+", "s2"}], 
+  RowBox[{
+   RowBox[{"-", "a1"}], "+", "a2"}]]], "Output",
+ CellChangeTimes->{3.974951890995386*^9},
+ CellLabel->
+  "Out[259]=",ExpressionUUID->"bde6001c-9367-4820-b7be-28a601323db8"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"s1", "+", "s2"}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{"a1", "-", "u1"}], ")"}]}], 
+  RowBox[{"a1", "-", "a2"}]]], "Output",
+ CellChangeTimes->{3.9749518909962473`*^9},
+ CellLabel->
+  "Out[261]=",ExpressionUUID->"cec7b1e7-5df6-4e18-82eb-466c7a4fe5cb"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"--", 
+      RowBox[{"--", 
+       RowBox[{"--", 
+        RowBox[{"--", 
+         RowBox[{"--", 
+          RowBox[{"--", 
+           RowBox[{"--", 
+            RowBox[{"--", 
+             RowBox[{"--", 
+              RowBox[{"--", 
+               RowBox[{"--", 
+                RowBox[{"--", 
+                 RowBox[{"-", "Region"}]}]}]}]}]}]}]}]}]}]}]}]}], " ", "3"}], 
+    ":", 
+    RowBox[{"u1", "<", "T", "<=", 
+     RowBox[{
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{
+              RowBox[{
+               RowBox[{
+                RowBox[{
+                 RowBox[{"a2", "--"}], "--"}], "--"}], "--"}], "--"}], "--"}],
+             "--"}], "--"}], "--"}], "--"}], "--"}], "--"}], "-"}]}]}], 
+   "*)"}], "\n", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"P3", "[", "T_", "]"}], ":=", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"T", "-", "a1"}], ")"}], "/", 
+        RowBox[{"(", 
+         RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "*", 
+      RowBox[{"(", 
+       RowBox[{"s1", "+", "s2", "-", 
+        RowBox[{"s2", "*", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"T", "-", "u1"}], ")"}], "/", 
+          RowBox[{"(", 
+           RowBox[{"u2", "-", "u1"}], ")"}]}]}]}], ")"}]}]}], ";"}], "\n", 
+   RowBox[{"dP3", "=", 
+    RowBox[{"FullSimplify", "[", 
+     RowBox[{
+      RowBox[{"D", "[", 
+       RowBox[{
+        RowBox[{"P3", "[", "T", "]"}], ",", "T"}], "]"}], ",", 
+      "$Assumptions"}], "]"}]}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{"sol3", "=", 
+    RowBox[{"Solve", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"dP3", "==", "0"}], "&&", 
+       RowBox[{"u1", "<", "T", "<", "a2"}]}], ",", "T", ",", "Reals"}], 
+     "]"}]}], "\[IndentingNewLine]", 
+   RowBox[{"T3opt", "=", 
+    RowBox[{
+     RowBox[{"T", "/.", " ", 
+      RowBox[{"First", "[", "sol3", "]"}]}], "//", "FullSimplify"}]}], "\n", "\[IndentingNewLine]", 
+   RowBox[{"P3opt", "=", 
+    RowBox[{"FullSimplify", "[", 
+     RowBox[{
+      RowBox[{"P3", "[", "T3opt", "]"}], ",", "$Assumptions"}], "]"}]}], 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{3.974952018298881*^9, 3.974952143488381*^9, 
+  3.974968525042366*^9},
+ CellLabel->
+  "In[314]:=",ExpressionUUID->"358e9d4a-152f-4b0c-a657-9d0383421ebb"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   RowBox[{"s2", " ", 
+    RowBox[{"(", 
+     RowBox[{"a1", "-", 
+      RowBox[{"2", " ", "T"}], "+", "u2"}], ")"}]}], "+", 
+   RowBox[{"s1", " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"-", "u1"}], "+", "u2"}], ")"}]}]}], 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"a1", "-", "a2"}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{"u1", "-", "u2"}], ")"}]}]]], "Output",
+ CellChangeTimes->{3.974951903518272*^9, 3.974952019237228*^9, 
+  3.9749521482606287`*^9, 3.974968526485848*^9},
+ CellLabel->
+  "Out[315]=",ExpressionUUID->"ecb5d365-b9dd-4805-bacb-46838d657a79"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{"T", "\[Rule]", 
+    TemplateBox[{
+      RowBox[{"-", 
+        FractionBox[
+         RowBox[{
+           RowBox[{
+             RowBox[{"-", "a1"}], " ", "s2"}], "+", 
+           RowBox[{"s1", " ", "u1"}], "-", 
+           RowBox[{"s1", " ", "u2"}], "-", 
+           RowBox[{"s2", " ", "u2"}]}], 
+         RowBox[{"2", " ", "s2"}]]}], 
+      InterpretationBox[
+       DynamicModuleBox[{Typeset`open = False}, 
+        TemplateBox[{"Expression", 
+          StyleBox[
+           TagBox[
+            TooltipBox["\"condition\"", 
+             TagBox[
+              RowBox[{
+                RowBox[{"(", 
+                  RowBox[{
+                    RowBox[{"a1", "<", "u2"}], "&&", 
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{"a1", "+", "u2"}], "2"], "<", "u1", "<", 
+                    RowBox[{
+                    FractionBox["1", "3"], " ", 
+                    RowBox[{"(", 
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ")"}]}]}], "&&", 
+                    RowBox[{"u1", "<", "a2", "<", 
+                    RowBox[{
+                    FractionBox["1", "2"], " ", 
+                    RowBox[{"(", 
+                    RowBox[{"a1", "-", "u1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ")"}]}]}], "&&", 
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "-", 
+                    RowBox[{"2", " ", "s2", " ", "u1"}], "+", 
+                    RowBox[{"s2", " ", "u2"}]}], 
+                    RowBox[{"u1", "-", "u2"}]], "<", "s1", "<", 
+                    FractionBox[
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"-", "a1"}], " ", "s2"}], "+", 
+                    RowBox[{"2", " ", "a2", " ", "s2"}], "-", 
+                    RowBox[{"s2", " ", "u2"}]}], 
+                    RowBox[{
+                    RowBox[{"-", "u1"}], "+", "u2"}]]}]}], ")"}], "||", 
+                RowBox[{"(", 
+                  RowBox[{
+                    RowBox[{"a1", "<", "u2"}], "&&", 
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "-", 
+                    RowBox[{"2", " ", "s2", " ", "u1"}], "+", 
+                    RowBox[{"s2", " ", "u2"}]}], 
+                    RowBox[{"u1", "-", "u2"}]], "<", "s1", "<", 
+                    FractionBox[
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"-", "a1"}], " ", "s2"}], "+", 
+                    RowBox[{"2", " ", "a2", " ", "s2"}], "-", 
+                    RowBox[{"s2", " ", "u2"}]}], 
+                    RowBox[{
+                    RowBox[{"-", "u1"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{
+                    RowBox[{
+                    FractionBox["1", "3"], " ", 
+                    RowBox[{"(", 
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ")"}]}], "<", "u1", "<", 
+                    "u2"}], "&&", 
+                    RowBox[{"u1", "<", "a2", "<", "u2"}]}], ")"}], "||", 
+                RowBox[{"(", 
+                  RowBox[{"\[LeftSkeleton]", "1", "\[RightSkeleton]"}], ")"}],
+                 "||", 
+                RowBox[{"(", 
+                  RowBox[{"\[LeftSkeleton]", "1", "\[RightSkeleton]"}], ")"}],
+                 "||", 
+                RowBox[{"\[LeftSkeleton]", "1", "\[RightSkeleton]"}], "||", 
+                RowBox[{"(", 
+                  RowBox[{"\[LeftSkeleton]", "1", "\[RightSkeleton]"}], ")"}],
+                 "||", 
+                RowBox[{"(", 
+                  RowBox[{
+                    RowBox[{"a1", "<", "u2"}], "&&", 
+                    RowBox[{
+                    RowBox[{
+                    FractionBox["1", "2"], " ", 
+                    RowBox[{"(", 
+                    RowBox[{"a1", "-", "u1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ")"}]}], "<", "a2", "<", 
+                    "u2"}], "&&", 
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]], "<", "s2"}], "&&", 
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{"a1", "+", "u2"}], "2"], "<", "u1", "<", 
+                    RowBox[{
+                    FractionBox["1", "3"], " ", 
+                    RowBox[{"(", 
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ")"}]}]}], "&&", 
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "-", 
+                    RowBox[{"2", " ", "s2", " ", "u1"}], "+", 
+                    RowBox[{"s2", " ", "u2"}]}], 
+                    RowBox[{"u1", "-", "u2"}]], "<", "s1"}]}], ")"}], "||", 
+                RowBox[{"(", 
+                  RowBox[{
+                    RowBox[{"a1", "<", "u2"}], "&&", 
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "-", 
+                    RowBox[{"2", " ", "s2", " ", "u1"}], "+", 
+                    RowBox[{"s2", " ", "u2"}]}], 
+                    RowBox[{"u1", "-", "u2"}]], "<", "s1"}], "&&", 
+                    RowBox[{
+                    RowBox[{
+                    FractionBox["1", "3"], " ", 
+                    RowBox[{"(", 
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ")"}]}], "<", "u1", "<", 
+                    "u2"}], "&&", 
+                    RowBox[{"u1", "<", "a2", "<", "u2"}], "&&", 
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]], "<", "s2", "<", 
+                    FractionBox[
+                    RowBox[{
+                    RowBox[{"-", "u1"}], "+", "u2"}], 
+                    RowBox[{
+                    RowBox[{"-", "a1"}], "+", 
+                    RowBox[{"2", " ", "u1"}], "-", "u2"}]]}]}], ")"}]}], 
+              Short[#, 7]& ]], Annotation[#, 
+             Short[
+              Or[
+               And[$CellContext`a1 < $CellContext`u2, 
+                Inequality[
+                Rational[1, 2] ($CellContext`a1 + $CellContext`u2), 
+                 Less, $CellContext`u1, Less, 
+                 Rational[1, 3] ($CellContext`a1 + 2 $CellContext`u2)], 
+                
+                Inequality[$CellContext`u1, Less, $CellContext`a2, Less, 
+                 Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+                  2 $CellContext`u2)], 
+                
+                Inequality[($CellContext`u1 - $CellContext`u2)^(-1) \
+($CellContext`a1 $CellContext`s2 - 
+                  2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2), Less, $CellContext`s1, 
+                 Less, (-$CellContext`u1 + $CellContext`u2)^(-1) \
+(-$CellContext`a1 $CellContext`s2 + 
+                  2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2)]], 
+               
+               And[$CellContext`a1 < $CellContext`u2, $CellContext`s2 < \
+($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+                 2 $CellContext`a2 + $CellContext`u2), 
+                
+                Inequality[($CellContext`u1 - $CellContext`u2)^(-1) \
+($CellContext`a1 $CellContext`s2 - 
+                  2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2), Less, $CellContext`s1, 
+                 Less, (-$CellContext`u1 + $CellContext`u2)^(-1) \
+(-$CellContext`a1 $CellContext`s2 + 
+                  2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2)], 
+                Inequality[
+                Rational[1, 3] ($CellContext`a1 + 2 $CellContext`u2), 
+                 Less, $CellContext`u1, Less, $CellContext`u2], 
+                
+                Inequality[$CellContext`u1, Less, $CellContext`a2, 
+                 Less, $CellContext`u2]], 
+               And[$CellContext`a1 < $CellContext`u2, 
+                
+                Inequality[$CellContext`a1, Less, $CellContext`u1, Less, 
+                 Rational[
+                  1, 2] ($CellContext`a1 + $CellContext`u2)], $CellContext`s1 < \
+(-$CellContext`u1 + $CellContext`u2)^(-1) (-$CellContext`a1 $CellContext`s2 + 
+                  2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2), 
+                Inequality[
+                Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+                  2 $CellContext`u2), Less, $CellContext`a2, 
+                 Less, $CellContext`u2], $CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2)], 
+               And[$CellContext`a1 < $CellContext`u2, 
+                
+                Inequality[$CellContext`a1, Less, $CellContext`u1, Less, 
+                 Rational[1, 2] ($CellContext`a1 + $CellContext`u2)], 
+                Inequality[
+                Rational[1, 2] ($CellContext`a1 + $CellContext`u2), 
+                 Less, $CellContext`a2, Less, 
+                 Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+                  2 $CellContext`u2)], $CellContext`s1 < (-$CellContext`u1 + \
+$CellContext`u2)^(-1) (-$CellContext`a1 $CellContext`s2 + 
+                  2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2)], 
+               And[$CellContext`a1 < $CellContext`u2, 
+                
+                Inequality[$CellContext`a1, Less, $CellContext`u1, Less, 
+                 Rational[1, 2] ($CellContext`a1 + $CellContext`u2)], 
+                Inequality[
+                Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+                  2 $CellContext`u2), Less, $CellContext`a2, 
+                 Less, $CellContext`u2], ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+                 2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2], 
+               And[$CellContext`a1 < $CellContext`u2, 
+                Inequality[
+                Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+                  2 $CellContext`u2), Less, $CellContext`a2, 
+                 Less, $CellContext`u2], $CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+                Inequality[
+                Rational[1, 2] ($CellContext`a1 + $CellContext`u2), 
+                 Less, $CellContext`u1, Less, 
+                 Rational[1, 3] ($CellContext`a1 + 2 $CellContext`u2)], 
+                
+                Inequality[($CellContext`u1 - $CellContext`u2)^(-1) \
+($CellContext`a1 $CellContext`s2 - 
+                  2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2), Less, $CellContext`s1, 
+                 Less, (-$CellContext`u1 + $CellContext`u2)^(-1) \
+(-$CellContext`a1 $CellContext`s2 + 
+                  2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2)]], 
+               And[$CellContext`a1 < $CellContext`u2, 
+                Inequality[
+                Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+                  2 $CellContext`u2), Less, $CellContext`a2, 
+                 Less, $CellContext`u2], ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+                 2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+                Inequality[
+                Rational[1, 2] ($CellContext`a1 + $CellContext`u2), 
+                 Less, $CellContext`u1, Less, 
+                 Rational[1, 3] ($CellContext`a1 + 
+                  2 $CellContext`u2)], ($CellContext`u1 - \
+$CellContext`u2)^(-1) ($CellContext`a1 $CellContext`s2 - 
+                  2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2) < $CellContext`s1], 
+               
+               And[$CellContext`a1 < $CellContext`u2, ($CellContext`u1 - \
+$CellContext`u2)^(-1) ($CellContext`a1 $CellContext`s2 - 
+                  2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2) < $CellContext`s1, 
+                Inequality[
+                Rational[1, 3] ($CellContext`a1 + 2 $CellContext`u2), 
+                 Less, $CellContext`u1, Less, $CellContext`u2], 
+                
+                Inequality[$CellContext`u1, Less, $CellContext`a2, 
+                 Less, $CellContext`u2], 
+                
+                Inequality[($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+                 Less, $CellContext`s2, 
+                 Less, (-$CellContext`a1 + 
+                   2 $CellContext`u1 - $CellContext`u2)^(-1) \
+(-$CellContext`u1 + $CellContext`u2)]]], 7], "Tooltip"]& ], 
+           "IconizedCustomName", StripOnInput -> False], 
+          GridBox[{{
+             RowBox[{
+               TagBox["\"Head: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+               TagBox["Or", "IconizedItem"]}]}, {
+             RowBox[{
+               TagBox["\"Byte count: \"", "IconizedLabel"], 
+               "\[InvisibleSpace]", 
+               TagBox["15816", "IconizedItem"]}]}}, 
+           GridBoxAlignment -> {"Columns" -> {{Left}}}, DefaultBaseStyle -> 
+           "Column", 
+           GridBoxItemSize -> {
+            "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}], 
+          Dynamic[Typeset`open]}, "IconizedObject"]], 
+       Or[
+        And[$CellContext`a1 < $CellContext`u2, 
+         Inequality[
+         Rational[1, 2] ($CellContext`a1 + $CellContext`u2), 
+          Less, $CellContext`u1, Less, 
+          Rational[1, 3] ($CellContext`a1 + 2 $CellContext`u2)], 
+         Inequality[$CellContext`u1, Less, $CellContext`a2, Less, 
+          Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+           2 $CellContext`u2)], 
+         Inequality[($CellContext`u1 - $CellContext`u2)^(-1) ($CellContext`a1 \
+$CellContext`s2 - 
+           2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2), Less, $CellContext`s1, 
+          Less, (-$CellContext`u1 + $CellContext`u2)^(-1) (-$CellContext`a1 \
+$CellContext`s2 + 
+           2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2)]], 
+        And[$CellContext`a1 < $CellContext`u2, $CellContext`s2 < \
+($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+          2 $CellContext`a2 + $CellContext`u2), 
+         Inequality[($CellContext`u1 - $CellContext`u2)^(-1) ($CellContext`a1 \
+$CellContext`s2 - 
+           2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2), Less, $CellContext`s1, 
+          Less, (-$CellContext`u1 + $CellContext`u2)^(-1) (-$CellContext`a1 \
+$CellContext`s2 + 
+           2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2)], 
+         Inequality[
+         Rational[1, 3] ($CellContext`a1 + 2 $CellContext`u2), 
+          Less, $CellContext`u1, Less, $CellContext`u2], 
+         Inequality[$CellContext`u1, Less, $CellContext`a2, 
+          Less, $CellContext`u2]], 
+        And[$CellContext`a1 < $CellContext`u2, 
+         Inequality[$CellContext`a1, Less, $CellContext`u1, Less, 
+          Rational[
+           1, 2] ($CellContext`a1 + $CellContext`u2)], $CellContext`s1 < \
+(-$CellContext`u1 + $CellContext`u2)^(-1) (-$CellContext`a1 $CellContext`s2 + 
+           2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2), 
+         Inequality[
+         Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+           2 $CellContext`u2), Less, $CellContext`a2, 
+          Less, $CellContext`u2], $CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2)], 
+        And[$CellContext`a1 < $CellContext`u2, 
+         Inequality[$CellContext`a1, Less, $CellContext`u1, Less, 
+          Rational[1, 2] ($CellContext`a1 + $CellContext`u2)], 
+         Inequality[
+         Rational[1, 2] ($CellContext`a1 + $CellContext`u2), 
+          Less, $CellContext`a2, Less, 
+          Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+           2 $CellContext`u2)], $CellContext`s1 < (-$CellContext`u1 + \
+$CellContext`u2)^(-1) (-$CellContext`a1 $CellContext`s2 + 
+           2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2)], 
+        And[$CellContext`a1 < $CellContext`u2, 
+         Inequality[$CellContext`a1, Less, $CellContext`u1, Less, 
+          Rational[1, 2] ($CellContext`a1 + $CellContext`u2)], 
+         Inequality[
+         Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+           2 $CellContext`u2), Less, $CellContext`a2, 
+          Less, $CellContext`u2], ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+          2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2], 
+        And[$CellContext`a1 < $CellContext`u2, 
+         Inequality[
+         Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+           2 $CellContext`u2), Less, $CellContext`a2, 
+          Less, $CellContext`u2], $CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+         Inequality[
+         Rational[1, 2] ($CellContext`a1 + $CellContext`u2), 
+          Less, $CellContext`u1, Less, 
+          Rational[1, 3] ($CellContext`a1 + 2 $CellContext`u2)], 
+         Inequality[($CellContext`u1 - $CellContext`u2)^(-1) ($CellContext`a1 \
+$CellContext`s2 - 
+           2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2), Less, $CellContext`s1, 
+          Less, (-$CellContext`u1 + $CellContext`u2)^(-1) (-$CellContext`a1 \
+$CellContext`s2 + 
+           2 $CellContext`a2 $CellContext`s2 - $CellContext`s2 \
+$CellContext`u2)]], 
+        And[$CellContext`a1 < $CellContext`u2, 
+         Inequality[
+         Rational[1, 2] ($CellContext`a1 - $CellContext`u1 + 
+           2 $CellContext`u2), Less, $CellContext`a2, 
+          Less, $CellContext`u2], ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+          2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+         Inequality[
+         Rational[1, 2] ($CellContext`a1 + $CellContext`u2), 
+          Less, $CellContext`u1, Less, 
+          Rational[1, 3] ($CellContext`a1 + 
+           2 $CellContext`u2)], ($CellContext`u1 - $CellContext`u2)^(-1) \
+($CellContext`a1 $CellContext`s2 - 
+           2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2) < $CellContext`s1], 
+        And[$CellContext`a1 < $CellContext`u2, ($CellContext`u1 - \
+$CellContext`u2)^(-1) ($CellContext`a1 $CellContext`s2 - 
+           2 $CellContext`s2 $CellContext`u1 + $CellContext`s2 \
+$CellContext`u2) < $CellContext`s1, 
+         Inequality[
+         Rational[1, 3] ($CellContext`a1 + 2 $CellContext`u2), 
+          Less, $CellContext`u1, Less, $CellContext`u2], 
+         Inequality[$CellContext`u1, Less, $CellContext`a2, 
+          Less, $CellContext`u2], 
+         Inequality[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+          2 $CellContext`a2 + $CellContext`u2), Less, $CellContext`s2, 
+          Less, (-$CellContext`a1 + 
+            2 $CellContext`u1 - $CellContext`u2)^(-1) (-$CellContext`u1 + \
+$CellContext`u2)]]], SelectWithContents -> True, Selectable -> False]},
+     "ConditionalExpression"]}], "}"}], "}"}]], "Output",
+ CellChangeTimes->{3.974951903518272*^9, 3.974952019237228*^9, 
+  3.9749521482606287`*^9, 3.974968526529271*^9},
+ CellLabel->
+  "Out[316]=",ExpressionUUID->"13e9960f-0998-4a60-a6a3-2c85f8d85c42"],
+
+Cell[BoxData[
+ TemplateBox[{
+   FractionBox[
+    RowBox[{
+      RowBox[{"a1", " ", "s2"}], "-", 
+      RowBox[{"s1", " ", "u1"}], "+", 
+      RowBox[{
+        RowBox[{"(", 
+          RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], 
+    RowBox[{"2", " ", "s2"}]], 
+   InterpretationBox[
+    DynamicModuleBox[{Typeset`open = False}, 
+     TemplateBox[{"Expression", 
+       StyleBox[
+        TagBox[
+         TooltipBox["\"condition\"", 
+          TagBox[
+           RowBox[{
+             RowBox[{"(", 
+               RowBox[{
+                 RowBox[{
+                   RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], "<", 
+                   RowBox[{
+                    RowBox[{"2", " ", "a2", " ", "s2"}], "+", 
+                    RowBox[{"s1", " ", "u1"}]}]}], "&&", 
+                 RowBox[{"(", 
+                   RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "a2"}]}]}], ")"}]}], ")"}]}], ")"}]}], 
+                   ")"}]}], ")"}], "||", 
+             RowBox[{"(", 
+               RowBox[{
+                 RowBox[{
+                   FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]], "<", "s2"}], "&&", 
+                 RowBox[{"(", 
+                   RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "u1"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                   ")"}]}], ")"}]}], Short[#, 7]& ]], Annotation[#, 
+          Short[
+           Or[
+            
+            And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+             2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 \
+$CellContext`u1, 
+             Or[
+              
+              And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+               Or[
+                
+                And[($CellContext`s1 + 
+                   2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                 Or[
+                  
+                  And[$CellContext`a1 + 2 $CellContext`u2 > 
+                   3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                   2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                   2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+                   2 $CellContext`u2 < 3 $CellContext`u1]], 
+                
+                And[$CellContext`a1 + $CellContext`u2 > 
+                 2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                 2 $CellContext`a2 + $CellContext`u1]]], 
+              
+              And[$CellContext`a1 + 2 $CellContext`u2 > 
+               2 $CellContext`a2 + $CellContext`u1, 
+               Or[
+                
+                And[($CellContext`s1 + 
+                   2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+                
+                And[$CellContext`a1 + $CellContext`u2 > 
+                 2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                 2 $CellContext`a2]]]]], 
+            
+            And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+              2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+             Or[
+              
+              And[($CellContext`s1 + 
+                 2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+               Or[
+                
+                And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+                  2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+                  2 $CellContext`u2 < 3 $CellContext`u1], 
+                
+                And[$CellContext`a1 + 2 $CellContext`u2 > 
+                 3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                 2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                 2 $CellContext`a2 + $CellContext`u1]]], 
+              
+              And[$CellContext`a1 + $CellContext`u2 > 
+               2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+               2 $CellContext`a2 + $CellContext`u1]]]], 7], "Tooltip"]& ], 
+        "IconizedCustomName", StripOnInput -> False], 
+       GridBox[{{
+          RowBox[{
+            TagBox["\"Head: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+            TagBox["Or", "IconizedItem"]}]}, {
+          RowBox[{
+            TagBox["\"Byte count: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+            
+            TagBox["8216", "IconizedItem"]}]}}, 
+        GridBoxAlignment -> {"Columns" -> {{Left}}}, DefaultBaseStyle -> 
+        "Column", 
+        GridBoxItemSize -> {
+         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}], 
+       Dynamic[Typeset`open]}, "IconizedObject"]], 
+    Or[
+     And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+      2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 $CellContext`u1, 
+      Or[
+       And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+          Or[
+           
+           And[$CellContext`a1 + 2 $CellContext`u2 > 
+            3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+            2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+            2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+            2 $CellContext`u2 < 3 $CellContext`u1]], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]], 
+       And[$CellContext`a1 + 2 $CellContext`u2 > 
+        2 $CellContext`a2 + $CellContext`u1, 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+          2 $CellContext`a2]]]]], 
+     And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+       2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+      Or[
+       And[($CellContext`s1 + 
+          2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+        Or[
+         And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+           2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+           2 $CellContext`u2 < 3 $CellContext`u1], 
+         And[$CellContext`a1 + 2 $CellContext`u2 > 
+          3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]], 
+       And[$CellContext`a1 + $CellContext`u2 > 
+        2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+        2 $CellContext`a2 + $CellContext`u1]]]], SelectWithContents -> True, 
+    Selectable -> False]},
+  "ConditionalExpression"]], "Output",
+ CellChangeTimes->{3.974951903518272*^9, 3.974952019237228*^9, 
+  3.9749521482606287`*^9, 3.974968527874713*^9},
+ CellLabel->
+  "Out[317]=",ExpressionUUID->"a735debf-a798-4d24-8980-fc1a75dbeacb"],
+
+Cell[BoxData[
+ TemplateBox[{
+   FractionBox[
+    SuperscriptBox[
+     RowBox[{"(", 
+       RowBox[{
+         RowBox[{"a1", " ", "s2"}], "+", 
+         RowBox[{"s1", " ", "u1"}], "-", 
+         RowBox[{
+           RowBox[{"(", 
+             RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], ")"}], "2"], 
+    RowBox[{"4", " ", 
+      RowBox[{"(", 
+        RowBox[{"a1", "-", "a2"}], ")"}], " ", "s2", " ", 
+      RowBox[{"(", 
+        RowBox[{"u1", "-", "u2"}], ")"}]}]], 
+   InterpretationBox[
+    DynamicModuleBox[{Typeset`open = False}, 
+     TemplateBox[{"Expression", 
+       StyleBox[
+        TagBox[
+         TooltipBox["\"condition\"", 
+          TagBox[
+           RowBox[{
+             RowBox[{"(", 
+               RowBox[{
+                 RowBox[{
+                   RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], "<", 
+                   RowBox[{
+                    RowBox[{"2", " ", "a2", " ", "s2"}], "+", 
+                    RowBox[{"s1", " ", "u1"}]}]}], "&&", 
+                 RowBox[{"(", 
+                   RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "a2"}]}]}], ")"}]}], ")"}]}], ")"}]}], 
+                   ")"}]}], ")"}], "||", 
+             RowBox[{"(", 
+               RowBox[{
+                 RowBox[{
+                   FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]], "<", "s2"}], "&&", 
+                 RowBox[{"(", 
+                   RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "u1"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                   ")"}]}], ")"}]}], Short[#, 7]& ]], Annotation[#, 
+          Short[
+           Or[
+            
+            And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+             2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 \
+$CellContext`u1, 
+             Or[
+              
+              And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+               Or[
+                
+                And[($CellContext`s1 + 
+                   2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                 Or[
+                  
+                  And[$CellContext`a1 + 2 $CellContext`u2 > 
+                   3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                   2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                   2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+                   2 $CellContext`u2 < 3 $CellContext`u1]], 
+                
+                And[$CellContext`a1 + $CellContext`u2 > 
+                 2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                 2 $CellContext`a2 + $CellContext`u1]]], 
+              
+              And[$CellContext`a1 + 2 $CellContext`u2 > 
+               2 $CellContext`a2 + $CellContext`u1, 
+               Or[
+                
+                And[($CellContext`s1 + 
+                   2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+                
+                And[$CellContext`a1 + $CellContext`u2 > 
+                 2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                 2 $CellContext`a2]]]]], 
+            
+            And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+              2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+             Or[
+              
+              And[($CellContext`s1 + 
+                 2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+               Or[
+                
+                And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+                  2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+                  2 $CellContext`u2 < 3 $CellContext`u1], 
+                
+                And[$CellContext`a1 + 2 $CellContext`u2 > 
+                 3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                 2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                 2 $CellContext`a2 + $CellContext`u1]]], 
+              
+              And[$CellContext`a1 + $CellContext`u2 > 
+               2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+               2 $CellContext`a2 + $CellContext`u1]]]], 7], "Tooltip"]& ], 
+        "IconizedCustomName", StripOnInput -> False], 
+       GridBox[{{
+          RowBox[{
+            TagBox["\"Head: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+            TagBox["Or", "IconizedItem"]}]}, {
+          RowBox[{
+            TagBox["\"Byte count: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+            
+            TagBox["8216", "IconizedItem"]}]}}, 
+        GridBoxAlignment -> {"Columns" -> {{Left}}}, DefaultBaseStyle -> 
+        "Column", 
+        GridBoxItemSize -> {
+         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}], 
+       Dynamic[Typeset`open]}, "IconizedObject"]], 
+    Or[
+     And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+      2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 $CellContext`u1, 
+      Or[
+       And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+          Or[
+           
+           And[$CellContext`a1 + 2 $CellContext`u2 > 
+            3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+            2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+            2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+            2 $CellContext`u2 < 3 $CellContext`u1]], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]], 
+       And[$CellContext`a1 + 2 $CellContext`u2 > 
+        2 $CellContext`a2 + $CellContext`u1, 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+          2 $CellContext`a2]]]]], 
+     And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+       2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+      Or[
+       And[($CellContext`s1 + 
+          2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+        Or[
+         And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+           2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+           2 $CellContext`u2 < 3 $CellContext`u1], 
+         And[$CellContext`a1 + 2 $CellContext`u2 > 
+          3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]], 
+       And[$CellContext`a1 + $CellContext`u2 > 
+        2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+        2 $CellContext`a2 + $CellContext`u1]]]], SelectWithContents -> True, 
+    Selectable -> False]},
+  "ConditionalExpression"]], "Output",
+ CellChangeTimes->{3.974951903518272*^9, 3.974952019237228*^9, 
+  3.9749521482606287`*^9, 3.9749685280312433`*^9},
+ CellLabel->
+  "Out[318]=",ExpressionUUID->"fbb97c9c-495c-4ce2-b7a2-ab4c391ccd34"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"--", 
+      RowBox[{"--", 
+       RowBox[{"--", 
+        RowBox[{"--", 
+         RowBox[{"--", 
+          RowBox[{"--", 
+           RowBox[{"--", 
+            RowBox[{"--", 
+             RowBox[{"--", 
+              RowBox[{"--", 
+               RowBox[{"--", 
+                RowBox[{"--", 
+                 RowBox[{"-", "Region"}]}]}]}]}]}]}]}]}]}]}]}]}], " ", "4"}], 
+    ":", 
+    RowBox[{"a2", "<", "T", "<=", 
+     RowBox[{
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{
+              RowBox[{
+               RowBox[{
+                RowBox[{
+                 RowBox[{"u2", "--"}], "--"}], "--"}], "--"}], "--"}], "--"}],
+             "--"}], "--"}], "--"}], "--"}], "--"}], "--"}], "-"}]}]}], 
+   "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"P4", "[", "T_", "]"}], ":=", 
+     RowBox[{"s1", "+", "s2", "-", 
+      RowBox[{"s2", "*", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"T", "-", "u1"}], ")"}], "/", 
+        RowBox[{"(", 
+         RowBox[{"u2", "-", "u1"}], ")"}]}]}]}]}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{"D", "[", 
+     RowBox[{
+      RowBox[{"P4", "[", "T", "]"}], ",", "T"}], "]"}], "//", 
+    "FullSimplify"}], "\[IndentingNewLine]", "\n", 
+   RowBox[{
+    RowBox[{"T4opt", "=", "a2"}], ";"}], "\n", 
+   RowBox[{"P4opt", "=", 
+    RowBox[{"Simplify", "[", 
+     RowBox[{
+      RowBox[{"P4", "[", "T4opt", "]"}], ",", "$Assumptions"}], 
+     "]"}]}]}]}]], "Input",
+ CellLabel->
+  "In[267]:=",ExpressionUUID->"96181918-c631-45c8-9fdb-0edce4fd5235"],
+
+Cell[BoxData[
+ FractionBox["s2", 
+  RowBox[{"u1", "-", "u2"}]]], "Output",
+ CellChangeTimes->{3.9749519197479963`*^9},
+ CellLabel->
+  "Out[268]=",ExpressionUUID->"c06e4612-32cd-4c10-afcd-af240216881a"],
+
+Cell[BoxData[
+ RowBox[{"s1", "+", 
+  FractionBox[
+   RowBox[{"s2", " ", 
+    RowBox[{"(", 
+     RowBox[{"a2", "-", "u2"}], ")"}]}], 
+   RowBox[{"u1", "-", "u2"}]]}]], "Output",
+ CellChangeTimes->{3.974951919765461*^9},
+ CellLabel->
+  "Out[270]=",ExpressionUUID->"21fc7db1-fc6b-4017-834d-9efdc45dadaf"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"--", 
+      RowBox[{"--", 
+       RowBox[{"--", 
+        RowBox[{"--", 
+         RowBox[{"--", 
+          RowBox[{"--", 
+           RowBox[{"--", 
+            RowBox[{"--", 
+             RowBox[{"--", 
+              RowBox[{"--", 
+               RowBox[{"--", 
+                RowBox[{"--", 
+                 RowBox[{"-", "Region"}]}]}]}]}]}]}]}]}]}]}]}]}], " ", "5"}], 
+    ":", 
+    RowBox[{"T", ">", 
+     RowBox[{
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{
+              RowBox[{
+               RowBox[{
+                RowBox[{
+                 RowBox[{"u2", "--"}], "--"}], "--"}], "--"}], "--"}], "--"}],
+             "--"}], "--"}], "--"}], "--"}], "--"}], "--"}], "-"}]}]}], 
+   "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"P5", "[", "T_", "]"}], ":=", "s1"}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{"D", "[", 
+     RowBox[{
+      RowBox[{"P5", "[", "T", "]"}], ",", "T"}], "]"}], "//", 
+    "FullSimplify"}], "\[IndentingNewLine]", "\n", 
+   RowBox[{
+    RowBox[{"T5opt", "=", "u2"}], ";"}], "  ", 
+   RowBox[{"(*", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"any", " ", "T"}], ">", 
+      RowBox[{"u2", " ", "gives", " ", "same", " ", "value"}]}], ";", 
+     RowBox[{"using", " ", "boundary", " ", "for", " ", "reference"}]}], 
+    "*)"}], "\n", 
+   RowBox[{"P5opt", "=", 
+    RowBox[{"Simplify", "[", 
+     RowBox[{
+      RowBox[{"P5", "[", "T5opt", "]"}], ",", "$Assumptions"}], 
+     "]"}]}]}]}]], "Input",
+ CellLabel->
+  "In[285]:=",ExpressionUUID->"c935ec84-5721-4990-ba29-2cd05fb5f2c4"],
+
+Cell[BoxData["0"], "Output",
+ CellChangeTimes->{3.974952194032805*^9},
+ CellLabel->
+  "Out[286]=",ExpressionUUID->"5c2578e2-42e3-4de4-8819-b265103bb9be"],
+
+Cell[BoxData["s1"], "Output",
+ CellChangeTimes->{3.974952194033382*^9},
+ CellLabel->
+  "Out[288]=",ExpressionUUID->"b84d1b05-0a47-4208-b590-0bf02a51b94a"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"candidates", "=", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"T1opt", ",", "P1opt"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"T2opt", ",", "P2opt"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"T3opt", ",", "P3opt"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"T4opt", ",", "P4opt"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"T5opt", ",", "P5opt"}], "}"}]}], "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"best", "=", 
+  RowBox[{"Simplify", "[", 
+   RowBox[{
+    RowBox[{"MaximalBy", "[", 
+     RowBox[{"candidates", ",", "Last"}], "]"}], ",", "$Assumptions"}], 
+   "]"}]}], "\n", 
+ RowBox[{
+  RowBox[{"Print", "[", 
+   RowBox[{"\"\<Best candidate: \>\"", ",", 
+    RowBox[{"best", "[", 
+     RowBox[{"[", 
+      RowBox[{"1", ",", "1"}], "]"}], "]"}]}], "]"}], ";"}], "\n", 
+ RowBox[{
+  RowBox[{"Print", "[", 
+   RowBox[{"\"\<T* = \>\"", ",", 
+    RowBox[{"best", "[", 
+     RowBox[{"[", 
+      RowBox[{"1", ",", "2"}], "]"}], "]"}]}], "]"}], ";"}]}], "Input",
+ CellLabel->
+  "In[289]:=",ExpressionUUID->"8600fb85-7b62-4519-a46e-35dd96614ee2"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{
+    TemplateBox[{
+      FractionBox[
+       RowBox[{
+         RowBox[{"a1", " ", "s2"}], "-", 
+         RowBox[{"s1", " ", "u1"}], "+", 
+         RowBox[{
+           RowBox[{"(", 
+             RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], 
+       RowBox[{"2", " ", "s2"}]], 
+      InterpretationBox[
+       DynamicModuleBox[{Typeset`open = False}, 
+        TemplateBox[{"Expression", 
+          StyleBox[
+           TagBox[
+            TooltipBox["\"condition\"", 
+             TagBox[
+              RowBox[{
+                RowBox[{"(", 
+                  RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2", " ", "s2"}], "+", 
+                    RowBox[{"s1", " ", "u1"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "a2"}]}]}], ")"}]}], ")"}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                RowBox[{"(", 
+                  RowBox[{
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]], "<", "s2"}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "u1"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}]}], Short[#, 7]& ]], Annotation[#, 
+             Short[
+              Or[
+               
+               And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+                2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 \
+$CellContext`u1, 
+                Or[
+                 
+                 And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+                  Or[
+                   
+                   And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                    Or[
+                    
+                    And[$CellContext`a1 + 2 $CellContext`u2 > 
+                    3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                    2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                    2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+                    2 $CellContext`u2 < 3 $CellContext`u1]], 
+                   
+                   And[$CellContext`a1 + $CellContext`u2 > 
+                    2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                    2 $CellContext`a2 + $CellContext`u1]]], 
+                 
+                 And[$CellContext`a1 + 2 $CellContext`u2 > 
+                  2 $CellContext`a2 + $CellContext`u1, 
+                  Or[
+                   
+                   And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+                   
+                   And[$CellContext`a1 + $CellContext`u2 > 
+                    2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                    2 $CellContext`a2]]]]], 
+               
+               And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+                 2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+                Or[
+                 
+                 And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                  Or[
+                   
+                   And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+                    2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+                    2 $CellContext`u2 < 3 $CellContext`u1], 
+                   
+                   And[$CellContext`a1 + 2 $CellContext`u2 > 
+                    3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                    2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                    2 $CellContext`a2 + $CellContext`u1]]], 
+                 
+                 And[$CellContext`a1 + $CellContext`u2 > 
+                  2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                  2 $CellContext`a2 + $CellContext`u1]]]], 7], "Tooltip"]& ], 
+           "IconizedCustomName", StripOnInput -> False], 
+          GridBox[{{
+             RowBox[{
+               TagBox["\"Head: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+               TagBox["Or", "IconizedItem"]}]}, {
+             RowBox[{
+               TagBox["\"Byte count: \"", "IconizedLabel"], 
+               "\[InvisibleSpace]", 
+               TagBox["8216", "IconizedItem"]}]}}, 
+           GridBoxAlignment -> {"Columns" -> {{Left}}}, DefaultBaseStyle -> 
+           "Column", 
+           GridBoxItemSize -> {
+            "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}], 
+          Dynamic[Typeset`open]}, "IconizedObject"]], 
+       Or[
+        And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+         2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 $CellContext`u1, 
+         
+         Or[
+          
+          And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+           Or[
+            
+            And[($CellContext`s1 + 
+               2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+             Or[
+              
+              And[$CellContext`a1 + 2 $CellContext`u2 > 
+               3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+               2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+               2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+               2 $CellContext`u2 < 3 $CellContext`u1]], 
+            
+            And[$CellContext`a1 + $CellContext`u2 > 
+             2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+             2 $CellContext`a2 + $CellContext`u1]]], 
+          
+          And[$CellContext`a1 + 2 $CellContext`u2 > 
+           2 $CellContext`a2 + $CellContext`u1, 
+           Or[
+            
+            And[($CellContext`s1 + 
+               2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+            
+            And[$CellContext`a1 + $CellContext`u2 > 
+             2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+             2 $CellContext`a2]]]]], 
+        And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+          2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+         Or[
+          
+          And[($CellContext`s1 + 
+             2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+           Or[
+            
+            And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+              2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+              2 $CellContext`u2 < 3 $CellContext`u1], 
+            
+            And[$CellContext`a1 + 2 $CellContext`u2 > 
+             3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+             2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+             2 $CellContext`a2 + $CellContext`u1]]], 
+          
+          And[$CellContext`a1 + $CellContext`u2 > 
+           2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+           2 $CellContext`a2 + $CellContext`u1]]]], SelectWithContents -> 
+       True, Selectable -> False]},
+     "ConditionalExpression"], ",", 
+    TemplateBox[{
+      FractionBox[
+       SuperscriptBox[
+        RowBox[{"(", 
+          RowBox[{
+            RowBox[{"a1", " ", "s2"}], "+", 
+            RowBox[{"s1", " ", "u1"}], "-", 
+            RowBox[{
+              RowBox[{"(", 
+                RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], ")"}], "2"], 
+       
+       RowBox[{"4", " ", 
+         RowBox[{"(", 
+           RowBox[{"a1", "-", "a2"}], ")"}], " ", "s2", " ", 
+         RowBox[{"(", 
+           RowBox[{"u1", "-", "u2"}], ")"}]}]], 
+      InterpretationBox[
+       DynamicModuleBox[{Typeset`open = False}, 
+        TemplateBox[{"Expression", 
+          StyleBox[
+           TagBox[
+            TooltipBox["\"condition\"", 
+             TagBox[
+              RowBox[{
+                RowBox[{"(", 
+                  RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2", " ", "s2"}], "+", 
+                    RowBox[{"s1", " ", "u1"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "a2"}]}]}], ")"}]}], ")"}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                RowBox[{"(", 
+                  RowBox[{
+                    RowBox[{
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]], "<", "s2"}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "u1"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}]}], Short[#, 7]& ]], Annotation[#, 
+             Short[
+              Or[
+               
+               And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+                2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 \
+$CellContext`u1, 
+                Or[
+                 
+                 And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+                  Or[
+                   
+                   And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                    Or[
+                    
+                    And[$CellContext`a1 + 2 $CellContext`u2 > 
+                    3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                    2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                    2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+                    2 $CellContext`u2 < 3 $CellContext`u1]], 
+                   
+                   And[$CellContext`a1 + $CellContext`u2 > 
+                    2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                    2 $CellContext`a2 + $CellContext`u1]]], 
+                 
+                 And[$CellContext`a1 + 2 $CellContext`u2 > 
+                  2 $CellContext`a2 + $CellContext`u1, 
+                  Or[
+                   
+                   And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+                   
+                   And[$CellContext`a1 + $CellContext`u2 > 
+                    2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                    2 $CellContext`a2]]]]], 
+               
+               And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+                 2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+                Or[
+                 
+                 And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                  Or[
+                   
+                   And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+                    2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+                    2 $CellContext`u2 < 3 $CellContext`u1], 
+                   
+                   And[$CellContext`a1 + 2 $CellContext`u2 > 
+                    3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                    2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                    2 $CellContext`a2 + $CellContext`u1]]], 
+                 
+                 And[$CellContext`a1 + $CellContext`u2 > 
+                  2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                  2 $CellContext`a2 + $CellContext`u1]]]], 7], "Tooltip"]& ], 
+           "IconizedCustomName", StripOnInput -> False], 
+          GridBox[{{
+             RowBox[{
+               TagBox["\"Head: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+               TagBox["Or", "IconizedItem"]}]}, {
+             RowBox[{
+               TagBox["\"Byte count: \"", "IconizedLabel"], 
+               "\[InvisibleSpace]", 
+               TagBox["8216", "IconizedItem"]}]}}, 
+           GridBoxAlignment -> {"Columns" -> {{Left}}}, DefaultBaseStyle -> 
+           "Column", 
+           GridBoxItemSize -> {
+            "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}], 
+          Dynamic[Typeset`open]}, "IconizedObject"]], 
+       Or[
+        And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+         2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 $CellContext`u1, 
+         
+         Or[
+          
+          And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+           Or[
+            
+            And[($CellContext`s1 + 
+               2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+             Or[
+              
+              And[$CellContext`a1 + 2 $CellContext`u2 > 
+               3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+               2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+               2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+               2 $CellContext`u2 < 3 $CellContext`u1]], 
+            
+            And[$CellContext`a1 + $CellContext`u2 > 
+             2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+             2 $CellContext`a2 + $CellContext`u1]]], 
+          
+          And[$CellContext`a1 + 2 $CellContext`u2 > 
+           2 $CellContext`a2 + $CellContext`u1, 
+           Or[
+            
+            And[($CellContext`s1 + 
+               2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+            
+            And[$CellContext`a1 + $CellContext`u2 > 
+             2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+             2 $CellContext`a2]]]]], 
+        And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+          2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+         Or[
+          
+          And[($CellContext`s1 + 
+             2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+           Or[
+            
+            And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+              2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+              2 $CellContext`u2 < 3 $CellContext`u1], 
+            
+            And[$CellContext`a1 + 2 $CellContext`u2 > 
+             3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+             2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+             2 $CellContext`a2 + $CellContext`u1]]], 
+          
+          And[$CellContext`a1 + $CellContext`u2 > 
+           2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+           2 $CellContext`a2 + $CellContext`u1]]]], SelectWithContents -> 
+       True, Selectable -> False]},
+     "ConditionalExpression"]}], "}"}], "}"}]], "Output",
+ CellChangeTimes->{3.9749528724380302`*^9},
+ CellLabel->
+  "Out[290]=",ExpressionUUID->"ef2526d5-9d22-4371-ae17-5c3bcec303f0"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"Best candidate: \"\>", "\[InvisibleSpace]", 
+   TemplateBox[{
+     FractionBox[
+      RowBox[{
+        RowBox[{"a1", " ", "s2"}], "-", 
+        RowBox[{"s1", " ", "u1"}], "+", 
+        RowBox[{
+          RowBox[{"(", 
+            RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], 
+      RowBox[{"2", " ", "s2"}]], 
+     InterpretationBox[
+      DynamicModuleBox[{Typeset`open = False}, 
+       TemplateBox[{"Expression", 
+         StyleBox[
+          TagBox[
+           TooltipBox["\"condition\"", 
+            TagBox[
+             RowBox[{
+               RowBox[{"(", 
+                 RowBox[{
+                   RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2", " ", "s2"}], "+", 
+                    RowBox[{"s1", " ", "u1"}]}]}], "&&", 
+                   RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "a2"}]}]}], ")"}]}], ")"}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+               RowBox[{"(", 
+                 RowBox[{
+                   RowBox[{
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]], "<", "s2"}], "&&", 
+                   RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "u1"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}]}], Short[#, 7]& ]], Annotation[#, 
+            Short[
+             Or[
+              
+              And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+               2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 \
+$CellContext`u1, 
+               Or[
+                
+                And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+                 Or[
+                  
+                  And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                   Or[
+                    
+                    And[$CellContext`a1 + 2 $CellContext`u2 > 
+                    3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                    2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                    2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+                    2 $CellContext`u2 < 3 $CellContext`u1]], 
+                  
+                  And[$CellContext`a1 + $CellContext`u2 > 
+                   2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                   2 $CellContext`a2 + $CellContext`u1]]], 
+                
+                And[$CellContext`a1 + 2 $CellContext`u2 > 
+                 2 $CellContext`a2 + $CellContext`u1, 
+                 Or[
+                  
+                  And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+                  
+                  And[$CellContext`a1 + $CellContext`u2 > 
+                   2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                   2 $CellContext`a2]]]]], 
+              
+              And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+                2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+               Or[
+                
+                And[($CellContext`s1 + 
+                   2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                 Or[
+                  
+                  And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+                    2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+                    2 $CellContext`u2 < 3 $CellContext`u1], 
+                  
+                  And[$CellContext`a1 + 2 $CellContext`u2 > 
+                   3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                   2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                   2 $CellContext`a2 + $CellContext`u1]]], 
+                
+                And[$CellContext`a1 + $CellContext`u2 > 
+                 2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                 2 $CellContext`a2 + $CellContext`u1]]]], 7], "Tooltip"]& ], 
+          "IconizedCustomName", StripOnInput -> False], 
+         GridBox[{{
+            RowBox[{
+              TagBox["\"Head: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+              TagBox["Or", "IconizedItem"]}]}, {
+            RowBox[{
+              TagBox["\"Byte count: \"", "IconizedLabel"], 
+              "\[InvisibleSpace]", 
+              TagBox["8216", "IconizedItem"]}]}}, 
+          GridBoxAlignment -> {"Columns" -> {{Left}}}, DefaultBaseStyle -> 
+          "Column", 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}], 
+         Dynamic[Typeset`open]}, "IconizedObject"]], 
+      Or[
+       And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+        2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 $CellContext`u1, 
+        Or[
+         And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+          Or[
+           
+           And[($CellContext`s1 + 
+              2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+            Or[
+             
+             And[$CellContext`a1 + 2 $CellContext`u2 > 
+              3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+              2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+              2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+              2 $CellContext`u2 < 3 $CellContext`u1]], 
+           
+           And[$CellContext`a1 + $CellContext`u2 > 
+            2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+            2 $CellContext`a2 + $CellContext`u1]]], 
+         And[$CellContext`a1 + 2 $CellContext`u2 > 
+          2 $CellContext`a2 + $CellContext`u1, 
+          Or[
+           
+           And[($CellContext`s1 + 
+              2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+           
+           And[$CellContext`a1 + $CellContext`u2 > 
+            2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+            2 $CellContext`a2]]]]], 
+       And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+         2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+          Or[
+           
+           And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+             2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+             2 $CellContext`u2 < 3 $CellContext`u1], 
+           
+           And[$CellContext`a1 + 2 $CellContext`u2 > 
+            3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+            2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+            2 $CellContext`a2 + $CellContext`u1]]], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]]], SelectWithContents -> True,
+       Selectable -> False]},
+    "ConditionalExpression"]}],
+  SequenceForm["Best candidate: ", 
+   ConditionalExpression[
+   Rational[1, 
+      2] $CellContext`s2^(-1) ($CellContext`a1 $CellContext`s2 - \
+$CellContext`s1 $CellContext`u1 + ($CellContext`s1 + $CellContext`s2) \
+$CellContext`u2), 
+    Or[
+     And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+      2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 $CellContext`u1, 
+      Or[
+       And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+          Or[
+           
+           And[$CellContext`a1 + 2 $CellContext`u2 > 
+            3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+            2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+            2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+            2 $CellContext`u2 < 3 $CellContext`u1]], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]], 
+       And[$CellContext`a1 + 2 $CellContext`u2 > 
+        2 $CellContext`a2 + $CellContext`u1, 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+          2 $CellContext`a2]]]]], 
+     And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+       2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+      Or[
+       And[($CellContext`s1 + 
+          2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+        Or[
+         And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+           2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+           2 $CellContext`u2 < 3 $CellContext`u1], 
+         And[$CellContext`a1 + 2 $CellContext`u2 > 
+          3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]], 
+       And[$CellContext`a1 + $CellContext`u2 > 
+        2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+        2 $CellContext`a2 + $CellContext`u1]]]]]],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.974952872442389*^9},
+ CellLabel->
+  "During evaluation of \
+In[289]:=",ExpressionUUID->"ec3d47d6-4d84-498b-a4be-1a8d35593c27"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"T* = \"\>", "\[InvisibleSpace]", 
+   TemplateBox[{
+     FractionBox[
+      SuperscriptBox[
+       RowBox[{"(", 
+         RowBox[{
+           RowBox[{"a1", " ", "s2"}], "+", 
+           RowBox[{"s1", " ", "u1"}], "-", 
+           RowBox[{
+             RowBox[{"(", 
+               RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], ")"}], "2"], 
+      RowBox[{"4", " ", 
+        RowBox[{"(", 
+          RowBox[{"a1", "-", "a2"}], ")"}], " ", "s2", " ", 
+        RowBox[{"(", 
+          RowBox[{"u1", "-", "u2"}], ")"}]}]], 
+     InterpretationBox[
+      DynamicModuleBox[{Typeset`open = False}, 
+       TemplateBox[{"Expression", 
+         StyleBox[
+          TagBox[
+           TooltipBox["\"condition\"", 
+            TagBox[
+             RowBox[{
+               RowBox[{"(", 
+                 RowBox[{
+                   RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2", " ", "s2"}], "+", 
+                    RowBox[{"s1", " ", "u1"}]}]}], "&&", 
+                   RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "a2"}]}]}], ")"}]}], ")"}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+               RowBox[{"(", 
+                 RowBox[{
+                   RowBox[{
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "a2"}], "+", "u2"}]], "<", "s2"}], "&&", 
+                   RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", 
+                    RowBox[{"2", " ", "s2"}]}], ")"}], " ", "u1"}], "<", 
+                    RowBox[{
+                    RowBox[{"a1", " ", "s2"}], "+", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"s1", "+", "s2"}], ")"}], " ", "u2"}]}]}], "&&", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"s2", "<", 
+                    FractionBox[
+                    RowBox[{"u1", "-", "u2"}], 
+                    RowBox[{"a1", "-", 
+                    RowBox[{"2", " ", "u1"}], "+", "u2"}]]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{"3", " ", "u1"}]}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], ">", 
+                    RowBox[{"3", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], "<", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}], "||", 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"a1", "+", "u2"}], ">", 
+                    RowBox[{"2", " ", "u1"}]}], "&&", 
+                    RowBox[{
+                    RowBox[{"a1", "+", 
+                    RowBox[{"2", " ", "u2"}]}], "<", 
+                    RowBox[{
+                    RowBox[{"2", " ", "a2"}], "+", "u1"}]}]}], ")"}]}], 
+                    ")"}]}], ")"}]}], Short[#, 7]& ]], Annotation[#, 
+            Short[
+             Or[
+              
+              And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+               2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 \
+$CellContext`u1, 
+               Or[
+                
+                And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+                 Or[
+                  And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                   Or[
+                    
+                    And[$CellContext`a1 + 2 $CellContext`u2 > 
+                    3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                    2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                    2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+                    2 $CellContext`u2 < 3 $CellContext`u1]], 
+                  
+                  And[$CellContext`a1 + $CellContext`u2 > 
+                   2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                   2 $CellContext`a2 + $CellContext`u1]]], 
+                
+                And[$CellContext`a1 + 2 $CellContext`u2 > 
+                 2 $CellContext`a2 + $CellContext`u1, 
+                 Or[
+                  
+                  And[($CellContext`s1 + 
+                    2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+                  
+                  And[$CellContext`a1 + $CellContext`u2 > 
+                   2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                   2 $CellContext`a2]]]]], 
+              
+              And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+                2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+               Or[
+                
+                And[($CellContext`s1 + 
+                   2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+                 Or[
+                  
+                  And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+                    2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+                    2 $CellContext`u2 < 3 $CellContext`u1], 
+                  
+                  And[$CellContext`a1 + 2 $CellContext`u2 > 
+                   3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+                   2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                   2 $CellContext`a2 + $CellContext`u1]]], 
+                
+                And[$CellContext`a1 + $CellContext`u2 > 
+                 2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+                 2 $CellContext`a2 + $CellContext`u1]]]], 7], "Tooltip"]& ], 
+          "IconizedCustomName", StripOnInput -> False], 
+         GridBox[{{
+            RowBox[{
+              TagBox["\"Head: \"", "IconizedLabel"], "\[InvisibleSpace]", 
+              TagBox["Or", "IconizedItem"]}]}, {
+            RowBox[{
+              TagBox["\"Byte count: \"", "IconizedLabel"], 
+              "\[InvisibleSpace]", 
+              TagBox["8216", "IconizedItem"]}]}}, 
+          GridBoxAlignment -> {"Columns" -> {{Left}}}, DefaultBaseStyle -> 
+          "Column", 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}], 
+         Dynamic[Typeset`open]}, "IconizedObject"]], 
+      Or[
+       And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+        2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 $CellContext`u1, 
+        Or[
+         And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+          Or[
+           
+           And[($CellContext`s1 + 
+              2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+            Or[
+             
+             And[$CellContext`a1 + 2 $CellContext`u2 > 
+              3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+              2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+              2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+              2 $CellContext`u2 < 3 $CellContext`u1]], 
+           
+           And[$CellContext`a1 + $CellContext`u2 > 
+            2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+            2 $CellContext`a2 + $CellContext`u1]]], 
+         And[$CellContext`a1 + 2 $CellContext`u2 > 
+          2 $CellContext`a2 + $CellContext`u1, 
+          Or[
+           
+           And[($CellContext`s1 + 
+              2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+           
+           And[$CellContext`a1 + $CellContext`u2 > 
+            2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+            2 $CellContext`a2]]]]], 
+       And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+         2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+          Or[
+           
+           And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+             2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+             2 $CellContext`u2 < 3 $CellContext`u1], 
+           
+           And[$CellContext`a1 + 2 $CellContext`u2 > 
+            3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+            2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+            2 $CellContext`a2 + $CellContext`u1]]], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]]], SelectWithContents -> True,
+       Selectable -> False]},
+    "ConditionalExpression"]}],
+  SequenceForm["T* = ", 
+   ConditionalExpression[
+   Rational[1, 
+      4] ($CellContext`a1 - $CellContext`a2)^(-1) $CellContext`s2^(-1) \
+($CellContext`u1 - $CellContext`u2)^(-1) ($CellContext`a1 $CellContext`s2 + \
+$CellContext`s1 $CellContext`u1 - ($CellContext`s1 + $CellContext`s2) \
+$CellContext`u2)^2, 
+    Or[
+     And[$CellContext`a1 $CellContext`s2 + ($CellContext`s1 + \
+$CellContext`s2) $CellContext`u2 < 
+      2 $CellContext`a2 $CellContext`s2 + $CellContext`s1 $CellContext`u1, 
+      Or[
+       And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 2 $CellContext`a2 + $CellContext`u2), 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+          Or[
+           
+           And[$CellContext`a1 + 2 $CellContext`u2 > 
+            3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+            2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+            2 $CellContext`a2 + $CellContext`u1], $CellContext`a1 + 
+            2 $CellContext`u2 < 3 $CellContext`u1]], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]], 
+       And[$CellContext`a1 + 2 $CellContext`u2 > 
+        2 $CellContext`a2 + $CellContext`u1, 
+        Or[
+         And[($CellContext`s1 + 
+            2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, \
+$CellContext`a1 + $CellContext`u2 < 2 $CellContext`u1], 
+         And[$CellContext`a1 + $CellContext`u2 > 
+          2 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+          2 $CellContext`a2]]]]], 
+     And[($CellContext`u1 - $CellContext`u2)/($CellContext`a1 - 
+       2 $CellContext`a2 + $CellContext`u2) < $CellContext`s2, 
+      Or[
+       And[($CellContext`s1 + 
+          2 $CellContext`s2) $CellContext`u1 < $CellContext`a1 \
+$CellContext`s2 + ($CellContext`s1 + $CellContext`s2) $CellContext`u2, 
+        Or[
+         And[$CellContext`s2 < ($CellContext`u1 - \
+$CellContext`u2)/($CellContext`a1 - 
+           2 $CellContext`u1 + $CellContext`u2), $CellContext`a1 + 
+           2 $CellContext`u2 < 3 $CellContext`u1], 
+         And[$CellContext`a1 + 2 $CellContext`u2 > 
+          3 $CellContext`u1, $CellContext`a1 + $CellContext`u2 < 
+          2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+          2 $CellContext`a2 + $CellContext`u1]]], 
+       And[$CellContext`a1 + $CellContext`u2 > 
+        2 $CellContext`u1, $CellContext`a1 + 2 $CellContext`u2 < 
+        2 $CellContext`a2 + $CellContext`u1]]]]]],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.9749528724439573`*^9},
+ CellLabel->
+  "During evaluation of \
+In[289]:=",ExpressionUUID->"f3096180-cfb1-4aac-ba78-8fa5edb356eb"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"eerSol", "=", 
+  RowBox[{"Solve", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"FAR", "[", 
+       RowBox[{"T", ",", "a1", ",", "a2"}], "]"}], "==", 
+      RowBox[{"FRR", "[", 
+       RowBox[{"T", ",", "u1", ",", "u2"}], "]"}]}], "&&", 
+     RowBox[{"u1", "<", "T", "<", "a2"}]}], ",", "T", ",", "Reals"}], 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Teer", "=", 
+   RowBox[{"T", "/.", " ", 
+    RowBox[{"eerSol", "[", 
+     RowBox[{"[", "1", "]"}], "]"}]}]}], ";"}], "\n", 
+ RowBox[{"Simplify", "[", 
+  RowBox[{"Teer", ",", "$Assumptions"}], "]"}]}], "Input",
+ CellLabel->
+  "In[293]:=",ExpressionUUID->"b15e3435-657b-4965-af18-584859c7b177"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{"T", "\[Rule]", 
+    TemplateBox[{
+      FractionBox[
+       RowBox[{
+         RowBox[{"a1", " ", "u1"}], "-", 
+         RowBox[{"a2", " ", "u2"}]}], 
+       RowBox[{"a1", "-", "a2", "+", "u1", "-", "u2"}]], 
+      RowBox[{
+        RowBox[{"u1", "<", "u2"}], "&&", 
+        RowBox[{"u1", "<", "a2", "<", "u2"}], "&&", 
+        RowBox[{"a1", "<", "u1"}]}]},
+     "ConditionalExpression"]}], "}"}], "}"}]], "Output",
+ CellChangeTimes->{3.974952897077736*^9},
+ CellLabel->
+  "Out[293]=",ExpressionUUID->"9d5e9270-3e92-4526-967b-5467bafb6deb"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   RowBox[{"a1", " ", "u1"}], "-", 
+   RowBox[{"a2", " ", "u2"}]}], 
+  RowBox[{"a1", "-", "a2", "+", "u1", "-", "u2"}]]], "Output",
+ CellChangeTimes->{3.974952897079441*^9},
+ CellLabel->
+  "Out[295]=",ExpressionUUID->"7d47c102-4bff-45c0-a56e-e7163c000334"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"FullSimplify", "[", 
+   RowBox[{
+    RowBox[{"s1", "*", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"T", "-", "a1"}], ")"}], "/", 
+       RowBox[{"(", 
+        RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "*", 
+     RowBox[{"(", 
+      RowBox[{"1", "-", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"T", "-", "u1"}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"u2", "-", "u1"}], ")"}]}], ")"}]}], ")"}]}], "+", 
+    RowBox[{"s2", "*", 
+     RowBox[{"(", 
+      RowBox[{"1", "-", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"T", "-", "a1"}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "-", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"T", "-", "u1"}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"u2", "-", "u1"}], ")"}]}], ")"}], "+", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"T", "-", "u1"}], ")"}], "/", 
+           RowBox[{"(", 
+            RowBox[{"u2", "-", "u1"}], ")"}]}], ")"}], "*", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"T", "-", "a1"}], ")"}], "/", 
+           RowBox[{"(", 
+            RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}]}], ")"}]}], ")"}]}], "+", 
+    RowBox[{"s1", "*", 
+     RowBox[{"(", 
+      RowBox[{"1", "-", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"T", "-", "a1"}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}], "-", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"T", "-", "u1"}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"u2", "-", "u1"}], ")"}]}], ")"}], "+", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"T", "-", "u1"}], ")"}], "/", 
+           RowBox[{"(", 
+            RowBox[{"u2", "-", "u1"}], ")"}]}], ")"}], "*", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"T", "-", "a1"}], ")"}], "/", 
+           RowBox[{"(", 
+            RowBox[{"a2", "-", "a1"}], ")"}]}], ")"}]}], ")"}]}], ")"}]}]}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.974965922072995*^9, 3.974966137084291*^9}},
+ CellLabel->
+  "In[296]:=",ExpressionUUID->"8ba48c17-f102-4bb1-ac79-d14cc28ed8b5"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"a1", " ", "s1"}], "-", 
+     RowBox[{"a2", " ", 
+      RowBox[{"(", 
+       RowBox[{"s1", "+", "s2"}], ")"}]}], "+", 
+     RowBox[{"s2", " ", "T"}]}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{"T", "-", "u2"}], ")"}]}], 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"a1", "-", "a2"}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{"u1", "-", "u2"}], ")"}]}]]], "Output",
+ CellChangeTimes->{3.974966144393537*^9},
+ CellLabel->
+  "Out[296]=",ExpressionUUID->"c0351fe2-069f-4f29-a3db-5bdd29910235"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"FullSimplify", "[", 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"a1", " ", "s1"}], "-", 
+     RowBox[{"a2", " ", 
+      RowBox[{"(", 
+       RowBox[{"s1", "+", "s2"}], ")"}]}], "+", 
+     RowBox[{"s2", " ", "T"}]}], ")"}], "/", 
+   RowBox[{"(", 
+    RowBox[{"a1", "-", "a2"}], ")"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.974966300968457*^9, 3.974966314131653*^9}},
+ CellLabel->
+  "In[297]:=",ExpressionUUID->"a98c9657-47b3-4258-b448-fd55f4b2b4f5"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   RowBox[{"a1", " ", "s1"}], "-", 
+   RowBox[{"a2", " ", 
+    RowBox[{"(", 
+     RowBox[{"s1", "+", "s2"}], ")"}]}], "+", 
+   RowBox[{"s2", " ", "T"}]}], 
+  RowBox[{"a1", "-", "a2"}]]], "Output",
+ CellChangeTimes->{3.974966316408224*^9},
+ CellLabel->
+  "Out[297]=",ExpressionUUID->"8af7e460-2748-4d80-a236-a0887feb7fc7"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"FullSimplify", "[", 
+  RowBox[{"s1", "+", "s2", "-", 
+   RowBox[{"s2", "*", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"a2", "-", "T"}], ")"}], "/", 
+     RowBox[{"(", 
+      RowBox[{"a2", "-", "a1"}], ")"}]}]}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.9749663824964027`*^9, 3.9749664171355762`*^9}},
+ CellLabel->
+  "In[298]:=",ExpressionUUID->"370e7942-19e4-4098-8cd1-1096b70398f1"],
+
+Cell[BoxData[
+ RowBox[{"s1", "+", 
+  FractionBox[
+   RowBox[{"s2", " ", 
+    RowBox[{"(", 
+     RowBox[{"a1", "-", "T"}], ")"}]}], 
+   RowBox[{"a1", "-", "a2"}]]}]], "Output",
+ CellChangeTimes->{3.9749664180469713`*^9},
+ CellLabel->
+  "Out[298]=",ExpressionUUID->"3b99cef6-d03d-406b-90f9-3cf01fd0f2cb"]
+}, Open  ]]
+},
+WindowSize->{808, 863},
+WindowMargins->{{Automatic, 444}, {-63, Automatic}},
+FrontEndVersion->"14.2 for Mac OS X ARM (64-bit) (December 26, 2024)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"0289b18b-4657-464d-a58e-086ea10bb71e"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[554, 20, 2203, 67, 90, "Input",ExpressionUUID->"8b501c40-dc77-46ba-87a4-e2d51028c9a8"],
+Cell[CellGroupData[{
+Cell[2782, 91, 1752, 54, 111, "Input",ExpressionUUID->"2fac414d-4bc9-43aa-9abf-54c95c6758c2"],
+Cell[4537, 147, 723, 25, 48, "Output",ExpressionUUID->"60cbdd5b-53ee-41ae-ac7a-d20c93e0d274"],
+Cell[5263, 174, 175, 3, 33, "Output",ExpressionUUID->"52b4a997-4366-4089-a787-4f4c0d524a42"],
+Cell[5441, 179, 466, 15, 53, "Output",ExpressionUUID->"52132ac6-1cfb-4585-8e77-043a5e149592"],
+Cell[5910, 196, 175, 3, 33, "Output",ExpressionUUID->"9efbf26c-d194-4e08-b822-bbff59e3134d"],
+Cell[6088, 201, 611, 20, 48, "Output",ExpressionUUID->"f69ac909-40bc-4050-bdd7-780a214eda51"]
+}, Open  ]],
+Cell[6714, 224, 1887, 57, 90, "Input",ExpressionUUID->"274e8b46-aa37-4c0f-89bd-a741d98aaa01"],
+Cell[CellGroupData[{
+Cell[8626, 285, 721, 21, 111, "Input",ExpressionUUID->"9b3d8676-b78c-4f80-84c6-a5bf21074d2f"],
+Cell[9350, 308, 228, 4, 33, "Output",ExpressionUUID->"36a50f77-4c27-4ac5-840c-a8fcff199b60"],
+Cell[9581, 314, 227, 4, 33, "Output",ExpressionUUID->"ee3457b0-31b1-4b8d-814f-bc42a82cb6af"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9845, 323, 1767, 62, 131, "Input",ExpressionUUID->"def257c7-3431-4f4f-9e88-00e182d15c87"],
+Cell[11615, 387, 242, 7, 46, "Output",ExpressionUUID->"bde6001c-9367-4820-b7be-28a601323db8"],
+Cell[11860, 396, 325, 10, 46, "Output",ExpressionUUID->"cec7b1e7-5df6-4e18-82eb-466c7a4fe5cb"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[12222, 411, 2478, 80, 192, "Input",ExpressionUUID->"358e9d4a-152f-4b0c-a657-9d0383421ebb"],
+Cell[14703, 493, 607, 19, 48, "Output",ExpressionUUID->"ecb5d365-b9dd-4805-bacb-46838d657a79"],
+Cell[15313, 514, 19787, 411, 55, "Output",ExpressionUUID->"13e9960f-0998-4a60-a6a3-2c85f8d85c42"],
+Cell[35103, 927, 13340, 307, 55, "Output",ExpressionUUID->"a735debf-a798-4d24-8980-fc1a75dbeacb"],
+Cell[48446, 1236, 13548, 313, 79, "Output",ExpressionUUID->"fbb97c9c-495c-4ce2-b7a2-ab4c391ccd34"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[62031, 1554, 1701, 59, 131, "Input",ExpressionUUID->"96181918-c631-45c8-9fdb-0edce4fd5235"],
+Cell[63735, 1615, 201, 5, 46, "Output",ExpressionUUID->"c06e4612-32cd-4c10-afcd-af240216881a"],
+Cell[63939, 1622, 301, 9, 46, "Output",ExpressionUUID->"21fc7db1-fc6b-4017-834d-9efdc45dadaf"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[64277, 1636, 1723, 59, 131, "Input",ExpressionUUID->"c935ec84-5721-4990-ba29-2cd05fb5f2c4"],
+Cell[66003, 1697, 153, 3, 33, "Output",ExpressionUUID->"5c2578e2-42e3-4de4-8819-b265103bb9be"],
+Cell[66159, 1702, 154, 3, 33, "Output",ExpressionUUID->"b84d1b05-0a47-4208-b590-0bf02a51b94a"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[66350, 1710, 1123, 34, 111, "Input",ExpressionUUID->"8600fb85-7b62-4519-a46e-35dd96614ee2"],
+Cell[67476, 1746, 27762, 641, 60, "Output",ExpressionUUID->"ef2526d5-9d22-4371-ae17-5c3bcec303f0"],
+Cell[CellGroupData[{
+Cell[95263, 2391, 16410, 371, 45, "Print",ExpressionUUID->"ec3d47d6-4d84-498b-a4be-1a8d35593c27"],
+Cell[111676, 2764, 16675, 377, 49, "Print",ExpressionUUID->"f3096180-cfb1-4aac-ba78-8fa5edb356eb"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[128400, 3147, 696, 20, 70, "Input",ExpressionUUID->"b15e3435-657b-4965-af18-584859c7b177"],
+Cell[129099, 3169, 595, 17, 55, "Output",ExpressionUUID->"9d5e9270-3e92-4526-967b-5467bafb6deb"],
+Cell[129697, 3188, 295, 8, 46, "Output",ExpressionUUID->"7d47c102-4bff-45c0-a56e-e7163c000334"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[130029, 3201, 2545, 80, 131, "Input",ExpressionUUID->"8ba48c17-f102-4bb1-ac79-d14cc28ed8b5"],
+Cell[132577, 3283, 569, 19, 48, "Output",ExpressionUUID->"c0351fe2-069f-4f29-a3db-5bdd29910235"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[133183, 3307, 486, 14, 29, "Input",ExpressionUUID->"a98c9657-47b3-4258-b448-fd55f4b2b4f5"],
+Cell[133672, 3323, 360, 11, 46, "Output",ExpressionUUID->"8af7e460-2748-4d80-a236-a0887feb7fc7"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[134069, 3339, 412, 11, 29, "Input",ExpressionUUID->"370e7942-19e4-4098-8cd1-1096b70398f1"],
+Cell[134484, 3352, 302, 9, 65, "Output",ExpressionUUID->"3b99cef6-d03d-406b-90f9-3cf01fd0f2cb"]
+}, Open  ]]
+}
+]
+*)
+
