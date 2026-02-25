@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\hline
+Distribution & $P_{\mathrm{AND}}$ @ EER & $P_{\mathrm{OR}}$ @ EER & $P_{\mathrm{AND}}$ @ optimal & $P_{\mathrm{OR}}$ @ optimal & $P_{\mathrm{AND}}$ @ standalone & $P_{\mathrm{OR}}$ @ standalone \\
+\hline
+Gaussian & 0.910723 & 0.911153 & 0.964468 & 0.962747 & 0.911503 & 0.911092 \\
+Uniform & 0.955707 & 0.955909 & 1.000000 & 1.000000 & 0.916643 & 0.999314 \\
+Parabolic & 0.920539 & 0.921013 & 0.987310 & 0.985384 & 0.919668 & 0.922812 \\
+\hline
+\end{tabular}
+}
+\caption{Wallet success under score distributions at three reference operating points: EER-pair $(T_1^{\mathrm{eer}},T_2^{\mathrm{eer}})$, joint optima (AND at $(T_1^{*},T_2^{*})_{\mathrm{AND}}$ and OR at $(T_1^{*},T_2^{*})_{\mathrm{OR}}$), and standalone safe-opt pair $(T_1^{\mathrm{safe}},T_2^{\mathrm{safe}})$. Uniform and Parabolic are moment-matched to the Gaussian credentials (same mean and variance per credential).}
+\label{tab:wallet_success_dist}
+\end{table}
