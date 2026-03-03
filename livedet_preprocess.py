@@ -2,11 +2,11 @@ from pathlib import Path
 from PIL import Image
 
 SRC = Path("/Users/dormalka/Downloads/LivDet 2015")
-DST = Path("/Users/dormalka/Desktop/Dor/Paper/livdet_preproc_png")
+DST = Path("/Users/dormalka/Desktop/Dor/Paper/livdet_preproc_tif")
 DST.mkdir(parents=True, exist_ok=True)
 
 MAX_SIDE = 800         
-OUT_EXT = ".png"
+OUT_EXT = ".tif"
 TARGET_DIRS = [
     SRC / "Training" / "Hi_Scan" / "Live",
     SRC / "Testing"  / "Hi_Scan" / "Live",
@@ -15,7 +15,7 @@ TARGET_DIRS = [
 
 def convert_one(bmp: Path):
     rel = bmp.relative_to(SRC)
-    out = (DST / rel).with_suffix(".png")
+    out = (DST / rel).with_suffix(".tif")
     out.parent.mkdir(parents=True, exist_ok=True)
 
     img = Image.open(bmp).convert("L")
@@ -25,7 +25,7 @@ def convert_one(bmp: Path):
         s = MAX_SIDE / float(m)
         img = img.resize((int(round(w * s)), int(round(h * s))), Image.BILINEAR)
 
-    img.save(out, format="PNG", optimize=True)
+    img.save(out, format="TIFF", compression="tiff_lzw")
 
 count = 0
 for folder in TARGET_DIRS:
