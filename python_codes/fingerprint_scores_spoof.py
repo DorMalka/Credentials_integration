@@ -178,7 +178,7 @@ def plot_histograms(genuine_scores, impostor_scores):
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_histogram.png", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_histogram.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -240,7 +240,7 @@ def plot_smoothed_pdfs(genuine_scores, impostor_scores, step=0.1, sigma_points=3
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_smoothed_pdf.png", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_smoothed_pdf.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -321,7 +321,7 @@ def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_far_frr.png", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_far_frr.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -376,7 +376,7 @@ def plot_p_success(thresholds, p_success, eer_threshold, max_success, max_thresh
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_p_success.png", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_p_success.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -417,7 +417,7 @@ def plot_success_and_or(
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_success_and_or.png", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_success_and_or.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
