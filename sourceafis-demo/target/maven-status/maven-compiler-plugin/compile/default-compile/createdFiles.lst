@@ -1,4 +1,5 @@
 BatchScorer$TemplateFile.class
+Main.class
 BatchScorer$PairEntry.class
 BatchScorer.class
 LivDetBatchScorer.class

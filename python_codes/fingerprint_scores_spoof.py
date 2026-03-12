@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import shutil
 import subprocess
 import tempfile
@@ -14,19 +15,39 @@ from scipy.ndimage import gaussian_filter1d
 # =========================
 REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
 SOURCEAFIS_DIR = REPO_ROOT / "sourceafis-demo"
-
 LIVDET_ROOT = SOURCEAFIS_DIR / "livdet_preproc_png"
 
-TRAIN_DIR = LIVDET_ROOT / "Training" / "Hi_Scan" / "Live"
-TEST_LIVE_DIR = LIVDET_ROOT / "Testing" / "Hi_Scan" / "Live"
-TEST_FAKE_DIR = LIVDET_ROOT / "Testing" / "Hi_Scan" / "Fake" / "Gelatine"
+# Main source dirs
+TRAIN_LIVE_DIR = LIVDET_ROOT / "Training" / "Digital_Persona" / "Live"
+TEST_LIVE_DIR = LIVDET_ROOT / "Testing" / "Digital_Persona" / "Live"
 
-MATCH_GLOB = "002_1_*.png"
+# Fake material names to include from BOTH training and testing
+FAKE_MATERIALS = [
+    "Gelatine",
+    "Woodglue",
+    "Ecoflex",
+    "Latex",
+]
+
+# User selection / probe selection
+# You can change these later for a different user
+PROBE_FILES = [
+    "002_0_0.png",
+    "002_0_1.png",
+    "002_0_2.png",
+    "002_0_3.png",
+    "002_0_4.png",
+]
+
+# Which genuine files belong to the same identity
+GENUINE_GLOB = "002_0_*.png"
+FAKE_GLOB = "002_0_*.png"
 
 OUTPUT_DIR = REPO_ROOT
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-SCORES_CSV = OUTPUT_DIR / "sourceafis_livdet_scores.csv"
+SCORES_CSV = OUTPUT_DIR / "sourceafis_livdet_scores_best_of_probes_raw.csv"
+AGGREGATED_SCORES_CSV = OUTPUT_DIR / "sourceafis_livdet_scores_best_of_probes_aggregated.csv"
 
 PDF_FINE_STEP = 0.1
 SMOOTH_SIGMA_POINTS = 3.0
@@ -34,69 +55,167 @@ HIST_BINS = np.arange(0, 101, 2)
 
 
 # =========================
-# Helper: create filtered directory
+# Small path helpers
 # =========================
-def make_filtered_dir(src_dir: Path, pattern: str, dst_dir: Path):
-    src_dir = Path(src_dir)
-    dst_dir = Path(dst_dir)
+def source_tag(p: Path) -> str:
+    """
+    Produce a unique staged filename prefix based on original path.
+    """
+    parts = list(p.parts)
+    try:
+        i = parts.index("livdet_preproc_png")
+        rel = Path(*parts[i + 1:])
+    except ValueError:
+        rel = p.name
+
+    rel_str = str(rel).replace("/", "__").replace("\\", "__").replace(" ", "_")
+    digest = hashlib.md5(str(p).encode("utf-8")).hexdigest()[:8]
+    return f"{rel_str}__{digest}"
+
+
+def stage_files(files, dst_dir: Path):
+    """
+    Stage files into dst_dir with unique names so train/test/fake folders
+    can be merged safely into one candidate directory.
+    Returns:
+        staged_dir, mapping(staged_name -> original_path)
+    """
     dst_dir.mkdir(parents=True, exist_ok=True)
+    mapping = {}
 
-    files = sorted(src_dir.glob(pattern))
-    if not files:
-        raise FileNotFoundError(f"No files matched pattern '{pattern}' in {src_dir}")
-
-    for f in files:
-        target = dst_dir / f.name
+    for src in files:
+        src = Path(src).resolve()
+        staged_name = f"{source_tag(src)}__{src.name}"
+        dst = dst_dir / staged_name
+        mapping[staged_name] = src
         try:
-            target.symlink_to(f.resolve())
+            dst.symlink_to(src)
         except Exception:
-            shutil.copy2(f, target)
+            shutil.copy2(src, dst)
 
-    return dst_dir, files
+    return dst_dir, mapping
+
+
+def collect_matching_files(src_dir: Path, pattern: str):
+    src_dir = Path(src_dir)
+    if not src_dir.is_dir():
+        return []
+    return sorted(f.resolve() for f in src_dir.glob(pattern) if f.is_file())
+
+
+def collect_probe_files(probe_dir: Path, probe_files):
+    found = []
+    for name in probe_files:
+        p = (probe_dir / name).resolve()
+        if not p.is_file():
+            raise FileNotFoundError(f"Probe file not found: {p}")
+        found.append(p)
+    return found
+
+
+def collect_genuine_candidates(train_live_dir, test_live_dir, genuine_glob, probe_paths):
+    probe_set = {p.resolve() for p in probe_paths}
+
+    candidates = []
+    candidates.extend(collect_matching_files(train_live_dir, genuine_glob))
+    candidates.extend(collect_matching_files(test_live_dir, genuine_glob))
+
+    # Exclude exact probe files
+    candidates = [p for p in candidates if p.resolve() not in probe_set]
+
+    # Deduplicate while preserving order
+    seen = set()
+    out = []
+    for p in candidates:
+        rp = p.resolve()
+        if rp not in seen:
+            seen.add(rp)
+            out.append(rp)
+    return out
+
+
+def collect_fake_candidates(livdet_root: Path, materials, fake_glob):
+    """
+    Collect fake candidates from BOTH Training/Fake/* and Testing/Fake/*,
+    matching the same identity glob as the genuine user.
+    """
+    candidates = []
+
+    for split in ["Training", "Testing"]:
+        for material in materials:
+            fake_dir = livdet_root / split / "Digital_Persona" / "Fake" / material
+            if fake_dir.is_dir():
+                candidates.extend(collect_matching_files(fake_dir, fake_glob))
+
+    # Deduplicate while preserving order
+    seen = set()
+    out = []
+    for p in candidates:
+        rp = p.resolve()
+        if rp not in seen:
+            seen.add(rp)
+            out.append(rp)
+    return out
 
 
 # =========================
 # SourceAFIS batch scoring
 # =========================
-def run_sourceafis_batch():
-    print("[i] TRAIN_DIR      =", TRAIN_DIR)
+def run_sourceafis_batch_best_of_probes():
+    print("[i] TRAIN_LIVE_DIR =", TRAIN_LIVE_DIR)
     print("[i] TEST_LIVE_DIR  =", TEST_LIVE_DIR)
-    print("[i] TEST_FAKE_DIR  =", TEST_FAKE_DIR)
-    print("[i] MATCH_GLOB     =", MATCH_GLOB)
-    print("[i] SCORES_CSV     =", SCORES_CSV)
+    print("[i] PROBE_FILES    =", PROBE_FILES)
+    print("[i] GENUINE_GLOB   =", GENUINE_GLOB)
+    print("[i] FAKE_MATERIALS =", FAKE_MATERIALS)
+    print("[i] FAKE_GLOB      =", FAKE_GLOB)
+    print("[i] RAW SCORES CSV =", SCORES_CSV)
 
-    if not TRAIN_DIR.is_dir():
-        raise FileNotFoundError(f"Training directory not found: {TRAIN_DIR}")
+    if not TRAIN_LIVE_DIR.is_dir():
+        raise FileNotFoundError(f"Training live directory not found: {TRAIN_LIVE_DIR}")
     if not TEST_LIVE_DIR.is_dir():
         raise FileNotFoundError(f"Testing live directory not found: {TEST_LIVE_DIR}")
-    if not TEST_FAKE_DIR.is_dir():
-        raise FileNotFoundError(f"Testing fake directory not found: {TEST_FAKE_DIR}")
 
-    train_files = sorted(TRAIN_DIR.glob(MATCH_GLOB))
-    if not train_files:
-        raise FileNotFoundError(f"No training files matched '{MATCH_GLOB}' in {TRAIN_DIR}")
+    probe_paths = collect_probe_files(TRAIN_LIVE_DIR, PROBE_FILES)
+    genuine_candidates = collect_genuine_candidates(
+        TRAIN_LIVE_DIR,
+        TEST_LIVE_DIR,
+        GENUINE_GLOB,
+        probe_paths,
+    )
+    fake_candidates = collect_fake_candidates(
+        LIVDET_ROOT,
+        FAKE_MATERIALS,
+        FAKE_GLOB,
+    )
 
-    with tempfile.TemporaryDirectory(prefix="livdet_filtered_") as tmp:
+    if not probe_paths:
+        raise ValueError("No probe files were found.")
+    if not genuine_candidates:
+        raise ValueError("No genuine candidates were found.")
+    if not fake_candidates:
+        raise ValueError("No fake candidates were found.")
+
+    print(f"[i] Probe files count      : {len(probe_paths)}")
+    print(f"[i] Genuine candidates    : {len(genuine_candidates)}")
+    print(f"[i] Fake candidates       : {len(fake_candidates)}")
+
+    with tempfile.TemporaryDirectory(prefix="livdet_best_probe_") as tmp:
         tmp_path = Path(tmp)
 
-        filtered_test_live_dir, live_files = make_filtered_dir(
-            TEST_LIVE_DIR, MATCH_GLOB, tmp_path / "test_live_filtered"
-        )
-        filtered_test_fake_dir, fake_files = make_filtered_dir(
-            TEST_FAKE_DIR, MATCH_GLOB, tmp_path / "test_fake_filtered"
-        )
+        staged_probe_dir, probe_map = stage_files(probe_paths, tmp_path / "probes")
+        staged_genuine_dir, genuine_map = stage_files(genuine_candidates, tmp_path / "genuine_candidates")
+        staged_fake_dir, fake_map = stage_files(fake_candidates, tmp_path / "fake_candidates")
 
-        print(f"[i] Matched train files      : {len(train_files)}")
-        print(f"[i] Matched testing live     : {len(live_files)}")
-        print(f"[i] Matched testing fake     : {len(fake_files)}")
-        print(f"[i] Filtered live dir        : {filtered_test_live_dir}")
-        print(f"[i] Filtered fake dir        : {filtered_test_fake_dir}")
+        print("[i] Staged probe dir      :", staged_probe_dir)
+        print("[i] Staged genuine dir    :", staged_genuine_dir)
+        print("[i] Staged fake dir       :", staged_fake_dir)
 
+        # We pass "*.png" because we staged only the intended probes into the probe dir
         exec_args = (
-            f'"{TRAIN_DIR}" '
-            f'"{MATCH_GLOB}" '
-            f'"{filtered_test_live_dir}" '
-            f'"{filtered_test_fake_dir}" '
+            f'"{staged_probe_dir}" '
+            f'"*.png" '
+            f'"{staged_genuine_dir}" '
+            f'"{staged_fake_dir}" '
             f'"{SCORES_CSV}"'
         )
 
@@ -120,30 +239,88 @@ def run_sourceafis_batch():
             text=True,
         )
 
+        return probe_map, genuine_map, fake_map
 
-def load_scores_from_csv():
-    genuine = []
-    impostor = []
+
+# =========================
+# CSV parsing / aggregation
+# =========================
+def find_first_existing(row, candidates, required=True):
+    for c in candidates:
+        if c in row and str(row[c]).strip() != "":
+            return row[c]
+    if required:
+        raise KeyError(f"Could not find any of columns: {candidates}")
+    return None
+
+
+def load_scores_from_csv_best_per_candidate():
+    """
+    Each CSV row is one comparison:
+        probe (stored template) vs target (candidate)
+
+    We want:
+        final_score(target) = max score over all probes
+
+    Group by:
+        - kind
+        - target
+    """
+
+    genuine_best = {}
+    impostor_best = {}
 
     with open(SCORES_CSV, "r", newline="") as f:
         reader = csv.DictReader(f)
-        for row in reader:
-            kind = row["kind"].strip().lower()
-            score = float(row["score"])
-            if kind == "genuine":
-                genuine.append(score)
-            elif kind == "impostor":
-                impostor.append(score)
 
-    genuine = np.array(genuine, dtype=float)
-    impostor = np.array(impostor, dtype=float)
+        expected = {"kind", "probe", "target", "score"}
+        got = set(reader.fieldnames or [])
+        if not expected.issubset(got):
+            raise ValueError(
+                f"CSV columns mismatch. Expected at least {expected}, got {reader.fieldnames}"
+            )
+
+        rows_seen = 0
+        for row in reader:
+            rows_seen += 1
+
+            kind = row["kind"].strip().lower()
+            probe = row["probe"].strip()
+            target = row["target"].strip()
+            score = float(row["score"])
+
+            # target is the candidate being evaluated
+            if kind == "genuine":
+                genuine_best[target] = max(score, genuine_best.get(target, -np.inf))
+            elif kind in ("impostor", "imposter"):
+                impostor_best[target] = max(score, impostor_best.get(target, -np.inf))
+            else:
+                raise ValueError(f"Unknown kind in CSV: {kind!r}")
+
+    if rows_seen == 0:
+        raise ValueError(f"CSV is empty: {SCORES_CSV}")
+
+    genuine = np.array(list(genuine_best.values()), dtype=float)
+    impostor = np.array(list(impostor_best.values()), dtype=float)
 
     if len(genuine) == 0:
-        raise ValueError("No genuine scores loaded.")
+        raise ValueError("No genuine scores loaded after best-over-probes aggregation.")
     if len(impostor) == 0:
-        raise ValueError("No impostor scores loaded.")
+        raise ValueError("No impostor scores loaded after best-over-probes aggregation.")
 
-    return genuine, impostor
+    return genuine, impostor, genuine_best, impostor_best
+
+
+def save_aggregated_scores_csv(genuine_best, impostor_best):
+    with open(AGGREGATED_SCORES_CSV, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["kind", "target", "best_score_over_all_probes"])
+
+        for target, score in sorted(genuine_best.items()):
+            writer.writerow(["genuine", target, score])
+
+        for target, score in sorted(impostor_best.items()):
+            writer.writerow(["impostor", target, score])
 
 
 # =========================
@@ -164,7 +341,7 @@ def normalize_scores_to_100(genuine_scores, impostor_scores):
 
 
 # =========================
-# Plot histogram + raw hist-PDF
+# Plot histogram + smoothed PDF
 # =========================
 def plot_histograms(genuine_scores, impostor_scores):
     plt.figure(figsize=(8, 6))
@@ -174,11 +351,11 @@ def plot_histograms(genuine_scores, impostor_scores):
         plt.hist(genuine_scores, bins=HIST_BINS, alpha=0.6, label="Genuine")
     plt.xlabel("Normalized similarity score (%)")
     plt.ylabel("Count")
-    plt.title("LivDet Score Histogram")
+    plt.title("LivDet Score Histogram (best score over probes)")
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_histogram.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_histogram_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -190,9 +367,6 @@ def build_hist_pdf(scores, bins):
     return centers, pdf, bw
 
 
-# =========================
-# Peak-to-peak interpolation + smoothing
-# =========================
 def interp_and_smooth_pdf(centers, pdf, step=0.1, sigma_points=3.0, eps=0.0):
     centers = np.asarray(centers, dtype=float)
     pdf = np.asarray(pdf, dtype=float)
@@ -236,11 +410,11 @@ def plot_smoothed_pdfs(genuine_scores, impostor_scores, step=0.1, sigma_points=3
 
     plt.xlabel("Normalized similarity score (%)")
     plt.ylabel("Probability Density")
-    plt.title("LivDet Smoothed PDFs")
+    plt.title("LivDet Smoothed PDFs (best score over probes)")
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_smoothed_pdf.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_smoothed_pdf_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -317,11 +491,11 @@ def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
     plt.scatter(eer_threshold, eer, label=f"EER≈{eer:.4f} @ T≈{eer_threshold:.2f}", zorder=3)
     plt.xlabel("Threshold (%)")
     plt.ylabel("Error Rate")
-    plt.title("LivDet FAR / FRR vs Threshold")
+    plt.title("LivDet FAR / FRR vs Threshold (best score over probes)")
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_far_frr.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_far_frr_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -372,11 +546,11 @@ def plot_p_success(thresholds, p_success, eer_threshold, max_success, max_thresh
 
     plt.xlabel("Threshold (%)")
     plt.ylabel("P_success")
-    plt.title("LivDet Success Probability vs Threshold")
+    plt.title("LivDet Success Probability vs Threshold (best score over probes)")
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_p_success.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_p_success_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -417,7 +591,7 @@ def plot_success_and_or(
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_success_and_or.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_success_and_or_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -425,17 +599,19 @@ def plot_success_and_or(
 # Main
 # =========================
 if __name__ == "__main__":
-    run_sourceafis_batch()
+    run_sourceafis_batch_best_of_probes()
 
-    genuine_raw, impostor_raw = load_scores_from_csv()
+    genuine_raw, impostor_raw, genuine_best, impostor_best = load_scores_from_csv_best_per_candidate()
+    save_aggregated_scores_csv(genuine_best, impostor_best)
 
-    print(f"[i] Raw genuine scores:  n={len(genuine_raw)}  min={genuine_raw.min():.4f}  max={genuine_raw.max():.4f}  mean={genuine_raw.mean():.4f}")
-    print(f"[i] Raw impostor scores: n={len(impostor_raw)} min={impostor_raw.min():.4f} max={impostor_raw.max():.4f} mean={impostor_raw.mean():.4f}")
+    print(f"[i] Aggregated genuine scores : n={len(genuine_raw)}  min={genuine_raw.min():.4f}  max={genuine_raw.max():.4f}  mean={genuine_raw.mean():.4f}")
+    print(f"[i] Aggregated impostor scores: n={len(impostor_raw)} min={impostor_raw.min():.4f} max={impostor_raw.max():.4f} mean={impostor_raw.mean():.4f}")
+    print(f"[i] Aggregated CSV saved to   : {AGGREGATED_SCORES_CSV}")
 
     genuine, impostor, raw_max = normalize_scores_to_100(genuine_raw, impostor_raw)
 
     print(f"[i] Normalization factor (raw max) = {raw_max:.4f}")
-    print(f"[i] Normalized genuine scores:  min={genuine.min():.4f}  max={genuine.max():.4f}  mean={genuine.mean():.4f}")
+    print(f"[i] Normalized genuine scores : min={genuine.min():.4f}  max={genuine.max():.4f}  mean={genuine.mean():.4f}")
     print(f"[i] Normalized impostor scores: min={impostor.min():.4f} max={impostor.max():.4f} mean={impostor.mean():.4f}")
 
     plot_histograms(genuine, impostor)
@@ -445,7 +621,7 @@ if __name__ == "__main__":
         genuine,
         impostor,
         step=PDF_FINE_STEP,
-        sigma_points=SMOOTH_SIGMA_POINTS
+        sigma_points=SMOOTH_SIGMA_POINTS,
     )
 
     eer, eer_threshold = compute_eer_intersection(thresholds, fars, frrs)
