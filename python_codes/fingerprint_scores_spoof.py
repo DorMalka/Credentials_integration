@@ -35,8 +35,6 @@ PROBE_FILES = [
     "002_0_0.png",
     "002_0_1.png",
     "002_0_2.png",
-    "002_0_3.png",
-    "002_0_4.png",
 ]
 
 # Which genuine files belong to the same identity
