@@ -1,12 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-
+from pathlib import Path
 # ============================================================
 # GLOBAL FONT SETTINGS
 # ============================================================
 FONTSIZE = 16
 FONTNAME = "Times New Roman"
+REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
+OUTPUT_DIR = REPO_ROOT
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 plt.rcParams.update({
     "font.size": FONTSIZE,
@@ -153,7 +156,7 @@ ax1.set_ylabel(r"$P(s)$")
 ax1.grid(axis='y', linestyle=":")
 
 plt.tight_layout()
-plt.savefig("Parabola_figure.pdf", format="pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_parabola" / "Parabola_figure.pdf", format="pdf")
 
 
 # ============================================================
@@ -179,7 +182,7 @@ for col, (b1, b2) in enumerate(attacker_roots):
             ha="center", va="top")
 
 plt.tight_layout()
-plt.savefig("fig_distributions_parabola.pdf", format="pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_parabola" / "fig_distributions_parabola.pdf", format="pdf")
 
 
 # ============================================================
@@ -212,15 +215,15 @@ for col, (b1, b2) in enumerate(attacker_roots):
     ax.scatter([T_opt], [Ps_opt], color="blue")
     ax.annotate("Optimal",
                 xy=(T_opt, Ps_opt),
-                xytext=(T_opt + 0.05, Ps_opt),
-                fontsize=12)
+                xytext=(T_opt - 0.5, Ps_opt),
+                fontsize=12, color="blue")
 
     ax.scatter([T_eer], [Ps_eer], color="red")
     ax.annotate("EER",
                 xy=(T_eer, Ps_eer),
-                xytext=(T_eer - 0.15, Ps_eer),
+                xytext=(T_eer + 0.3, Ps_eer),
                 ha="right",
-                fontsize=12)
+                fontsize=12, color="red")
 
     set_symbolic_ticks(ax, b1, b2)
     remove_y_ticks(ax)
@@ -233,7 +236,7 @@ for col, (b1, b2) in enumerate(attacker_roots):
             ha="center", va="top")
 
 plt.tight_layout()
-plt.savefig("fig_psuccess_parabola.pdf", format="pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_parabola" / "fig_psuccess_parabola.pdf", format="pdf")
 
 
 # ============================================
@@ -265,14 +268,14 @@ for col, (b1, b2) in enumerate(attacker_roots):
     ax.scatter([frr_opt], [far_opt], color="blue")
     ax.annotate("Optimal",
                 xy=(frr_opt, far_opt),
-                xytext=(frr_opt + 0.03, far_opt + 0.03),
-                fontsize=12)
+                xytext=(frr_opt + 0.015, far_opt + 0.015),
+                fontsize=12, color="blue")
 
     ax.scatter([eer], [eer], color="red")
     ax.annotate("EER",
                 xy=(eer, eer),
-                xytext=(eer + 0.03, eer),
-                fontsize=12)
+                xytext=(eer + 0.015, eer),
+                fontsize=12, color="red")
 
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
@@ -291,7 +294,7 @@ for col, (b1, b2) in enumerate(attacker_roots):
             ha="center", va="top")
 
 plt.tight_layout()
-plt.savefig("fig_FARvFRR_parabola.pdf", format="pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_parabola" / "fig_FARvFRR_parabola.pdf", format="pdf")
 
 
 # ============================================
@@ -343,7 +346,7 @@ ax_gap.set_ylabel(r"$|T_{\text{opt}} - T_{\text{EER}}|$")
 ax_gap.grid(True, linestyle=":")
 
 plt.tight_layout()
-plt.savefig("fig_gap_vs_variance_parabola.pdf", format="pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_parabola" / "fig_gap_vs_variance_parabola.pdf", format="pdf")
 
 print("Saved all parabolic figures:")
 print("  - Parabola_figure.pdf")

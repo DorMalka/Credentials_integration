@@ -35,6 +35,9 @@ PROBE_FILES = [
     "002_0_0.png",
     "002_0_1.png",
     "002_0_2.png",
+    "002_0_3.png",
+    "002_0_4.png",
+    "002_0_5.png",
 ]
 
 # Which genuine files belong to the same identity
@@ -44,8 +47,8 @@ FAKE_GLOB = "002_0_*.png"
 OUTPUT_DIR = REPO_ROOT
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-SCORES_CSV = OUTPUT_DIR / "sourceafis_livdet_scores_best_of_probes_raw.csv"
-AGGREGATED_SCORES_CSV = OUTPUT_DIR / "sourceafis_livdet_scores_best_of_probes_aggregated.csv"
+SCORES_CSV = OUTPUT_DIR / "figs" / "fig_spoofed_users" /"sourceafis_livdet_scores_best_of_probes_raw.csv"
+AGGREGATED_SCORES_CSV = OUTPUT_DIR / "figs" / "fig_spoofed_users" /"sourceafis_livdet_scores_best_of_probes_aggregated.csv"
 
 PDF_FINE_STEP = 0.1
 SMOOTH_SIGMA_POINTS = 3.0
@@ -353,7 +356,7 @@ def plot_histograms(genuine_scores, impostor_scores):
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_histogram_best_of_probes.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" / "livdet_sourceafis_histogram_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -412,7 +415,7 @@ def plot_smoothed_pdfs(genuine_scores, impostor_scores, step=0.1, sigma_points=3
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_smoothed_pdf_best_of_probes.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" /"livdet_sourceafis_smoothed_pdf_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -493,7 +496,7 @@ def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_far_frr_best_of_probes.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" /"livdet_sourceafis_far_frr_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -548,7 +551,7 @@ def plot_p_success(thresholds, p_success, eer_threshold, max_success, max_thresh
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_p_success_best_of_probes.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" /"livdet_sourceafis_p_success_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -589,7 +592,7 @@ def plot_success_and_or(
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "livdet_sourceafis_success_and_or_best_of_probes.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" /"livdet_sourceafis_success_and_or_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -641,10 +644,10 @@ if __name__ == "__main__":
         fars,
         frrs,
         eer_threshold=eer_threshold,
-        P_safe=0.9,
-        P_leak=0.04,
+        P_safe=0.8,
+        P_leak=0.15,
         P_loss=0.04,
-        P_theft=0.02,
+        P_theft=0.01,
     )
 
     print(f"[i] AND max P_success = {p_and[idx_and]:.4f} at T={thresholds[idx_and]:.4f}")

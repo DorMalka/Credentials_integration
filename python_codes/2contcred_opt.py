@@ -7,10 +7,13 @@ from scipy.optimize import minimize
 from scipy.integrate import quad
 
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 
 Mode = Literal["AND", "OR"]
-
+REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
+OUTPUT_DIR = REPO_ROOT
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 @dataclass(frozen=True)
 class GaussianPair:
@@ -388,22 +391,22 @@ def shared_x_grid(p1: GaussianPair, p2: GaussianPair, k: float = 6.0, n: int = 2
 def plot_gaussians_subplots_2cred(
     p1: GaussianPair,
     p2: GaussianPair,
-    out_pdf: str = "01_gaussians.pdf",
+    out_pdf: str = OUTPUT_DIR / "figs" / "fig_2continuous" / "01_gaussians.pdf",
 ) -> None:
     x = shared_x_grid(p1, p2)
 
     fig, axes = plt.subplots(2, 1, figsize=(8, 7), sharex=True)
 
     ax = axes[0]
-    ax.plot(x, norm.pdf(x, loc=p1.mu_u, scale=p1.sigma_u), label="User PDF")
-    ax.plot(x, norm.pdf(x, loc=p1.mu_a, scale=p1.sigma_a), label="Attacker PDF")
+    ax.plot(x, norm.pdf(x, loc=p1.mu_u, scale=p1.sigma_u), label="User PDF", color = "blue")
+    ax.plot(x, norm.pdf(x, loc=p1.mu_a, scale=p1.sigma_a), label="Attacker PDF", color = "red")
     ax.set_title("Credential 1: Gaussian PDFs")
     ax.set_ylabel("density")
     ax.legend()
 
     ax = axes[1]
-    ax.plot(x, norm.pdf(x, loc=p2.mu_u, scale=p2.sigma_u), label="User PDF")
-    ax.plot(x, norm.pdf(x, loc=p2.mu_a, scale=p2.sigma_a), label="Attacker PDF")
+    ax.plot(x, norm.pdf(x, loc=p2.mu_u, scale=p2.sigma_u), label="User PDF", color = "blue")
+    ax.plot(x, norm.pdf(x, loc=p2.mu_a, scale=p2.sigma_a), label="Attacker PDF" , color = "red")
     ax.set_title("Credential 2: Gaussian PDFs")
     ax.set_xlabel("x")
     ax.set_ylabel("density")
@@ -417,7 +420,7 @@ def plot_gaussians_subplots_2cred(
 def plot_far_vs_frr_subplots_2cred(
     p1: GaussianPair,
     p2: GaussianPair,
-    out_pdf: str = "02_far_vs_frr.pdf",
+    out_pdf: str = OUTPUT_DIR / "figs" / "fig_2continuous" / "02_far_vs_frr.pdf",
 ) -> None:
     # Curves per credential
     T1 = auto_T_grid_1d(p1)
@@ -625,7 +628,7 @@ def build_paper_table_gaussian_uniform_parabolic_2cred(
 def plot_success_functions_2cred(
     p1: GaussianPair,
     p2: GaussianPair,
-    out_pdf: str = "04_success_functions.pdf",
+    out_pdf: str = OUTPUT_DIR / "figs" / "fig_2continuous" / "04_success_functions.pdf",
 ) -> None:
     # Grids
     T1_grid = auto_T_grid_1d(p1)
@@ -695,7 +698,7 @@ def plot_success_functions_2cred(
 # =========================
 # Success surfaces (Gaussian as before)
 # =========================
-def plot_success_surfaces_2cred(p1: GaussianPair, p2: GaussianPair, out_pdf: str = "03_success_surfaces.pdf") -> None:
+def plot_success_surfaces_2cred(p1: GaussianPair, p2: GaussianPair, out_pdf: str = OUTPUT_DIR / "figs" / "fig_2continuous" / "03_success_surfaces.pdf") -> None:
     T1 = auto_T_grid_1d(p1, n=220)
     T2 = auto_T_grid_1d(p2, n=220)
     T1g, T2g = np.meshgrid(T1, T2, indexing="xy")
@@ -774,14 +777,14 @@ if __name__ == "__main__":
     print("OR :", out_or)
 
     # Gaussian figures (as before)
-    plot_gaussians_subplots_2cred(p1, p2, out_pdf="01_gaussians.pdf")
-    plot_far_vs_frr_subplots_2cred(p1, p2, out_pdf="02_far_vs_frr.pdf")
-    plot_success_surfaces_2cred(p1, p2, out_pdf="03_success_surfaces.pdf")
-    plot_success_functions_2cred(p1, p2, out_pdf="04_success_functions.pdf")
+    plot_gaussians_subplots_2cred(p1, p2, out_pdf=OUTPUT_DIR / "figs" / "fig_2continuous" /"01_gaussians.pdf")
+    plot_far_vs_frr_subplots_2cred(p1, p2, out_pdf=OUTPUT_DIR / "figs" / "fig_2continuous" / "02_far_vs_frr.pdf")
+    plot_success_surfaces_2cred(p1, p2, out_pdf=OUTPUT_DIR / "figs" / "fig_2continuous" / "03_success_surfaces.pdf")
+    plot_success_functions_2cred(p1, p2, out_pdf=OUTPUT_DIR / "figs" / "fig_2continuous" / "04_success_functions.pdf")
 
     # Table now includes Gaussian + Uniform + Parabolic (no extra figures for the new distributions)
     latex = build_paper_table_gaussian_uniform_parabolic_2cred(
-        p1, p2, out_tex="05_wallet_success_table.tex", nd=6
+        p1, p2, out_tex=OUTPUT_DIR / "figs" / "fig_2continuous" / "05_wallet_success_table.tex", nd=6
     )
     print(latex)
 
