@@ -1,5 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
+
+REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
+OUTPUT_DIR = REPO_ROOT
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # =========================
 # Roots (uniform supports)
@@ -161,8 +166,8 @@ T_opt_and_st, P_opt_and_st = T[idx_opt_and_st], p_and_st[idx_opt_and_st]
 # (1) FIGURE — ORIGINAL OR WALLET (unchanged filename)
 # =========================================================
 plt.figure(figsize=(6.5, 4.5))
-plt.plot(T, p_or, label="P_success_OR(T)")
-plt.scatter(T_eer, p_or[idx_eer], zorder=5)
+plt.plot(T, p_or, label=r"$P_{success}^{OR}(T)$")
+plt.scatter(T_eer, p_or[idx_eer], zorder=5, label="EER")
 plt.scatter(T_opt_or, P_opt_or, zorder=6, label="Optimal")
 
 plt.xlabel("Threshold T")
@@ -172,15 +177,15 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig("OR_wallet_1dis_1con_success.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "OR_wallet_1dis_1con_success.pdf")
 plt.close()
 
 # =========================================================
 # (2) FIGURE — ORIGINAL AND WALLET (unchanged filename)
 # =========================================================
 plt.figure(figsize=(6.5, 4.5))
-plt.plot(T, p_and, label="P_success_AND(T)")
-plt.scatter(T_eer, p_and[idx_eer], zorder=5)
+plt.plot(T, p_and, label=r"$P_{success}^{AND}(T)$")
+plt.scatter(T_eer, p_and[idx_eer], zorder=5, label="EER")
 plt.scatter(T_opt_and, P_opt_and, zorder=6, label="Optimal")
 
 plt.xlabel("Threshold T")
@@ -190,7 +195,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig("AND_wallet_1dis_1con_success.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" /"AND_wallet_1dis_1con_success.pdf")
 plt.close()
 
 # =========================================================
@@ -210,7 +215,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig("OR_wallet_compare_safe_loss_only.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "OR_wallet_compare_safe_loss_only.pdf")
 plt.close()
 
 # =========================================================
@@ -230,7 +235,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig("AND_wallet_compare_safe_loss_only.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "AND_wallet_compare_safe_loss_only.pdf")
 plt.close()
 
 # =========================================================
@@ -250,7 +255,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig("OR_wallet_compare_safe_leak_only.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "OR_wallet_compare_safe_leak_only.pdf")
 plt.close()
 
 # =========================================================
@@ -270,7 +275,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig("AND_wallet_compare_safe_leak_only.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "AND_wallet_compare_safe_leak_only.pdf")
 plt.close()
 
 # =========================================================
@@ -290,7 +295,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig("OR_wallet_compare_safe_theft_only.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "OR_wallet_compare_safe_theft_only.pdf")
 plt.close()
 
 # =========================================================
@@ -310,7 +315,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig("AND_wallet_compare_safe_theft_only.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "AND_wallet_compare_safe_theft_only.pdf")
 plt.close()
 
 
@@ -380,7 +385,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend(fontsize=8, ncol=2)
 plt.tight_layout()
-plt.savefig("OR_wallet_attacker_roots_ordered_width.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "OR_wallet_attacker_roots_ordered_width.pdf")
 plt.close()
 
 # =========================================================
@@ -403,7 +408,7 @@ plt.ylim(-0.05, 1.05)
 plt.grid(True, alpha=0.3)
 plt.legend(fontsize=8, ncol=2)
 plt.tight_layout()
-plt.savefig("AND_wallet_attacker_roots_ordered_width.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_1continuous_1discrete" / "AND_wallet_attacker_roots_ordered_width.pdf")
 plt.close()
 
 # Restore original attacker roots (optional)
