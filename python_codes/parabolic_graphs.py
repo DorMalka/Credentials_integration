@@ -168,9 +168,10 @@ for col, (b1, b2) in enumerate(attacker_roots):
     PA = attacker_pdf(x, b1, b2)
     ax = axes2A[col]
 
-    ax.plot(x, PU, color="blue", linewidth=2)
-    ax.plot(x, PA, color="red", linewidth=2)
+    ax.plot(x, PU, color="blue", linewidth=2,label =r"$P_U(s)$")
+    ax.plot(x, PA, color="red", linewidth=2, label =r"$P_A(s)$")
 
+    ax.legend()
     set_symbolic_ticks(ax, b1, b2)
     remove_y_ticks(ax)
 
@@ -210,21 +211,22 @@ for col, (b1, b2) in enumerate(attacker_roots):
     Ps_eer = Ps[idx_eer]
 
     ax = axes2B[col]
-    ax.plot(x, Ps, color="black", linewidth=2)
+    ax.plot(x, Ps, color="black", linewidth=2, label="Success Curve")
 
-    ax.scatter([T_opt], [Ps_opt], color="blue")
+    ax.scatter([T_opt], [Ps_opt], color="blue", label=r"$P_{\text{success}}(T_{opt})$")
     ax.annotate("Optimal",
                 xy=(T_opt, Ps_opt),
                 xytext=(T_opt - 0.5, Ps_opt),
                 fontsize=12, color="blue")
 
-    ax.scatter([T_eer], [Ps_eer], color="red")
+    ax.scatter([T_eer], [Ps_eer], color="red",label=r"$P_{\text{success}}(T_{eer})$")
     ax.annotate("EER",
                 xy=(T_eer, Ps_eer),
                 xytext=(T_eer + 0.3, Ps_eer),
                 ha="right",
                 fontsize=12, color="red")
 
+    ax.legend()
     set_symbolic_ticks(ax, b1, b2)
     remove_y_ticks(ax)
 
@@ -263,15 +265,15 @@ for col, (b1, b2) in enumerate(attacker_roots):
     eer = far_vals[idx_eer]
 
     ax = axes3[col]
-    ax.plot(frr_vals, far_vals, color="purple", linewidth=2)
+    ax.plot(frr_vals, far_vals, color="purple", linewidth=2, label="Operating Curve")
 
-    ax.scatter([frr_opt], [far_opt], color="blue")
+    ax.scatter([frr_opt], [far_opt], color="blue", label="Optimal Point")
     ax.annotate("Optimal",
                 xy=(frr_opt, far_opt),
                 xytext=(frr_opt + 0.015, far_opt + 0.015),
                 fontsize=12, color="blue")
 
-    ax.scatter([eer], [eer], color="red")
+    ax.scatter([eer], [eer], color="red", label="EER Point")
     ax.annotate("EER",
                 xy=(eer, eer),
                 xytext=(eer + 0.015, eer),
@@ -283,7 +285,7 @@ for col, (b1, b2) in enumerate(attacker_roots):
     # No numbers
     ax.set_xticks([])
     ax.set_yticks([])
-
+    ax.legend()
     ax.set_xlabel("FRR(T)")
     ax.set_ylabel("FAR(T)")
 
@@ -340,7 +342,6 @@ gaps = np.array(gaps)
 fig_gap, ax_gap = plt.subplots(figsize=(10, 6))
 
 ax_gap.plot(variances, gaps, color="purple", linewidth=2)
-
 ax_gap.set_xlabel(r"Attacker Variance $\mathrm{Var}(s)$")
 ax_gap.set_ylabel(r"$|T_{\text{opt}} - T_{\text{EER}}|$")
 ax_gap.grid(True, linestyle=":")

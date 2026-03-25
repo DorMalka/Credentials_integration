@@ -1,10 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-
+from pathlib import Path
 # ============================================================
 #                 BASE PDF DEFINITION
 # ============================================================
+REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
+OUTPUT_DIR = REPO_ROOT
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 def uniform_pdf(x, a, b):
     return np.where((x >= a) & (x <= b), 1 / (b - a), 0)
 
@@ -97,9 +101,8 @@ plt.figure(figsize=(10, 5))
 # 1. SYMMETRIC CASE
 # --------------------------
 plt.subplot(1, 2, 1)
-plt.plot(x, user_pdf_sym,     label="User PDF",     color='blue', linewidth=2)
-plt.plot(x, attacker_pdf_sym, label="Attacker PDF", color='red',  linewidth=2)
-plt.title("a. Symmetric PDFs")
+plt.plot(x, user_pdf_sym, label=r"$P_U(s)$", color='blue', linewidth=2)
+plt.plot(x, attacker_pdf_sym, label=r"$P_A(s)$", color='red',  linewidth=2)
 plt.xlabel("Matching Score")
 plt.ylabel("Probability Density", labelpad=-60)
 plt.legend(loc='upper right')
@@ -119,9 +122,8 @@ plt.yticks(
 # 2. ASYMMETRIC CASE
 # --------------------------
 plt.subplot(1, 2, 2)
-plt.plot(x, user_pdf_sym,      label="User PDF",     color='blue', linewidth=2)
-plt.plot(x, attacker_pdf_asym, label="Attacker PDF", color='red',  linewidth=2)
-plt.title("b. Asymmetric PDFs")
+plt.plot(x, user_pdf_sym, label=r"$P_U(s)$", color='blue', linewidth=2)
+plt.plot(x, attacker_pdf_asym, label=r"$P_A(s)$", color='red',  linewidth=2)
 plt.xlabel("Matching Score")
 plt.ylabel("Probability Density", labelpad=-20)
 plt.legend(loc='upper right')
@@ -138,7 +140,7 @@ plt.yticks(
 )
 
 plt.tight_layout()
-plt.savefig("fig_uniforms.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_uniforms.pdf")
 
 
 # ============================================================
@@ -185,10 +187,9 @@ best_safe  = safe[max_idx]
 
 
 plt.figure(figsize=(10, 5))
-plt.plot(x, safe, label="Wallet Success", color="purple")
-plt.title("Uniform - Success Function")
-plt.xlabel("Threshold T")
-plt.ylabel("Success", labelpad=-80)
+plt.plot(x, safe, label=r"$P_{\text{success}}(T)$", color="purple")
+plt.xlabel(r"$T$")
+plt.ylabel(r"$P_{\text{success}}(T)$", labelpad=-80)
 plt.legend()
 plt.grid(True)
 
@@ -206,7 +207,7 @@ plt.yticks(
 )
 
 plt.tight_layout()
-plt.savefig("fig_success_uniform.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_success_uniform.pdf")
 
 
 # ============================================================
@@ -222,10 +223,10 @@ FRR_eer = FRR[eer_idx]
 FAR_eer = FAR[eer_idx]
 
 plt.figure(figsize=(8, 4))
-plt.plot(FRR, FAR, label="FAR vs FRR", color='purple', linewidth=2)
+plt.plot(FRR, FAR, color='purple', linewidth=2, label = "Operating Curve")
 
 # ---- Plot Optimal Point ----
-plt.scatter(FRR_opt, FAR_opt, color='blue', s=50, zorder=5)
+plt.scatter(FRR_opt, FAR_opt, color='blue', s=50, zorder=5,label = "Optimal Point")
 plt.annotate(
     'Optimal',
     xy=(FRR_opt, FAR_opt),
@@ -234,7 +235,7 @@ plt.annotate(
 )
 
 # ---- Plot EER Point ----
-plt.scatter(FRR_eer, FAR_eer, color='red', s=50, zorder=5)
+plt.scatter(FRR_eer, FAR_eer, color='red', s=50, zorder=5, label="EER Point")
 plt.annotate(
     'EER',
     xy=(FRR_eer, FAR_eer),
@@ -242,10 +243,9 @@ plt.annotate(
     fontsize=12,
     color='black'
 )
-
-plt.title("FAR vs FRR Curve")
-plt.xlabel("FRR")
-plt.ylabel("FAR", labelpad=-10)
+plt.legend()
+plt.xlabel(r"$\text{FRR}$")
+plt.ylabel(r"$\text{FAR}$", labelpad=-10)
 plt.grid(True)
 
 # ---- Only show ticks 0 and 1 ----
@@ -253,7 +253,7 @@ plt.xticks([0, 1], ["0", "1"], fontsize=12)
 plt.yticks([0, 1], ["0", "1"], fontsize=12)
 
 plt.tight_layout()
-plt.savefig("fig_FARvFRR_uniform.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_FARvFRR_uniform.pdf")
 
 
 # ============================================================
@@ -279,7 +279,7 @@ plt.xlabel("Variance of Attacker PDF")
 plt.ylabel(r"$|T_{opt} - T_{EER}|$")
 plt.grid(True)
 plt.tight_layout()
-plt.savefig("fig_gap_uniform.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_gap_uniform.pdf")
 
 
 # ============================================================
@@ -323,7 +323,7 @@ legend_elements = [
 plt.legend(handles=legend_elements, loc="upper right")
 
 plt.tight_layout()
-plt.savefig("fig_uniforms_sweep.pdf")
+plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_uniforms_sweep.pdf")
 
 print("Saved all uniform figures:")
 print("  - fig_uniforms.pdf")
