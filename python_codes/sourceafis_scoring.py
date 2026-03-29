@@ -18,7 +18,7 @@ DATA_DIR = SOURCEAFIS_DIR / "fvc2002_png" / "DB1_B"
 # DATA_DIR = SOURCEAFIS_DIR / "fvc2004_png" / "DB1_B"
 
 USER_ID = 103
-USER_SAMPLES = {2,3,5}
+USER_SAMPLES = {5}
 
 OUTPUT_DIR = REPO_ROOT
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -64,26 +64,63 @@ def run_sourceafis_batch():
 
 
 def load_scores_from_csv():
-    genuine = []
-    impostor = []
+    """
+    Load SourceAFIS scores and collapse multiple probe-vs-same-candidate matches
+    into a single score per candidate, taking the maximum over all probes.
+
+    Expected CSV columns:
+      - kind   : "genuine" or "impostor"
+      - score  : numeric score
+      - target : candidate file / matched sample   (preferred)
+    Optional fallback:
+      - candidate
+    """
+
+    genuine_best = {}
+    impostor_best = {}
 
     with open(SCORES_CSV, "r", newline="") as f:
         reader = csv.DictReader(f)
+
+        # Validate score column
+        if "score" not in reader.fieldnames:
+            raise ValueError(f"CSV must contain a 'score' column. Found: {reader.fieldnames}")
+
+        # Prefer "target" as the candidate identifier, fallback to "candidate"
+        candidate_col = None
+        for col in ("target", "candidate"):
+            if col in reader.fieldnames:
+                candidate_col = col
+                break
+
+        if candidate_col is None:
+            raise ValueError(
+                f"CSV must contain a candidate identifier column such as 'target' or 'candidate'. "
+                f"Found: {reader.fieldnames}"
+            )
+
         for row in reader:
             kind = row["kind"].strip().lower()
             score = float(row["score"])
-            if kind == "genuine":
-                genuine.append(score)
-            elif kind == "impostor":
-                impostor.append(score)
+            candidate = row[candidate_col].strip()
 
-    genuine = np.array(genuine, dtype=float)
-    impostor = np.array(impostor, dtype=float)
+            if kind == "genuine":
+                if candidate not in genuine_best or score > genuine_best[candidate]:
+                    genuine_best[candidate] = score
+            elif kind == "impostor":
+                if candidate not in impostor_best or score > impostor_best[candidate]:
+                    impostor_best[candidate] = score
+
+    genuine = np.array(list(genuine_best.values()), dtype=float)
+    impostor = np.array(list(impostor_best.values()), dtype=float)
 
     if len(genuine) == 0:
         raise ValueError("No genuine scores loaded.")
     if len(impostor) == 0:
         raise ValueError("No impostor scores loaded.")
+
+    print(f"[i] Collapsed genuine candidates:  {len(genuine_best)}")
+    print(f"[i] Collapsed impostor candidates: {len(impostor_best)}")
 
     return genuine, impostor
 
@@ -120,7 +157,7 @@ def plot_histograms(genuine_scores, impostor_scores):
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "sourceafis_histogram.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_histogram.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -182,7 +219,7 @@ def plot_smoothed_pdfs(genuine_scores, impostor_scores, step=0.1, sigma_points=3
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "sourceafis_smoothed_pdf.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_smoothed_pdf.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -263,7 +300,7 @@ def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "sourceafis_far_frr.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_far_frr.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -320,7 +357,7 @@ def plot_p_success(thresholds, p_success, eer_threshold, max_success, max_thresh
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "sourceafis_p_success.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_p_success.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
@@ -373,7 +410,7 @@ def plot_success_and_or(
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "sourceafis_success_and_or.pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_success_and_or.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
 
