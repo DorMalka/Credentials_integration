@@ -1,0 +1,37 @@
+\documentclass[sigconf]{acmart}
+\setcopyright{none}
+
+\title{Biometric Authentication Mechanisms}
+
+\author{Dor Malka}
+\affiliation{%
+  \institution{Technion}
+  \country{Haifa, Israel}
+}
+\email{dm29@campus.technion.ac.il}
+
+\author{Ittay Eyal}
+\affiliation{%
+  \institution{Technion}
+  \country{Haifa, Israel}
+}
+\email{ittay@technion.ac.il}
+
+% For anonymous CCS submission, remove author names entirely.
+% \author{Anonymous Author(s)}
+
+\begin{document}
+
+\begin{abstract}
+Biometric credentials such as fingerprints and face recognition are widely used in modern authentication. Biometric sensors obtain a sample, calculate a \emph{similarity score} and output accept if it is above a set threshold or reject otherwise. A large body of work focuses on improving the accuracy of biometric sensors. Other works study \emph{authentication mechanisms} with one or more credentials, but treat biometric credentials as \emph{atomic} (like passwords, either a perfect match or wrong); The state of the art for this prevalent authentication method is using a heuristic threshold.
+
+We explore optimal-threshold authentication mechanisms with biometric credentials. Following prior work, we define a mechanism's success as the probability it accepts legitimate users and rejects attackers. We model user and attacker similarity scores as random distributions and symbolically derive optimal thresholds. Our optimal threshold reduces mechanism failure probability by 50-70\% compared to the heuristic threshold, when biometric credentials are incorporated together or with atomic credentials.
+
+We prove that integrating a biometric credential improves mechanism success even when an atomic credential has arbitrary low fault probabilities and a biometric credential provides only weak separation between users and attackers. We quantitatively demonstrate the improvement through experiments with real public biometric data, testing users against spoofing attempts. Our optimized threshold reduces mechanism failure probability by an order of magnitude compared to the heuristic threshold when a biometric credential is integrated with an atomic one.
+
+These results imply that biometric sensors should stop defaulting to EER and allow setting their threshold according to the full authentication mechanism.
+\end{abstract}
+
+\maketitle
+
+\end{document}
