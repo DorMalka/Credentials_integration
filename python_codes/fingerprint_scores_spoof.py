@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
-
+from typing import Dict, List, Tuple
 
 # =========================
 # Config
@@ -595,6 +595,363 @@ def plot_success_and_or(
     plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" /"livdet_sourceafis_success_and_or_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
+# =========================
+# Sweep over P_safe configurations
+# =========================
+def generate_psafe_configs(
+    safe_start: float = 0.50,
+    safe_end: float = 0.90,
+    safe_step: float = 0.01,
+    *,
+    leak_case_base: Tuple[float, float, float, float] = (0.50, 0.45, 0.04, 0.01),
+    loss_case_base: Tuple[float, float, float, float] = (0.50, 0.04, 0.45, 0.01),
+) -> List[Dict[str, float]]:
+    """
+    Generate two families of configurations:
+
+    1) leak_case:
+       P_safe increases from 0.50 to 0.90,
+       P_leak decreases by the same amount,
+       P_loss and P_theft remain fixed.
+
+    2) loss_case:
+       P_safe increases from 0.50 to 0.90,
+       P_loss decreases by the same amount,
+       P_leak and P_theft remain fixed.
+
+    Each family must start from a valid base tuple:
+        (P_safe, P_leak, P_loss, P_theft)
+
+    Returns a list of dicts, one dict per configuration.
+    """
+    configs: List[Dict[str, float]] = []
+
+    safe_values = np.round(np.arange(safe_start, safe_end + 1e-12, safe_step), 2)
+
+    # ---- leak-decreasing family ----
+    base_safe, base_leak, base_loss, base_theft = leak_case_base
+    for psafe in safe_values:
+        delta = round(psafe - base_safe, 10)
+        pleak = round(base_leak - delta, 10)
+        ploss = round(base_loss, 10)
+        ptheft = round(base_theft, 10)
+
+        if pleak < -1e-12:
+            raise ValueError(
+                f"Leak-case invalid: P_leak became negative for P_safe={psafe:.2f}. "
+                f"Choose a larger base leak or a smaller safe range."
+            )
+
+        total = psafe + pleak + ploss + ptheft
+        if not np.isclose(total, 1.0):
+            raise ValueError(
+                f"Leak-case probabilities do not sum to 1: "
+                f"P_safe={psafe}, P_leak={pleak}, P_loss={ploss}, P_theft={ptheft}, total={total}"
+            )
+
+        configs.append({
+            "family": "decrease_leak",
+            "P_safe": psafe,
+            "P_leak": pleak,
+            "P_loss": ploss,
+            "P_theft": ptheft,
+        })
+
+    # ---- loss-decreasing family ----
+    base_safe, base_leak, base_loss, base_theft = loss_case_base
+    for psafe in safe_values:
+        delta = round(psafe - base_safe, 10)
+        ploss = round(base_loss - delta, 10)
+        pleak = round(base_leak, 10)
+        ptheft = round(base_theft, 10)
+
+        if ploss < -1e-12:
+            raise ValueError(
+                f"Loss-case invalid: P_loss became negative for P_safe={psafe:.2f}. "
+                f"Choose a larger base loss or a smaller safe range."
+            )
+
+        total = psafe + pleak + ploss + ptheft
+        if not np.isclose(total, 1.0):
+            raise ValueError(
+                f"Loss-case probabilities do not sum to 1: "
+                f"P_safe={psafe}, P_leak={pleak}, P_loss={ploss}, P_theft={ptheft}, total={total}"
+            )
+
+        configs.append({
+            "family": "decrease_loss",
+            "P_safe": psafe,
+            "P_leak": pleak,
+            "P_loss": ploss,
+            "P_theft": ptheft,
+        })
+
+    return configs
+
+
+def evaluate_config_success(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    eer_threshold: float,
+    cfg: Dict[str, float],
+) -> Dict[str, float]:
+    """
+    Evaluate one configuration and return:
+      - maximal AND
+      - maximal OR
+      - EER AND
+      - EER OR
+      - best maximal config
+      - improvement in failure percentage as requested
+    """
+    p_and, p_or, idx_and, idx_or, p_and_eer, p_or_eer = compute_success_and_or(
+        thresholds,
+        fars,
+        frrs,
+        eer_threshold=eer_threshold,
+        P_safe=cfg["P_safe"],
+        P_leak=cfg["P_leak"],
+        P_loss=cfg["P_loss"],
+        P_theft=cfg["P_theft"],
+    )
+
+    max_and = float(p_and[idx_and])
+    max_or = float(p_or[idx_or])
+    eer_and = float(p_and_eer)
+    eer_or = float(p_or_eer)
+
+    if max_and >= max_or:
+        best_kind = "AND"
+        best_max = max_and
+        eer_of_maximal_config = eer_and
+        best_threshold = float(thresholds[idx_and])
+    else:
+        best_kind = "OR"
+        best_max = max_or
+        eer_of_maximal_config = eer_or
+        best_threshold = float(thresholds[idx_or])
+
+    denom_reference = eer_of_maximal_config
+    denom_failure = 1.0 - denom_reference
+
+    if np.isclose(denom_failure, 0.0):
+        improvement_failure_ratio = np.nan
+    else:
+        improvement_failure_ratio = (best_max - denom_reference) / denom_failure
+
+    return {
+        "family": cfg["family"],
+        "P_safe": float(cfg["P_safe"]),
+        "P_leak": float(cfg["P_leak"]),
+        "P_loss": float(cfg["P_loss"]),
+        "P_theft": float(cfg["P_theft"]),
+        "max_AND": max_and,
+        "max_OR": max_or,
+        "eer_AND": eer_and,
+        "eer_OR": eer_or,
+        "best_kind": best_kind,
+        "best_max": best_max,
+        "eer_of_maximal_config": eer_of_maximal_config,
+        "best_threshold": best_threshold,
+        "failure_improvement_ratio": float(improvement_failure_ratio),
+    }
+
+
+def sweep_psafe_success(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    eer_threshold: float,
+    *,
+    safe_start: float = 0.50,
+    safe_end: float = 0.90,
+    safe_step: float = 0.01,
+    leak_case_base: Tuple[float, float, float, float] = (0.50, 0.45, 0.04, 0.01),
+    loss_case_base: Tuple[float, float, float, float] = (0.50, 0.04, 0.45, 0.01),
+) -> Tuple[List[Dict[str, float]], Dict[str, Dict[str, float]], Dict[str, float]]:
+    """
+    Sweep all requested configurations and return:
+      1) all_rows: detailed results for every configuration
+      2) family_best: best row in each family according to best_max
+      3) overall_best: best row overall according to best_max
+    """
+    configs = generate_psafe_configs(
+        safe_start=safe_start,
+        safe_end=safe_end,
+        safe_step=safe_step,
+        leak_case_base=leak_case_base,
+        loss_case_base=loss_case_base,
+    )
+
+    all_rows: List[Dict[str, float]] = []
+    for cfg in configs:
+        row = evaluate_config_success(
+            thresholds=thresholds,
+            fars=fars,
+            frrs=frrs,
+            eer_threshold=eer_threshold,
+            cfg=cfg,
+        )
+        all_rows.append(row)
+
+    leak_rows = [r for r in all_rows if r["family"] == "decrease_leak"]
+    loss_rows = [r for r in all_rows if r["family"] == "decrease_loss"]
+
+    family_best = {
+        "decrease_leak": max(leak_rows, key=lambda r: r["best_max"]),
+        "decrease_loss": max(loss_rows, key=lambda r: r["best_max"]),
+    }
+
+    overall_best = max(all_rows, key=lambda r: r["best_max"])
+
+    return all_rows, family_best, overall_best
+
+
+def print_psafe_sweep_summary(
+    all_rows: List[Dict[str, float]],
+    family_best: Dict[str, Dict[str, float]],
+    overall_best: Dict[str, float],
+) -> None:
+    """
+    Print:
+      - overall 4 requested results from the overall-best configuration
+      - family-best summaries
+    """
+    print("\n" + "=" * 80)
+    print("[SWEEP SUMMARY] OVERALL BEST CONFIGURATION")
+    print("=" * 80)
+    print(f"[i] Family                    : {overall_best['family']}")
+    print(f"[i] P_safe                    : {overall_best['P_safe']:.2f}")
+    print(f"[i] P_leak                    : {overall_best['P_leak']:.2f}")
+    print(f"[i] P_loss                    : {overall_best['P_loss']:.2f}")
+    print(f"[i] P_theft                   : {overall_best['P_theft']:.2f}")
+    print(f"[i] Maximal AND               : {overall_best['max_AND']:.6f}")
+    print(f"[i] Maximal OR                : {overall_best['max_OR']:.6f}")
+    print(f"[i] EER AND                   : {overall_best['eer_AND']:.6f}")
+    print(f"[i] EER OR                    : {overall_best['eer_OR']:.6f}")
+    print(f"[i] Best configuration kind   : {overall_best['best_kind']}")
+    print(f"[i] Best threshold            : {overall_best['best_threshold']:.6f}")
+    print(f"[i] Best maximal success      : {overall_best['best_max']:.6f}")
+    print(f"[i] EER of maximal config     : {overall_best['eer_of_maximal_config']:.6f}")
+    print(f"[i] Failure improvement ratio : {overall_best['failure_improvement_ratio']:.6f}")
+
+    print("\n" + "=" * 80)
+    print("[SWEEP SUMMARY] BEST PER FAMILY")
+    print("=" * 80)
+    for family_name, row in family_best.items():
+        print(f"\n[i] Family                    : {family_name}")
+        print(f"[i] P_safe                    : {row['P_safe']:.2f}")
+        print(f"[i] P_leak                    : {row['P_leak']:.2f}")
+        print(f"[i] P_loss                    : {row['P_loss']:.2f}")
+        print(f"[i] P_theft                   : {row['P_theft']:.2f}")
+        print(f"[i] Maximal AND               : {row['max_AND']:.6f}")
+        print(f"[i] Maximal OR                : {row['max_OR']:.6f}")
+        print(f"[i] EER AND                   : {row['eer_AND']:.6f}")
+        print(f"[i] EER OR                    : {row['eer_OR']:.6f}")
+        print(f"[i] Best configuration kind   : {row['best_kind']}")
+        print(f"[i] Best threshold            : {row['best_threshold']:.6f}")
+        print(f"[i] Best maximal success      : {row['best_max']:.6f}")
+        print(f"[i] EER of maximal config     : {row['eer_of_maximal_config']:.6f}")
+        print(f"[i] Failure improvement ratio : {row['failure_improvement_ratio']:.6f}")
+
+
+def save_psafe_sweep_csv(
+    all_rows: List[Dict[str, float]],
+    out_csv: Path,
+) -> None:
+    """
+    Save all sweep results to CSV.
+    """
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+
+    fieldnames = [
+        "family",
+        "P_safe",
+        "P_leak",
+        "P_loss",
+        "P_theft",
+        "max_AND",
+        "max_OR",
+        "eer_AND",
+        "eer_OR",
+        "best_kind",
+        "best_max",
+        "eer_of_maximal_config",
+        "best_threshold",
+        "failure_improvement_ratio",
+    ]
+
+    with open(out_csv, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in all_rows:
+            writer.writerow(row)
+
+def print_psafe_summary_simple(csv_path: Path):
+    """
+    Prints ONLY:
+    - overall improvement range
+    - best improvement + values
+    - minimal improvement + values
+    """
+
+    rows = []
+    with open(csv_path, "r", newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            rows.append({
+                "P_safe": float(row["P_safe"]),
+                "P_leak": float(row["P_leak"]),
+                "P_loss": float(row["P_loss"]),
+                "P_theft": float(row["P_theft"]),
+                "max_AND": float(row["max_AND"]),
+                "max_OR": float(row["max_OR"]),
+                "eer_AND": float(row["eer_AND"]),
+                "eer_OR": float(row["eer_OR"]),
+                "best_max": float(row["best_max"]),
+                "failure_improvement_ratio": float(row["failure_improvement_ratio"]),
+            })
+
+    if not rows:
+        print("No data found.")
+        return
+
+    # Convert to percentages
+    for r in rows:
+        r["improvement_pct"] = 100 * r["failure_improvement_ratio"]
+
+    # Find best and worst
+    best_row = max(rows, key=lambda r: r["improvement_pct"])
+    worst_row = min(rows, key=lambda r: r["improvement_pct"])
+
+    min_imp = worst_row["improvement_pct"]
+    max_imp = best_row["improvement_pct"]
+
+    # ===== PRINT =====
+    print(f"Overall improvement range: {min_imp:.2f}% - {max_imp:.2f}%\n")
+
+    print("Best improvement:")
+    print(f"{max_imp:.2f}%")
+    print(f"Psafe: {best_row['P_safe']:.2f}")
+    print(f"Pleak: {best_row['P_leak']:.2f}")
+    print(f"Ploss: {best_row['P_loss']:.2f}")
+    print(f"Ptheft: {best_row['P_theft']:.2f}")
+    print(f"Max AND: {best_row['max_AND']:.6f}")
+    print(f"Max OR: {best_row['max_OR']:.6f}")
+    print(f"EER AND: {best_row['eer_AND']:.6f}")
+    print(f"EER OR: {best_row['eer_OR']:.6f}")
+
+    print("\nMinimal improvement:")
+    print(f"{min_imp:.2f}%")
+    print(f"Psafe: {worst_row['P_safe']:.2f}")
+    print(f"Pleak: {worst_row['P_leak']:.2f}")
+    print(f"Ploss: {worst_row['P_loss']:.2f}")
+    print(f"Ptheft: {worst_row['P_theft']:.2f}")
+    print(f"Max AND: {worst_row['max_AND']:.6f}")
+    print(f"Max OR: {worst_row['max_OR']:.6f}")
+    print(f"EER AND: {worst_row['eer_AND']:.6f}")
+    print(f"EER OR: {worst_row['eer_OR']:.6f}")
 
 # =========================
 # Main
@@ -665,3 +1022,27 @@ if __name__ == "__main__":
         p_and_eer,
         p_or_eer,
     )
+
+        # =========================
+    # New sweep requested by user
+    # =========================
+    SWEEP_RESULTS_CSV = OUTPUT_DIR / "figs" / "fig_spoofed_users" / "psafe_sweep_results.csv"
+
+    all_rows, family_best, overall_best = sweep_psafe_success(
+        thresholds,
+        fars,
+        frrs,
+        eer_threshold,
+        safe_start=0.55,
+        safe_end=0.90,
+        safe_step=0.01,
+        # Case 1: increasing P_safe comes from decreasing P_leak
+        leak_case_base=(0.55, 0.4, 0.04, 0.01),
+        # Case 2: increasing P_safe comes from decreasing P_loss
+        loss_case_base=(0.55, 0.04, 0.4, 0.01),
+    )
+
+    print_psafe_sweep_summary(all_rows, family_best, overall_best)
+    save_psafe_sweep_csv(all_rows, SWEEP_RESULTS_CSV)
+    print(f"[i] Sweep CSV saved to: {SWEEP_RESULTS_CSV}")
+    print_psafe_summary_simple(SWEEP_RESULTS_CSV)   
