@@ -8,6 +8,7 @@ from pathlib import Path
 REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
 OUTPUT_DIR = REPO_ROOT
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+DATA_TXT = OUTPUT_DIR / "uniform_pdfs.txt"
 
 def uniform_pdf(x, a, b):
     return np.where((x >= a) & (x <= b), 1 / (b - a), 0)
@@ -77,7 +78,7 @@ u1, u2 = 0.30, 0.70             # length = 0.40
 a1_sym,  a2_sym  = 0.10, 0.50   # symmetric: same width as user
 
 # --- Asymmetric case: different width, still overlapping and left ---
-a1_asym, a2_asym = 0.05, 0.42   # attacker narrower & left, with overlap
+a1_asym, a2_asym = 0.05, 0.35   # attacker narrower & left, with overlap
 
 x = np.linspace(0, 1, 1000)
 
@@ -90,6 +91,18 @@ max_u   = 1 / (u2      - u1)        # = 1 / 0.4
 max_sym = 1 / (a2_sym  - a1_sym)    # same as max_u by construction
 att_max = 1 / (a2_asym - a1_asym)
 
+PU = uniform_pdf(x, u1, u2)
+PA_asym = uniform_pdf(x, a1_asym, a2_asym)
+
+DATA_TXT = OUTPUT_DIR / "figs" / "fig_uniform" / "uniform_graphs.txt"
+DATA_TXT.parent.mkdir(parents=True, exist_ok=True)
+
+with open(DATA_TXT, "w") as f:
+    f.write("s PU PA\n")
+    for xi, pu, pa in zip(x, PU, PA_asym):
+        f.write(f"{xi:.6f} {pu:.6f} {pa:.6f}\n")
+
+print(f"[i] Data saved to: {DATA_TXT}")
 
 # ============================================================
 #         FIGURE 1 – SYMMETRIC & ASYMMETRIC UNIFORMS

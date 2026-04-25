@@ -10,7 +10,8 @@ FONTNAME = "Times New Roman"
 REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
 OUTPUT_DIR = REPO_ROOT
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
+DATA_DIR = OUTPUT_DIR / "figs" / "fig_parabola"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 plt.rcParams.update({
     "font.size": FONTSIZE,
     "font.family": FONTNAME,
@@ -139,7 +140,13 @@ PU = user_pdf(x)
 # ============================================
 b1_plot, b2_plot = attacker_roots[0]
 PA = attacker_pdf(x, b1_plot, b2_plot)
-
+np.savetxt(
+    DATA_DIR / "parabola_graphs.txt",
+    np.column_stack([x, PU, PA]),
+    header="s PU PA",
+    comments="",
+    fmt="%.10f"
+)
 fig1, ax1 = plt.subplots(figsize=(10, 4))
 ax1.plot(x, PU, color="blue", linewidth=2, label=r"$P_U(s)$")
 ax1.plot(x, PA, color="red",  linewidth=2, label=r"$P_A(s)$")

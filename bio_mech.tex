@@ -5,6 +5,17 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{subcaption}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\usepgfplotslibrary[colorbrewer]
+\usetikzlibrary{pgfplots.colorbrewer}
+\usetikzlibrary{calc}
+\definecolor{color1}{HTML}{0868ac}
+\definecolor{color2}{HTML}{43a2ca}
+\definecolor{color3}{HTML}{7bccc4}
+\definecolor{color4}{HTML}{a8ddb5}
+\definecolor{color5}{HTML}{ccebc5}
+
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
     Bib\TeX}}}
@@ -107,6 +118,79 @@ Previous work~$(\S\ref{sec:2})$ has conducted extensive analysis of biometric cr
 In this work, we study how biometric credentials influence the authentication mechanism's success with and without atomic credentials. More precisely, our goal is to analyze how the presence of atomic credentials can influence and determine the biometric decision threshold to enhance the mechanism success. First, we define the authentication model~$(\S\ref{sec:3})$ built on a set of biometric and atomic credentials. The mechanism interacts with 2 players: a user and an attacker, trying to identify the user based on the provided credentials by the player. The possesion of each credential can be either~\cite{Eyal2021}, (1)~\emph{safe}: Only available to the user , (2)~\emph{loss}: Not available to both players, (3)~\emph{leak}: Available to both players, or (4)~\emph{theft}: Only available to the attacker. Each credential has a probability of being in each of the four states. Biometric credentials are evaluated by a sensor that calculates a confidence score for both players. In case the score is above a match threshold, the mechanism will approve an acess to the player, vice versa. This is used to establish two fault probabilites: \emph{false acceptance rate}~(FAR): The probability that the mechanism incorrectly accepts an attacker as a legitimate user, and \emph{false rejection rate}~(FRR): The probability that the mechanism incorrectly rejects a legitimate user.
 
 We start with analyzing the effect of a single biometirc credential on the mechnaism's success~$(\S\ref{sec:4})$. We examine distribution functions that approximate a biometric credential score distribution as shown in Figure~\ref{intro-fig}. We find closed form expressions of the mechanism's success for different score distribution functions of a biometric credential and we symbolically calculate the optimal and EER thresholds. Our findings show that the optimal threshold differs from the commonly used EER for each distribution function. We quantify the effect of the attacker's distribution \emph{variance}, i.e, the likelihood of an attacker to produce sparse samples represented by a wide range of scores, on the deviation between the optimal threshold and the EER. We find that the difference increases as the attacker's distribution variance increases, leading to more significant improvement in the mechanism's success. This observation suggests a larger room for improvement in the mechanism's success, when the biometric credential provides weak separation between users and attackers, as we will prove and illustrate later.
+
+\begin{figure*}[t]
+\centering
+
+\begin{tikzpicture}
+\pgfplotsset{compat=1.18,width=0.42\textwidth,height=0.27\textwidth}
+
+\begin{axis}[
+    name=uniform,
+    xlabel={Matching Score},
+    ylabel={Probability Density},
+    xmin=0, xmax=1,
+    ymin=0, ymax=3.7,
+    grid=none,
+    xtick={0.05,0.30,0.42,0.70},
+    xticklabels={$a_1$,$u_1$,$a_2$,$u_2$},
+    ytick={2.5,3.3333},
+    yticklabels={$\frac{1}{u_2-u_1}$,$\frac{1}{a_2-a_1}$},
+    yticklabel style={font=\scriptsize, xshift=-3pt},
+    legend to name=sharedlegend,
+    legend columns=2,
+    legend style={
+        font=\footnotesize,
+        draw=black,
+        fill=white,
+        column sep=0.35cm
+    }
+]
+
+\addplot+[blue, thick, mark=none, const plot]
+table [x=s, y=PU] {figs/fig_uniform/uniform_graphs.txt};
+\addlegendentry{User}
+
+\addplot+[red, thick, mark=none, const plot]
+table [x=s, y=PA] {figs/fig_uniform/uniform_graphs.txt};
+\addlegendentry{Attacker}
+
+\end{axis}
+
+\begin{axis}[
+    name=parabolic,
+    at={(uniform.east)},
+    anchor=west,
+    xshift=0.08\textwidth,
+    xlabel={Matching Score},
+    ylabel={Probability Density},
+    xmin=0, xmax=5,
+    ymin=-0.1, ymax=1.65,
+    grid=none,
+    xtick={2,3,3.5,4},
+    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    ytick=\empty,
+]
+
+\addplot+[blue, thick, mark=none]
+table [x=s, y=PU] {figs/fig_parabola/parabola_graphs.txt};
+
+\addplot+[red, thick, mark=none]
+table [x=s, y=PA] {figs/fig_parabola/parabola_graphs.txt};
+
+\end{axis}
+
+\node[
+    anchor=north,
+    yshift=-0.75cm
+] at ($(uniform.south)!0.5!(parabolic.south)$)
+{\pgfplotslegendfromname{sharedlegend}};
+
+\end{tikzpicture}
+
+\caption{Uniform and Quadratic user and attacker distributions.}
+\label{intro-fig}
+\end{figure*}
 
 As each credential can influence the mechanism's success probability differently, we examine a more complex case, where a mechanism is comprised of biometric and atomic credentials~$(\S\ref{sec:5})$. We randomly generate different distributions represent a user and an attacker and analyzed the mechanism's success. Our analysis reveals that the optimal threshold for a mechanism comprised of multiple biometric credentials is not necessarily the same as the optimal threshold if used individually~$(\S\ref{sec:5.1})$. Using a numeircal optimization algorithm on random distribution functions, we observe a reduction of over~66\% in the failure rate of the success function, when comparing the EER and the optimal threshold. Moreover, we closed form the mechanism's success when atomic and biometric credentials are integrated and symbolically calculate the optimal and EER thresholds.
 
