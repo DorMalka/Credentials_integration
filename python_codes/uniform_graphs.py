@@ -104,12 +104,12 @@ DATA_TXT_2.parent.mkdir(parents=True, exist_ok=True)
 with open(DATA_TXT, "w") as f:
     f.write("s PU PA\n")
     for xi, pu, pa in zip(x, PU, PA_asym):
-        f.write(f"{xi:.6f} {pu:.6f} {pa:.6f}\n")
+        f.write(f"{xi:.4f} {pu:.4f} {pa:.4f}\n")
 
 with open(DATA_TXT_2, "w") as f:
     f.write("s PU PA_sym PA_asym\n")
     for xi, pu, pa_sym, pa_asym in zip(x, PU, PA_sym, PA_asym):
-        f.write(f"{xi:.6f} {pu:.6f} {pa_sym:.6f} {pa_asym:.6f}\n")
+        f.write(f"{xi:.4f} {pu:.4f} {pa_sym:.4f} {pa_asym:.4f}\n")
 
 print(f"[i] Data saved to: {DATA_TXT}")
 print(f"[i] Data saved to: {DATA_TXT_2}")
@@ -225,17 +225,17 @@ with open(SUCCESS_DATA_TXT, "w") as f:
     f.write("s FRR FAR loss leak theft safe FAR_opt FRR_opt FAR_eer FRR_eer\n")
     for xi, frr, far, lo, le, th, sa in zip(x, FRR, FAR, loss, leak, theft, safe):
         f.write(
-            f"{xi:.6f} "
-            f"{frr:.6f} "
-            f"{far:.6f} "
-            f"{lo:.6f} "
-            f"{le:.6f} "
-            f"{th:.6f} "
-            f"{sa:.6f} "
-            f"{FAR_opt:.6f} "
-            f"{FRR_opt:.6f} "
-            f"{FAR_eer:.6f} "
-            f"{FRR_eer:.6f}\n"
+            f"{xi:.4f} "
+            f"{frr:.4f} "
+            f"{far:.4f} "
+            f"{lo:.4f} "
+            f"{le:.4f} "
+            f"{th:.4f} "
+            f"{sa:.4f} "
+            f"{FAR_opt:.4f} "
+            f"{FRR_opt:.4f} "
+            f"{FAR_eer:.4f} "
+            f"{FRR_eer:.4f}\n"
         )
 
 plt.figure(figsize=(10, 5))

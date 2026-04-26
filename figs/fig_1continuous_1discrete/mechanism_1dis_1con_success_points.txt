@@ -1,0 +1,2 @@
+T_eer P_or_eer P_and_eer T_opt_or P_opt_or T_opt_and P_opt_and
+0.6684 0.3316 0.4886 0.8003 0.5166 0.5057 0.5644

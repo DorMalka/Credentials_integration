@@ -28,4 +28,3 @@
 # — VS Code workspace settings
 .vscode/
 *venv
-*.pdf

@@ -212,7 +212,7 @@ def _derivatives_wrt_T(T: float, p: DistPair) -> Dict[str, float]:
 # =========================
 # EER helpers (per-credential)
 # =========================
-def auto_T_grid_1d(p: DistPair, k: float = 6.0, n: int = 2000) -> np.ndarray:
+def auto_T_grid_1d(p: DistPair, k: float = 6.0, n: int = 500) -> np.ndarray:
     """
     Gaussian: mu±k*sigma range.
     Uniform/Parabolic: cover full support (user ∪ attacker).
@@ -434,7 +434,7 @@ def export_gaussians_2cred_data(
         f.write("s PU1 PA1 PU2 PA2\n")
         for xi, pu1, pa1, pu2, pa2 in zip(x, PU1, PA1, PU2, PA2):
             f.write(
-                f"{xi:.8f} {pu1:.8f} {pa1:.8f} {pu2:.8f} {pa2:.8f}\n"
+                f"{xi:.4f} {pu1:.4f} {pa1:.4f} {pu2:.4f} {pa2:.4f}\n"
             )
 
 def plot_far_vs_frr_subplots_2cred(
@@ -533,8 +533,8 @@ def export_far_vs_frr_2cred_data(
         f.write("T1 FAR1 FRR1 T2 FAR2 FRR2\n")
         for t1, far1, frr1, t2, far2, frr2 in zip(T1, FAR1, FRR1, T2, FAR2, FRR2):
             f.write(
-                f"{t1:.8f} {far1:.8f} {frr1:.8f} "
-                f"{t2:.8f} {far2:.8f} {frr2:.8f}\n"
+                f"{t1:.4f} {far1:.4f} {frr1:.4f} "
+                f"{t2:.4f} {far2:.4f} {frr2:.4f}\n"
             )
 
     with open(out_points, "w") as f:
@@ -543,14 +543,14 @@ def export_far_vs_frr_2cred_data(
             "FAR2_and FRR2_and FAR2_or FRR2_or FAR2_eer FRR2_eer FAR2_safe FRR2_safe\n"
         )
         f.write(
-            f"{float(FAR1_and):.8f} {float(FRR1_and):.8f} "
-            f"{float(FAR1_or):.8f} {float(FRR1_or):.8f} "
-            f"{eer1['FAR_eer']:.8f} {eer1['FRR_eer']:.8f} "
-            f"{safeopt1['FAR_safe_opt']:.8f} {safeopt1['FRR_safe_opt']:.8f} "
-            f"{float(FAR2_and):.8f} {float(FRR2_and):.8f} "
-            f"{float(FAR2_or):.8f} {float(FRR2_or):.8f} "
-            f"{eer2['FAR_eer']:.8f} {eer2['FRR_eer']:.8f} "
-            f"{safeopt2['FAR_safe_opt']:.8f} {safeopt2['FRR_safe_opt']:.8f}\n"
+            f"{float(FAR1_and):.4f} {float(FRR1_and):.4f} "
+            f"{float(FAR1_or):.4f} {float(FRR1_or):.4f} "
+            f"{eer1['FAR_eer']:.4f} {eer1['FRR_eer']:.4f} "
+            f"{safeopt1['FAR_safe_opt']:.4f} {safeopt1['FRR_safe_opt']:.4f} "
+            f"{float(FAR2_and):.4f} {float(FRR2_and):.4f} "
+            f"{float(FAR2_or):.4f} {float(FRR2_or):.4f} "
+            f"{eer2['FAR_eer']:.4f} {eer2['FRR_eer']:.4f} "
+            f"{safeopt2['FAR_safe_opt']:.4f} {safeopt2['FRR_safe_opt']:.4f}\n"
         )
 
 # =========================
@@ -823,8 +823,8 @@ def export_success_functions_2cred_data(
             T2_grid, P_and_T2, P_or_T2
         ):
             f.write(
-                f"{t1:.8f} {pa1:.8f} {po1:.8f} "
-                f"{t2:.8f} {pa2:.8f} {po2:.8f}\n"
+                f"{t1:.4f} {pa1:.4f} {po1:.4f} "
+                f"{t2:.4f} {pa2:.4f} {po2:.4f}\n"
             )
 
     with open(out_points, "w") as f:
@@ -833,12 +833,12 @@ def export_success_functions_2cred_data(
             "T2_and P_and_opt2 T2_or P_or_opt2 T2_eer P_and_T2_eer P_or_T2_eer\n"
         )
         f.write(
-            f"{T1_and:.8f} {P_and_at_opt:.8f} "
-            f"{T1_or:.8f} {P_or_at_opt:.8f} "
-            f"{T1_eer:.8f} {P_and_T1_eer:.8f} {P_or_T1_eer:.8f} "
-            f"{T2_and:.8f} {P_and_at_opt:.8f} "
-            f"{T2_or:.8f} {P_or_at_opt:.8f} "
-            f"{T2_eer:.8f} {P_and_T2_eer:.8f} {P_or_T2_eer:.8f}\n"
+            f"{T1_and:.4f} {P_and_at_opt:.4f} "
+            f"{T1_or:.4f} {P_or_at_opt:.4f} "
+            f"{T1_eer:.4f} {P_and_T1_eer:.4f} {P_or_T1_eer:.4f} "
+            f"{T2_and:.4f} {P_and_at_opt:.4f} "
+            f"{T2_or:.4f} {P_or_at_opt:.4f} "
+            f"{T2_eer:.4f} {P_and_T2_eer:.4f} {P_or_T2_eer:.4f}\n"
         )
 
 # =========================

@@ -114,7 +114,7 @@ def P_OR_ST(T):
 # =========================
 # Threshold sweep
 # =========================
-T = np.linspace(min(a1, u1) - 0.1, max(a2, u2) + 0.1, 4001)
+T = np.linspace(min(a1, u1) - 0.1, max(a2, u2) + 0.1, 500)
 fa, fr = FAR(T), FRR(T)
 
 # =========================
@@ -162,6 +162,26 @@ T_opt_or_st, P_opt_or_st = T[idx_opt_or_st], p_or_st[idx_opt_or_st]
 idx_opt_and_st = np.argmax(p_and_st)
 T_opt_and_st, P_opt_and_st = T[idx_opt_and_st], p_and_st[idx_opt_and_st]
 
+out_dir = OUTPUT_DIR / "figs" / "fig_1continuous_1discrete"
+out_dir.mkdir(parents=True, exist_ok=True)
+
+# Main curve data
+with open(out_dir / "mechanism_1dis_1con_success_data.txt", "w") as f:
+    f.write("T P_or P_and\n")
+    for t, po, pa in zip(T, p_or, p_and):
+        f.write(f"{t:.4f} {po:.4f} {pa:.4f}\n")
+
+# Marker points
+with open(out_dir / "mechanism_1dis_1con_success_points.txt", "w") as f:
+    f.write(
+        "T_eer P_or_eer P_and_eer "
+        "T_opt_or P_opt_or T_opt_and P_opt_and\n"
+    )
+    f.write(
+        f"{T_eer:.4f} {p_or[idx_eer]:.4f} {p_and[idx_eer]:.4f} "
+        f"{T_opt_or:.4f} {P_opt_or:.4f} "
+        f"{T_opt_and:.4f} {P_opt_and:.4f}\n"
+    )
 # =========================================================
 # (1) FIGURE — ORIGINAL OR WALLET (unchanged filename)
 # =========================================================
