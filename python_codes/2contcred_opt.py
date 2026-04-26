@@ -416,6 +416,26 @@ def plot_gaussians_subplots_2cred(
     fig.savefig(out_pdf)
     plt.close(fig)
 
+def export_gaussians_2cred_data(
+    p1: GaussianPair,
+    p2: GaussianPair,
+    out_txt = OUTPUT_DIR / "figs" / "fig_2continuous" / "gaussians_2cred_data.txt",
+) -> None:
+    x = shared_x_grid(p1, p2)
+    out_txt.parent.mkdir(parents=True, exist_ok=True)
+
+    PU1 = norm.pdf(x, loc=p1.mu_u, scale=p1.sigma_u)
+    PA1 = norm.pdf(x, loc=p1.mu_a, scale=p1.sigma_a)
+
+    PU2 = norm.pdf(x, loc=p2.mu_u, scale=p2.sigma_u)
+    PA2 = norm.pdf(x, loc=p2.mu_a, scale=p2.sigma_a)
+
+    with open(out_txt, "w") as f:
+        f.write("s PU1 PA1 PU2 PA2\n")
+        for xi, pu1, pa1, pu2, pa2 in zip(x, PU1, PA1, PU2, PA2):
+            f.write(
+                f"{xi:.8f} {pu1:.8f} {pa1:.8f} {pu2:.8f} {pa2:.8f}\n"
+            )
 
 def plot_far_vs_frr_subplots_2cred(
     p1: GaussianPair,
@@ -478,6 +498,60 @@ def plot_far_vs_frr_subplots_2cred(
     fig.savefig(out_pdf)
     plt.close(fig)
 
+def export_far_vs_frr_2cred_data(
+    p1: GaussianPair,
+    p2: GaussianPair,
+    out_txt=OUTPUT_DIR / "figs" / "fig_2continuous" / "far_vs_frr_2cred_data.txt",
+    out_points=OUTPUT_DIR / "figs" / "fig_2continuous" / "far_vs_frr_2cred_points.txt",
+) -> None:
+    T1 = auto_T_grid_1d(p1)
+    T2 = auto_T_grid_1d(p2)
+
+    FAR1, FRR1 = far_frr(T1, p1)
+    FAR2, FRR2 = far_frr(T2, p2)
+
+    out_and = optimize_thresholds_lbfgs(p1, p2, mode="AND")
+    out_or = optimize_thresholds_lbfgs(p1, p2, mode="OR")
+
+    T1_and, T2_and = out_and["T_opt"]
+    T1_or, T2_or = out_or["T_opt"]
+
+    FAR1_and, FRR1_and = far_frr(T1_and, p1)
+    FAR1_or, FRR1_or = far_frr(T1_or, p1)
+    FAR2_and, FRR2_and = far_frr(T2_and, p2)
+    FAR2_or, FRR2_or = far_frr(T2_or, p2)
+
+    eer1 = eer_from_grid(p1, T1)
+    eer2 = eer_from_grid(p2, T2)
+
+    safeopt1 = safe_opt_from_grid(p1, T1)
+    safeopt2 = safe_opt_from_grid(p2, T2)
+
+    out_txt.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(out_txt, "w") as f:
+        f.write("T1 FAR1 FRR1 T2 FAR2 FRR2\n")
+        for t1, far1, frr1, t2, far2, frr2 in zip(T1, FAR1, FRR1, T2, FAR2, FRR2):
+            f.write(
+                f"{t1:.8f} {far1:.8f} {frr1:.8f} "
+                f"{t2:.8f} {far2:.8f} {frr2:.8f}\n"
+            )
+
+    with open(out_points, "w") as f:
+        f.write(
+            "FAR1_and FRR1_and FAR1_or FRR1_or FAR1_eer FRR1_eer FAR1_safe FRR1_safe "
+            "FAR2_and FRR2_and FAR2_or FRR2_or FAR2_eer FRR2_eer FAR2_safe FRR2_safe\n"
+        )
+        f.write(
+            f"{float(FAR1_and):.8f} {float(FRR1_and):.8f} "
+            f"{float(FAR1_or):.8f} {float(FRR1_or):.8f} "
+            f"{eer1['FAR_eer']:.8f} {eer1['FRR_eer']:.8f} "
+            f"{safeopt1['FAR_safe_opt']:.8f} {safeopt1['FRR_safe_opt']:.8f} "
+            f"{float(FAR2_and):.8f} {float(FRR2_and):.8f} "
+            f"{float(FAR2_or):.8f} {float(FRR2_or):.8f} "
+            f"{eer2['FAR_eer']:.8f} {eer2['FRR_eer']:.8f} "
+            f"{safeopt2['FAR_safe_opt']:.8f} {safeopt2['FRR_safe_opt']:.8f}\n"
+        )
 
 # =========================
 # Table for paper: Gaussian + Uniform + Parabolic (NO extra figures)
@@ -694,6 +768,78 @@ def plot_success_functions_2cred(
     fig.savefig(out_pdf)
     plt.close(fig)
 
+def export_success_functions_2cred_data(
+    p1: GaussianPair,
+    p2: GaussianPair,
+    out_data=OUTPUT_DIR / "figs" / "fig_2continuous" / "success_functions_2cred_data.txt",
+    out_points=OUTPUT_DIR / "figs" / "fig_2continuous" / "success_functions_2cred_points.txt",
+) -> None:
+    T1_grid = auto_T_grid_1d(p1)
+    T2_grid = auto_T_grid_1d(p2)
+
+    out_and = optimize_thresholds_lbfgs(p1, p2, mode="AND")
+    out_or = optimize_thresholds_lbfgs(p1, p2, mode="OR")
+
+    T1_and, T2_and = out_and["T_opt"]
+    T1_or, T2_or = out_or["T_opt"]
+
+    eer1 = eer_from_grid(p1, T1_grid)
+    eer2 = eer_from_grid(p2, T2_grid)
+    T1_eer, T2_eer = eer1["T_eer"], eer2["T_eer"]
+
+    P_and_T1 = np.array([
+        success_probability(float(t1), T2_and, p1, p2, "AND")
+        for t1 in T1_grid
+    ])
+    P_or_T1 = np.array([
+        success_probability(float(t1), T2_or, p1, p2, "OR")
+        for t1 in T1_grid
+    ])
+
+    P_and_T2 = np.array([
+        success_probability(T1_and, float(t2), p1, p2, "AND")
+        for t2 in T2_grid
+    ])
+    P_or_T2 = np.array([
+        success_probability(T1_or, float(t2), p1, p2, "OR")
+        for t2 in T2_grid
+    ])
+
+    P_and_at_opt = success_probability(T1_and, T2_and, p1, p2, "AND")
+    P_or_at_opt = success_probability(T1_or, T2_or, p1, p2, "OR")
+
+    P_and_T1_eer = success_probability(T1_eer, T2_and, p1, p2, "AND")
+    P_or_T1_eer = success_probability(T1_eer, T2_or, p1, p2, "OR")
+
+    P_and_T2_eer = success_probability(T1_and, T2_eer, p1, p2, "AND")
+    P_or_T2_eer = success_probability(T1_or, T2_eer, p1, p2, "OR")
+
+    out_data.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(out_data, "w") as f:
+        f.write("T1 P_and_T1 P_or_T1 T2 P_and_T2 P_or_T2\n")
+        for t1, pa1, po1, t2, pa2, po2 in zip(
+            T1_grid, P_and_T1, P_or_T1,
+            T2_grid, P_and_T2, P_or_T2
+        ):
+            f.write(
+                f"{t1:.8f} {pa1:.8f} {po1:.8f} "
+                f"{t2:.8f} {pa2:.8f} {po2:.8f}\n"
+            )
+
+    with open(out_points, "w") as f:
+        f.write(
+            "T1_and P_and_opt T1_or P_or_opt T1_eer P_and_T1_eer P_or_T1_eer "
+            "T2_and P_and_opt2 T2_or P_or_opt2 T2_eer P_and_T2_eer P_or_T2_eer\n"
+        )
+        f.write(
+            f"{T1_and:.8f} {P_and_at_opt:.8f} "
+            f"{T1_or:.8f} {P_or_at_opt:.8f} "
+            f"{T1_eer:.8f} {P_and_T1_eer:.8f} {P_or_T1_eer:.8f} "
+            f"{T2_and:.8f} {P_and_at_opt:.8f} "
+            f"{T2_or:.8f} {P_or_at_opt:.8f} "
+            f"{T2_eer:.8f} {P_and_T2_eer:.8f} {P_or_T2_eer:.8f}\n"
+        )
 
 # =========================
 # Success surfaces (Gaussian as before)
@@ -778,9 +924,12 @@ if __name__ == "__main__":
 
     # Gaussian figures (as before)
     plot_gaussians_subplots_2cred(p1, p2, out_pdf=OUTPUT_DIR / "figs" / "fig_2continuous" /"01_gaussians.pdf")
+    export_gaussians_2cred_data(p1, p2)
     plot_far_vs_frr_subplots_2cred(p1, p2, out_pdf=OUTPUT_DIR / "figs" / "fig_2continuous" / "02_far_vs_frr.pdf")
+    export_far_vs_frr_2cred_data(p1, p2)
     plot_success_surfaces_2cred(p1, p2, out_pdf=OUTPUT_DIR / "figs" / "fig_2continuous" / "03_success_surfaces.pdf")
     plot_success_functions_2cred(p1, p2, out_pdf=OUTPUT_DIR / "figs" / "fig_2continuous" / "04_success_functions.pdf")
+    export_success_functions_2cred_data(p1, p2)
 
     # Table now includes Gaussian + Uniform + Parabolic (no extra figures for the new distributions)
     latex = build_paper_table_gaussian_uniform_parabolic_2cred(

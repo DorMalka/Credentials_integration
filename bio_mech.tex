@@ -15,6 +15,10 @@
 \definecolor{color3}{HTML}{7bccc4}
 \definecolor{color4}{HTML}{a8ddb5}
 \definecolor{color5}{HTML}{ccebc5}
+\definecolor{myPurple}{HTML}{7B3294}
+\definecolor{myOrange}{HTML}{E66100}
+\definecolor{myGreen}{HTML}{1B9E77}
+\definecolor{myRed}{HTML}{D7191C}
 
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
@@ -122,25 +126,25 @@ We start with analyzing the effect of a single biometirc credential on the mechn
 \begin{figure*}[t]
 \centering
 
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
 \begin{tikzpicture}
-\pgfplotsset{compat=1.18,width=0.42\textwidth,height=0.27\textwidth}
-
 \begin{axis}[
-    name=uniform,
+    scale only axis,
+    width=\linewidth,
+    height=0.6\linewidth,
     xlabel={Matching Score},
     ylabel={Probability Density},
-    xmin=0, xmax=1,
+    xmin=0, xmax=0.8,
     ymin=0, ymax=3.7,
     grid=none,
     xtick={0.05,0.30,0.42,0.70},
     xticklabels={$a_1$,$u_1$,$a_2$,$u_2$},
-    ytick={2.5,3.3333},
-    yticklabels={$\frac{1}{u_2-u_1}$,$\frac{1}{a_2-a_1}$},
-    yticklabel style={font=\scriptsize, xshift=-3pt},
-    legend to name=sharedlegend,
+    xticklabel style={text height=1.5ex, text depth=.25ex},
+    ytick=\empty,
+    legend to name=sharedintrolegend,
     legend columns=2,
     legend style={
-        font=\footnotesize,
         draw=black,
         fill=white,
         column sep=0.35cm
@@ -156,20 +160,26 @@ table [x=s, y=PA] {figs/fig_uniform/uniform_graphs.txt};
 \addlegendentry{Attacker}
 
 \end{axis}
-
+\end{tikzpicture}
+\caption{Uniform distributions.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\begin{tikzpicture}
 \begin{axis}[
-    name=parabolic,
-    at={(uniform.east)},
-    anchor=west,
-    xshift=0.08\textwidth,
+    scale only axis,
+    width=\linewidth,
+    height=0.62\linewidth,
     xlabel={Matching Score},
     ylabel={Probability Density},
-    xmin=0, xmax=5,
+    xmin=1.5, xmax=4.5,
     ymin=-0.1, ymax=1.65,
     grid=none,
     xtick={2,3,3.5,4},
     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-    ytick=\empty,
+    xticklabel style={text height=1.5ex, text depth=.25ex},
+    ytick=\empty
 ]
 
 \addplot+[blue, thick, mark=none]
@@ -179,16 +189,15 @@ table [x=s, y=PU] {figs/fig_parabola/parabola_graphs.txt};
 table [x=s, y=PA] {figs/fig_parabola/parabola_graphs.txt};
 
 \end{axis}
-
-\node[
-    anchor=north,
-    yshift=-0.75cm
-] at ($(uniform.south)!0.5!(parabolic.south)$)
-{\pgfplotslegendfromname{sharedlegend}};
-
 \end{tikzpicture}
+\caption{Quadratic distributions.}
+\end{subfigure}
 
-\caption{Uniform and Quadratic user and attacker distributions.}
+\medskip
+
+\pgfplotslegendfromname{sharedintrolegend}
+
+\caption{Uniform and quadratic user and attacker distributions.}
 \label{intro-fig}
 \end{figure*}
 
@@ -215,15 +224,13 @@ Other work has explored authentication mechanism defined as predicate of credeni
 %%%
 %%%
 \section{Authentication Model}\label{sec:3}
-An authentication mechanism $M$ is built on a set of credentials $\{c_1, c_2, \ldots, c_n\}$ and two players: a user $U$ and an attacker $A$. Both players, try to satisfy the system with their own set of credentials $\{c_1, c_2, \ldots, c_n\}$ in order to reach the asset. Each credential $c_i$ can be either discrete or continuously distributed. In this paper, we will focus on continuously distributed credentials. We will formalize the systems success and identify the optimal operating point for both single and multiple credentials.
+An authentication mechanism $M$ is built on a set of credentials $\{c_1, c_2, \ldots, c_n\}$ and two players: a user $U$ and an attacker $A$. Both players, try to satisfy the mechanism with their own set of credentials $\{c_1, c_2, \ldots, c_n\}$ in order to reach the asset. Each credential $c_i$ can be either atomic or biometric. In this paper, we will focus on biometric credentials. We will formalize the systems success and identify the optimal operating point for both single and multiple credentials.
 \subsection{Model Details}
-We follow the definitions given by Eyal~\cite{Eyal2021}. A wallet $w$ is defined by predicate of availability of N keys. Each key can be in one of the following states. Safe: only the user has access to the key. Loss: neither the user nor the attacker has access to the key. Leak: both the user and the attacker have access to the key. Theft: only the attacker has access to the key.
+We follow the definitions given by Eyal~\cite{Eyal2021}. A mechanism $M$ is defined by a predicate of credential's availability. Each credential can be in one of the following states.~\emph{Safe}: Only the user has access to the credential.~\emph{Loss}: Neither the user nor the attacker has access to the credential.~\emph{Leak}: Both the user and the attacker have access to the credential.~\emph{Theft}: Only the attacker has access to the credential.
 
-We define the probability associated with each state as follows: $P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and $P_{\text{theft}}$ corresponding respectively to the states of safe, loss, leak, and theft. Furthermore, the confidence associated with different decisions may be characterized by the genuine distribution and the impostor distribution, which are used to establish two error rates: false acceptance rate (FAR), which is defined as the probability of an impostor being accepted as a genuine individual and false rejection rate (FRR), which is defined as the probability of a genuine individual being rejected as an impostor.
+We define the probability associated with each state as follows: $P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and $P_{\text{theft}}$. Furthermore, the matching score produced by the biometric sensor characterizes the genuine distribution, when the sample obtained by the sensor belongs to the real user and the impostor distribution, when the sample obtained by the sensor belongs to an attacker. These distributions are used to establish two error rates: false acceptance rate (FAR), defined as the probability of an impostor being accepted as a genuine individual and false rejection rate (FRR), the probability of a genuine individual being rejected as an impostor.
 
-A wallet $w$ is comprised of a set of credentials $\{c_1, c_2, \ldots, c_n\}$ clasified as one of previously defined states.
-
-Denoted $S$, i.e., $\{c_1, c_2, \ldots, c_n\} \in S = \{ \text{safe}, \text{loss}, \text{leak}, \text{theft} \}$ the state of each credential. A scenario $\sigma$ is defined as a vector of states of each credential in the wallet. Denote $\sigma_i$ the state of credential $c_i$ in scenario $\sigma$. An availability vector represents the availablity of all credentials to a user $U$ or an attacker $A$. Denote by $\sigma^U$,$\sigma^A$ the availability vector of the user and the attacker respectively.
+Denote the credential state by $S$, i.e., $\{c_1, c_2, \ldots, c_n\} \in S = \allowbreak \{ \text{safe}, \text{loss}, \text{leak}, \text{theft} \}$. A scenario $\sigma$ is defined as a vector of states of each credential in the mechanism. Denote by $\sigma_i$ the state of credential $c_i$ in scenario $\sigma$. An availability vector represents the availablity of all credentials to a user $U$ or an attacker $A$. Denote by $\sigma^U$,$\sigma^A$ the availability vector of the user and the attacker respectively.
 
 In the following sections we will represent all biometric credentials as the probability function of the matching score $s$ denoted as $P_U[s]$. We follow the definitions given by Jain et al.~\cite{anil2004} and generalize it to all biometric credentials. If the stored reference template of the user $U$ is represented by $X_U$ and the acquired input for recognition is represented by $X_Q$ then:
 
@@ -235,8 +242,8 @@ $D_O$, $D_1$ are the imposter and geniuine persons trying to authenticate into t
 The matching score $s$, is usually a single number, that quantifies the similarity between an input $X_Q$ and and the reference store template in the database $X_U$~\cite{prabhakar2003}. If the matching score $s(X_Q,X_U)$ is above a threshold $t$ then decide $D_1$ else, decide $D_0$.
 
 
-\section{Single Credential}\label{sec:4}
-For a wallet $w$ comprised of a single credential $c_1$, $w^\text{single}(c_1)=c_1$ we have built $\mathrm{FAR}$ vs $\mathrm{FRR}$ curves for Uniform and Quadratic probabilistic distribution functions and defined each one of the states as follows:
+\section{Single Biometric Credential}\label{sec:4}
+For a mechanism $M$ comprised of a single biometric credential $c_1$, $M^\text{single}(c_1)=c_1$ we have built $\mathrm{FAR}$ vs $\mathrm{FRR}$ curves for Uniform and Quadratic probabilistic distribution functions and defined each one of the states as follows:
 
 \[
 P_{\text{loss}} = \mathrm{FRR} \cdot (1 - \mathrm{FAR})
@@ -251,13 +258,13 @@ P_{\text{theft}}=\mathrm{FRR} \cdot \mathrm{FAR}
 P_{{\text{safe}}}=1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{theft}}}
 \]
 
-The probability for success of the wallet $w$, is defined as the probability of users successfully defend their wallets. In a single credential wallet, this is simply the probability that the key is neither theft, loss or leaked. i.e.,
+The probability for success of a mechanism $M$, is defined as the probability it accepts legitimate users and rejects attackers. In a single biometric credential mechanism, this is simply the probability that the credential is neither theft, loss or leaked. i.e.,
 \begin{equation}
     \label{eqn:safesuccess}
-    P_{\text{success}}(w^{\text{single}}) = P_{{\text{safe}}} = 1 - \mathrm{FAR} - \mathrm{FRR} + \mathrm{FAR} \cdot \mathrm{FRR}
+    P_{\text{success}}(M^{\text{single}}) = P_{{\text{safe}}} = 1 - \mathrm{FAR} - \mathrm{FRR} + \mathrm{FAR} \cdot \mathrm{FRR}
 \end{equation}
 
-Until now, it has been common practice to select the operating point at the Equal Error Rate (EER), where $\mathrm{FAR} = \mathrm{FRR}$ following Sarkar's claim: "The operating point is that point where the FAR is equal to the FRR and known as Equal Error Rate (EER)"~\cite{sarkar2020}. Our findings indicate that a different operating point can yield a higher $P_{\text{safe}}$, thereby enhancing the system’s overall security. Furthermore, We found that the operating point depends on the variance of the PDFs. We will further explore this in the following sections for different distributions.
+Until now, it has been common practice to select the operating point at the Equal Error Rate (EER), where $\mathrm{FAR} = \mathrm{FRR}$ following Sarkar et al.~\cite{sarkar2020}. Our findings indicate that a different operating point can yield a higher $P_{\text{safe}}$, thereby enhancing the mechanism's success. Furthermore, We found a link between the operating point and the variance of the PDFs. We will further explore this in the following sections for different distributions.
 
 \subsection{Uniformly Distributed Credential}\label{sec:4.1}
 As a first-order approximation, we model the biometric credential using a uniform distribution.
@@ -269,18 +276,85 @@ P_U(s) = \frac{1}{u_2-u_1} \quad \text{for } u_1 \leq s \leq u_2
 P_A(s) = \frac{1}{a_2-a_1} \quad \text{for } a_1 \leq s \leq a_2
 \]
 Where $u_1, u_2$ are the user PDFs' bounds and $a_1, a_2$ are the attacker PDFs' bounds. 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.995\textwidth]{figs/fig_uniform/fig_uniforms.pdf}
-    \caption{Symmetric and Asymmetric Uniform PDFs}
-    \label{fig:uniforms_distributions}
-\end{figure}
 
-We assume that $a_1 < u_1$ and $a_2 < u_2$ as the x axis represents the matching score $s$ and higher values of $s$ corresponds to the user $D_1$ as mentioned in the model details. Furthemore, we assume there is an overlaping region between the distributions; otherwise the scenario reduces to a trivial case. We also assume that the user and attacker PDFs are do not fully contain one another, as such cases would render them non-separable. Figure~\ref{fig:uniforms_distributions}a illustrates the case where the user and attacker PDF's are symmetric, while Figure~\ref{fig:uniforms_distributions}b illustrates asymmetric PDFs both as function of the matching score $s$.
-The probability of success for a single credential wallet is defined as: 
+We assume that $a_1 < u_1$ and $a_2 < u_2$ as the x axis represents the matching score $s$ and higher values of $s$ corresponds to the user $D_1$ as mentioned in the model details. Furthemore, we assume there is an overlaping region between the distributions; otherwise the scenario reduces to a trivial case. We also assume that the user and attacker PDFs are do not fully contain one another, as such cases would render them non-separable. Figure~\ref{fig:uniforms_distributions} illustrates the case where the user and attacker PDF's are symmetrically and asymmetrically distributed both as function of the matching score $s$.
+The probability of success for a single biometric credential mechanism is defined as: 
 \[ 
-P_{\text{success}}(w^{\text{single}}) = P_{{\text{safe}}} = 1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{theft}}}=1-\mathrm{FRR} - \mathrm{FAR} + \mathrm{FRR} \cdot \mathrm{FAR}
+P_{\text{success}}(M^{\text{single}}) = P_{{\text{safe}}} = 1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{theft}}}=1-\mathrm{FRR} - \mathrm{FAR} + \mathrm{FRR} \cdot \mathrm{FAR}
 \]
+
+\begin{figure}[t]
+\centering
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\columnwidth,
+    height=0.42\columnwidth,
+    title={Symmetric},
+    xlabel={Matching Score},
+    ylabel={Probability Density},
+    xmin=0, xmax=0.75,
+    ymin=0, ymax=3,
+    grid=major,
+    xtick={0,0.10,0.30,0.50,0.70},
+    xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$},
+    ytick={0,2.5},
+    yticklabels={$0$,$\frac{1}{u_2-u_1}$}
+]
+\addplot+[blue, thick, mark=none, const plot]
+table [x=s, y=PU] {figs/fig_uniform/uniform_graphs_2.txt};
+
+\addplot+[red, thick, mark=none, const plot]
+table [x=s, y=PA_sym] {figs/fig_uniform/uniform_graphs_2.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Symmetric uniform PDFs.}
+\label{fig:uniform_symmetric_pdf}
+\end{subfigure}
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\columnwidth,
+    height=0.42\columnwidth,
+    title={Asymmetric},
+    xlabel={Matching Score},
+    ylabel={Probability Density},
+    xmin=0, xmax=0.75,
+    ymin=0, ymax=3.7,
+    grid=major,
+    xtick={0,0.05,0.30,0.42,0.70},
+    xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$},
+    ytick={0,2.5,3.3333},
+    yticklabels={$0$,$\frac{1}{u_2-u_1}$,$\frac{1}{a_2-a_1}$},
+    legend style={
+        at={(0.5,-0.32)},
+        anchor=north,
+        legend columns=2,
+        draw=black
+    }
+]
+\addplot+[blue, thick, mark=none, const plot]
+table [x=s, y=PU] {figs/fig_uniform/uniform_graphs_2.txt};
+\addlegendentry{User}
+
+\addplot+[red, thick, mark=none, const plot]
+table [x=s, y=PA_asym] {figs/fig_uniform/uniform_graphs_2.txt};
+\addlegendentry{Attacker}
+\end{axis}
+\end{tikzpicture}
+\caption{Asymmetric uniform PDFs.}
+\label{fig:uniform_asymmetric_pdf}
+\end{subfigure}
+
+\caption{Symmetric and asymmetric uniform PDFs.}
+\label{fig:uniforms_distributions}
+\end{figure}
 
 Let $T$ denote the threshold. Then the False Acceptance Rate (FAR) and False Rejection Rate (FRR) are defined as:
 \[
@@ -305,7 +379,7 @@ Let $T$ denote the threshold. Then the False Acceptance Rate (FAR) and False Rej
 \right.
 \]
 
-We defined the probability of success as a function of the threshold $T$ by setting the $FAR(T)$ $FRR(T)$ into the equation and received:
+We define the probability of success as a function of the threshold $T$ by setting the $FAR(T)$ and $FRR(T)$ into the equation and receive:
 \[
 P_{\text{success}}(T) = 
 \left\{
@@ -323,9 +397,7 @@ P_{\text{success}}(T) =
 \right.
 \]
 
-$P_{\text{success}}(T)$ is a continuous function in $[a_1,u_2]$ ,differentiable in $(a_1,u_2)$ and maintains 
-
-$P_{\text{success}}(a_1) = P_{\text{success}}(u_2)$ thus by Rolle's Theorem, there exists at least one point in $(a_1,u_2)$ such that:
+$P_{\text{success}}(T)$ is a continuous function in $[a_1,u_2]$ ,differentiable in $(a_1,u_2)$ and maintains $P_{\text{success}}(a_1) = P_{\text{success}}(u_2)$ thus by Rolle's Theorem, there exists at least one point in $(a_1,u_2)$ such that:
 \[\frac{d}{dT} P_{\text{success}}(T) = 0.\] 
 
 The horizontal tangent point is:
@@ -338,21 +410,54 @@ T = \frac{a_1+u_2}{2} \quad \text{for } u_1 \leq T \leq a_2
 
 \[\frac{d}{dt} P_{\text{success}}(T) < 0 \text{, For every } T \in (\frac{a_1+u_2}{2}, a_2) \]
 
-Thus, by the First Derivative Test the maximum point is at $T = \frac{a_1 + u_2}{2}$.
+Thus, by the First Derivative Test the maximum point is at $T_{\text{Max}} = \frac{a_1 + u_2}{2}$.
 \[
-P_{\text{success}}(T_{\text{opt}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}
+P_{\text{success}}(T_{\text{Max}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}
 \]
-We calculated the EER point and showed it is not equal to the optimal point:
+We calculate the EER point and show it is not equal to the optimal point:
 \[
-T_{\text{EER}} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{a_1 - a_2 + u_1 - u_2} \neq \frac{a_1 + u_2}{2}
+T_{\text{EER}} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{a_1 - a_2 + u_1 - u_2} \neq \frac{a_1 + u_2}{2} = T_{\text{Max}}
 \] 
-The maximum point represnents the optimal threshold of the wallet. By selecting the threshold value, we influnce the wallet's security sensetivity by adjusting the probability associated with each state in $S$. The optimal point indicates that increasing the offset between the two uniform distributions is likely to improve the wallet's success. This optimal point suggest an asymmetry between the user’s and the attacker’s distribution intervals. Figure~\ref{fig:uniform_success_1_cred} illustrates the probability of success for a single credential wallet depends on the threshold $T$. 
+The maximum point represnents the optimal threshold of the mechanism. The optimal point indicates that increasing the offset between the two uniform distributions is likely to improve the mechanism's success. Moreover, it suggest an asymmetry between the user’s and the attacker’s distribution intervals. Figure~\ref{fig:uniform_success_1_cred} illustrates the probability of success for a single biometric credential mechanism as function of threshold $T$. 
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{figs/fig_uniform/fig_success_uniform.pdf}
-    \caption{Probability of success for a single credential wallet asymmetrically distributed}
-    \label{fig:uniform_success_1_cred}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\columnwidth,
+    height=0.42\columnwidth,
+    xlabel={$T$},
+    ylabel={$P_{\mathrm{success}}(T)$},
+    grid=major,
+    xmin=0, xmax=0.75,
+    ymin=0, ymax=0.8,
+    legend style={
+        at={(0.98,0.98)},
+        anchor=north east,
+        fill=white,
+        fill opacity=0.85,
+        font=\scriptsize,
+        text opacity=1,
+        draw=black
+    },
+    xtick={0,0.05,0.30,0.375,0.42,0.70},
+    xticklabels={$0$,$a_1$,$u_1$,$T_{\mathrm{opt}}$,$a_2$,$u_2$},
+    ytick={0,0.7137},
+    yticklabels={
+        $0$
+    }
+]
+
+\addplot[thick, myPurple, mark=none]
+table [x=s, y=safe] {figs/fig_uniform/success_uniform_data.txt};
+
+\addlegendentry{$P_{\mathrm{success}}(T)$}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Success probability as a function of the threshold.}
+\label{fig:uniform_success_1_cred}
 \end{figure}
 
 We can define the FAR and FRR at the optimal point as follows:
@@ -360,18 +465,58 @@ We can define the FAR and FRR at the optimal point as follows:
 
 \[\text{FRR}(T_{\text{opt}}) = \frac{a_1 + u_2 - 2u_1}{2(u_2 - u_1)}\]
 Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrated the FAR vs FRR curve.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.75\textwidth]{figs/fig_uniform/fig_FARvFRR_uniform.pdf}
-    \caption{FAR vs FRR curve}
-    \label{fig:FAR_FRR_uniform_1_cred}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.42\columnwidth,
+    xlabel={$\mathrm{FRR}$},
+    ylabel={$\mathrm{FAR}$},
+    grid=major,
+    xmin=-0.05, xmax=1.05,
+    ymin=-0.05, ymax=1.05,
+    xtick={0,0.2,0.4,0.6,0.8,1},
+    ytick={0,0.5,1},
+    legend style={
+        at={(0.98,0.98)},
+        anchor=north east,
+        fill=white,
+        fill opacity=0.85,
+        font=\scriptsize,
+        text opacity=1,
+        draw=black
+    }
+]
+
+\addplot[thick, myPurple, mark=none]
+table [x=FRR, y=FAR] {figs/fig_uniform/success_uniform_data.txt};
+\addlegendentry{Operating Curve}
+
+\addplot[only marks, mark=*, mark size=1.3pt, blue]
+table [x=FRR_opt, y=FAR_opt] {figs/fig_uniform/success_uniform_data.txt};
+\addlegendentry{Optimal Point}
+
+\addplot[only marks, mark=*, mark size=1.3pt, red]
+table [x=FRR_eer, y=FAR_eer] {figs/fig_uniform/success_uniform_data.txt};
+\addlegendentry{EER Point}
+
+\node[anchor=west,font=\scriptsize] at (axis cs:0.20,0.16) {Optimal};
+\node[anchor=east,font=\scriptsize] at (axis cs:0.16,0.10) {EER};
+
+\end{axis}
+\end{tikzpicture}
+\Description{A FAR versus FRR operating curve showing the operating curve, the optimal operating point, and the equal error rate point.}
+\caption{FAR vs. FRR operating curve with optimal and EER points.}
+\label{fig:FAR_FRR_uniform_1_cred}
 \end{figure}
 
 \subsection{Quadratic Distributed Credential}
 %%%
 %%%
 %%%
-Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data $(\S\ref{sec:7})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005} on Eigenfinger and Eigenpalm feature distributions. Accordingly, we define two probability density functions (PDFs) for the user and the attacker, denoted by $P_U$ and $P_A$, respectively.
+Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:7})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005} on Eigenfinger and Eigenpalm feature distributions. Accordingly, we define two probability density functions (PDFs) for the user and the attacker, denoted by $P_U$ and $P_A$, respectively.
 \[
 P_U(s) = 
 \left\{
@@ -399,11 +544,48 @@ We therefore focus on the intermediate and most meaningful configuration, where
 \]
 as illustrated in Figure~\ref{fig:quadratic_pdf_1_cred}.
 
-\begin{figure}[H]  
-    \centering
-    \includegraphics[width=0.995\textwidth]{figs/fig_parabola/Parabola_figure.pdf}
-    \caption{Quadratic PDFs}
-    \label{fig:quadratic_pdf_1_cred}
+\begin{figure}[t]
+\centering
+
+\begin{tikzpicture}
+\pgfplotsset{compat=1.18}
+
+\begin{axis}[
+    scale only axis,
+    width=0.80\columnwidth,
+    height=0.45\columnwidth,
+    xlabel={Matching Score},
+    ylabel={Probability Density},
+    xmin=1.5, xmax=4.5,
+    ymin=-0.1, ymax=1.65,
+    grid=none,
+    xtick={2,3,3.5,4},
+    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    ytick=\empty,
+    legend style={
+        at={(0.3,0.92)},
+        anchor=north east,
+        font=\scriptsize,
+        fill=white,
+        fill opacity=0.85,
+        text opacity=1,
+        draw=black
+    },
+]
+
+\addplot+[blue, thick, mark=none]
+table [x=s, y=PU] {figs/fig_parabola/parabola_graphs.txt};
+\addlegendentry{User}
+
+\addplot+[red, thick, mark=none]
+table [x=s, y=PA] {figs/fig_parabola/parabola_graphs.txt};
+\addlegendentry{Attacker}
+
+\end{axis}
+\end{tikzpicture}
+
+\caption{Quadratic user and attacker distributions.}
+\label{fig:quadratic_pdf_1_cred}
 \end{figure}
 
 To reduce the degrees of freedom of the quadratic functions while maintaining a symbolic analysis, we express the coefficients directly in terms of their roots. Under the additional assumption that the integral of each PDF over its roots interval equals~1, the coefficients become fully determined. Accordingly, we define the coefficients as follows.
@@ -429,63 +611,98 @@ Therefore, we can write the quadratic PDFs as:
 P_U(s) =
 \left\{
 \begin{array}{ll}
-     \frac{6}{(\alpha_1 - \alpha_2)^2} \cdot s^2 - \frac{6 \cdot (\alpha_1 + \alpha_2)}{(\alpha_1 - \alpha_2)^3} \cdot x + \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3} & \alpha_1 \leq x \leq \alpha_2 \\
-    0 & x > \alpha_2 \lor x < \alpha_1
+     \frac{6}{(\alpha_1 - \alpha_2)^2} \cdot s^2 - \frac{6 \cdot (\alpha_1 + \alpha_2)}{(\alpha_1 - \alpha_2)^3} \cdot s + \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3} & \alpha_1 \leq s \leq \alpha_2 \\
+    0, & \text{otherwise}
     \end{array}
 \right.
 \]
+
 \[
 P_A(s) =
 \left\{
 \begin{array}{ll}
-     \frac{6}{(\beta_1 - \beta_2)^2} \cdot x^2 - \frac{6 \cdot (\beta_1 + \beta_2)}{(\beta_1 - \beta_2)^3} \cdot x + \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} & \beta_1 \leq x \leq \beta_2 \\
-    0 & x > \beta_2 \lor x < \beta_1
+     \frac{6}{(\beta_1 - \beta_2)^2} \cdot s^2 - \frac{6 \cdot (\beta_1 + \beta_2)}{(\beta_1 - \beta_2)^3} \cdot s + \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} & \beta_1 \leq s \leq \beta_2 \\
+    0, & \text{otherwise}
     \end{array}
 \right.
 \]
 
-We will find FAR and FRR as a function of the threshold $T$ and define the probability of success based on the single credential wallet as shown in $(\S\ref{sec:4.1})$:
-\[\text{FAR}(T) = \int_{T}^{\beta_2} P_A(s) ds =
-\left\{
-\begin{array}{ll}
-0 & T \le \beta_1 \\
-\frac{6 \left(\frac{\beta_2^3}{3}-\frac{T^3}{3}\right)}{(\beta_1-\beta_2)^3}-\frac{6 \left(\frac{\beta_2^2}{2}-\frac{T^2}{2}\right) (\beta_1+\beta_2)}{(\beta_1-\beta_2)^3}+\frac{6 \beta_1 \beta_2 (\beta_2-T)}{(\beta_1-\beta_2)^3} & \beta_1 < T \le \beta_2 \\
-1 & T > \beta_2
-\end{array}
-\right.
+We will find FAR and FRR as a function of the threshold $T$ and define the probability of success based on the single credential wallet as shown in~$(\S\ref{sec:4.1})$.
+Define:
+\[
+A(T)=
+\frac{
+2(\beta_2^3-T^3)
+-3(\beta_1+\beta_2)(\beta_2^2-T^2)
++6\beta_1\beta_2(\beta_2-T)
+}{
+(\beta_1-\beta_2)^3
+},
 \]
-\[\text{FRR}(T) = \int_{\alpha_1}^{T} P_U(s) ds =
-\left\{
-\begin{array}{ll}
-1 & T \le \alpha_1 \\
-\frac{6 \left(\frac{T^3}{3}-\frac{\alpha_1^3}{3}\right)}{(\alpha_1-\alpha_2)^3}-\frac{6 \left(\frac{T^2}{2}-\frac{\alpha_1^2}{2}\right) (\alpha_1+\alpha_2)}{(\alpha_1-\alpha_2)^3}+\frac{6 \alpha_1 \alpha_2 (T-\alpha_1)}{(\alpha_1-\alpha_2)^3} & \alpha_1 < T \le \alpha_2 \\
-0 & T > \alpha_2
-\end{array}
-\right.
-\]
-\\
-\[P_{{\text{success}}} =
-\left\{
-\begin{array}{cc}
-\ &
-\begin{array}{cc}
-0 & T < \beta_1 \lor T > \alpha_2 \\
-\\
-\frac{(T-\beta_1)^2 (2 T+\beta_1-3 \beta_2)}{(\beta_1-\beta_2)^3} 
-&  \beta_1 \le T \le \alpha_1 \\
-\\
--\frac{(T-\alpha_2)^2 (T-\beta_1)^2 (2 T-3 \alpha_1+\alpha_2) (2 T+\beta_1-3 \beta_2)}{(\alpha_1-\alpha_2)^3 (\beta_1-\beta_2)^3}
-& \alpha_1 \le T \le \beta_2 \\
-\\
--\frac{(T-\alpha_2)^2 (2 T-3 \alpha_1+\alpha_2)}{(\alpha_1-\alpha_2)^3}
-& \beta_2 \le T \le \alpha_2  \\
-\end{array}
-\end{array}
-\right.
-\]
-We differentiate $P_{\text{success}}(T)$ and compute its critical points in each interval. By comparing the stationary values obtained in all valid regions, we identify the global maximum, which corresponds to the optimal threshold $T_{\text{opt}}$.
 
-Before writing the piecewise derivative, we define the polynomial coefficients:
+\[
+U(T)=
+\frac{
+2(T^3-\alpha_1^3)
+-3(\alpha_1+\alpha_2)(T^2-\alpha_1^2)
++6\alpha_1\alpha_2(T-\alpha_1)
+}{
+(\alpha_1-\alpha_2)^3
+}.
+\]
+
+Thus,
+\[
+\mathrm{FAR}(T)=
+\begin{cases}
+1, & T \le \beta_1,\\
+A(T), & \beta_1 < T \le \beta_2,\\
+0, & T > \beta_2,
+\end{cases}
+\]
+
+\[
+\mathrm{FRR}(T)=
+\begin{cases}
+0, & T \le \alpha_1,\\
+U(T), & \alpha_1 < T \le \alpha_2,\\
+1, & T > \alpha_2.
+\end{cases}
+\]
+
+\[
+G(T)=
+-\frac{
+(T-\alpha_2)^2(T-\beta_1)^2
+(2T-3\alpha_1+\alpha_2)
+(2T+\beta_1-3\beta_2)
+}{
+(\alpha_1-\alpha_2)^3(\beta_1-\beta_2)^3
+}.
+\]
+
+\[
+P_{\mathrm{success}}(T)=
+\begin{cases}
+0,
+& T<\beta_1 \lor T>\alpha_2,\\
+
+\dfrac{(T-\beta_1)^2(2T+\beta_1-3\beta_2)}
+{(\beta_1-\beta_2)^3},
+& \beta_1 \le T \le \alpha_1,\\
+
+G(T),
+& \alpha_1 \le T \le \beta_2,\\
+
+-\dfrac{(T-\alpha_2)^2(2T-3\alpha_1+\alpha_2)}
+{(\alpha_1-\alpha_2)^3},
+& \beta_2 \le T \le \alpha_2.
+\end{cases}
+\]
+
+We differentiate $P_{\text{success}}(T)$ and compute its critical points in every interval. By comparing the stationary values obtained in all valid regions, we identify the global maximum, which corresponds to the optimal threshold $T_{\text{opt}}$.
+
+Before writing the piecewise derivative, we define the polynomial coefficients and the following function:
 \[
 \begin{aligned}
 q &= 4, \\[6pt]
@@ -496,31 +713,29 @@ n &= \alpha_1(3\alpha_2 + \beta_1 + 6\beta_2)
        + \alpha_2^2 \beta_2.
 \end{aligned}
 \]
-
-With these coefficients, the derivative of $P_{\text{success}}(T)$ is given by the following piecewise expression:
+\[R(T)= -\frac{6 (T-\alpha_2)(T-\beta_1)\bigl(qT^3 + mT^2 + nT + \ell\bigr)}
+     {(\alpha_1-\alpha_2)^3 (\beta_1-\beta_2)^3}.
+\]
+With these coefficients and function $R(T)$, the derivative of $P_{\text{success}}(T)$ is given by the following piecewise expression:
 \[
 \frac{dP_{\text{success}}}{dT} =
 \begin{cases}
-0, & T < \beta_1 \;\lor\; T > \alpha_2, \\[6pt]
+0, & T < \beta_1 \;\lor\; T > \alpha_2, \\
 
-\displaystyle
-\frac{6 (T-\beta_1) (T-\beta_2)}{(\beta_1-\beta_2)^3},
-& \beta_1 \le T \le \alpha_1, \\[12pt]
+\dfrac{6 (T-\beta_1) (T-\beta_2)}{(\beta_1-\beta_2)^3},
+& \beta_1 \le T \le \alpha_1, \\
 
-\displaystyle
--\frac{6 (T-\alpha_2)(T-\beta_1)\bigl(qT^3 + mT^2 + nT + \ell\bigr)}
-     {(\alpha_1-\alpha_2)^3 (\beta_1-\beta_2)^3},
-& \alpha_1 \le T \le \beta_2, \\[12pt]
+R(T),
+& \alpha_1 \le T \le \beta_2, \\
 
-\displaystyle
--\frac{6 (T-\alpha_1) (T-\alpha_2)}{(\alpha_1-\alpha_2)^3},
+-\dfrac{6 (T-\alpha_1) (T-\alpha_2)}{(\alpha_1-\alpha_2)^3},
 & \beta_2 \le T \le \alpha_2.
 \end{cases}
 \]
 
 In the second interval, the derivative has a single critical point at $T=\beta_{1}$. Since the derivative is strictly positive for all $T>\beta_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $T=\alpha_{2}$, and the derivative is strictly negative for all $T<\alpha_{2}$. Therefore, this interval also contains no maximum either.
 
-We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at $T=\beta_{1}$ and $T=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic ,reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution can not be simplified further more than a complex expression. Thus, we denote the solution as $T_{\text{cubic}}$.
+We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at $T=\beta_{1}$ and $T=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic, reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution can not be simplified further more than a complex expression. Thus, we denote the solution as $T_{\text{cubic}}$.
 
 By examining the sign of the derivative on both sides of the critical point $T_{\text{cubic}}$, we verify that it constitutes a global maximum of $P_{\text{safe}}(T)$. We denote this maximizing point by $T_{\text{opt}}$.
 
@@ -530,90 +745,613 @@ To demonstrate that this optimal threshold differs from the Equal Error Rate (EE
 \]
 
 We illustrate several user and attacker distributions and present their corresponding probability of success curves, expressed as functions of the threshold $T$ in Figure~\ref{fig:different_attackers_pdf_1_quadratic_cred} and Figure~\ref{fig:success_per_attacker_1_quadratic_cred} respectively.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1.0\textwidth]{figs/fig_parabola/fig_distributions_parabola.pdf}
-    \caption{User and Attacker Quadratically Distributed}
-    \label{fig:different_attackers_pdf_1_quadratic_cred}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1.0\textwidth]{figs/fig_parabola/fig_psuccess_parabola.pdf}
-    \caption{Probability of success for a single credential wallet quadratically distributed}
-    \label{fig:success_per_attacker_1_quadratic_cred}
-\end{figure}
+\begin{figure*}[t]
+\centering
+
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$s$},
+    ylabel={$P(s)$},
+    xmin=1.5, xmax=4.5,
+    ymin=-0.1, ymax=1.65,
+    xtick={2,3,3.5,4},
+    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    ytick=\empty,
+    legend to name=distlegend,
+    legend columns=2,
+    legend style={draw=black, fill=white}
+]
+\addplot[blue, thick, mark=none]
+table [x=s, y=PU] {figs/fig_parabola/parabola_case_a.txt};
+\addlegendentry{User}
+
+\addplot[red, thick, mark=none]
+table [x=s, y=PA] {figs/fig_parabola/parabola_case_a.txt};
+\addlegendentry{Attacker}
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with low variance.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$s$},
+    ylabel={$P(s)$},
+    xmin=1, xmax=4.5,
+    ymin=-0.1, ymax=1.65,
+    xtick={1.2,3,3.5,4},
+    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    ytick=\empty
+]
+\addplot[blue, thick, mark=none]
+table [x=s, y=PU] {figs/fig_parabola/parabola_case_b.txt};
+
+\addplot[red, thick, mark=none]
+table [x=s, y=PA] {figs/fig_parabola/parabola_case_b.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with medium variance.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$s$},
+    ylabel={$P(s)$},
+    xmin=0.5, xmax=4.5,
+    ymin=-0.1, ymax=1.65,
+    xtick={0.6,3,3.5,4},
+    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    ytick=\empty
+]
+\addplot[blue, thick, mark=none]
+table [x=s, y=PU] {figs/fig_parabola/parabola_case_c.txt};
+
+\addplot[red, thick, mark=none]
+table [x=s, y=PA] {figs/fig_parabola/parabola_case_c.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with high variance.}
+\end{subfigure}
+
+\medskip
+
+\pgfplotslegendfromname{distlegend}
+
+\Description{Three plots showing quadratic user and attacker probability density functions for three attacker configurations.}
+\caption{Quadratic user and attacker distributions.}
+\label{fig:different_attackers_pdf_1_quadratic_cred}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$T$},
+    ylabel={$P_{\mathrm{success}}(T)$},
+    xmin=1.5, xmax=4.5,
+    ymin=0, ymax=1.05,
+    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    xtick={2,3,3.5,4},
+    ytick=\empty,
+    legend to name=successlegend,
+    legend columns=3,
+    legend style={draw=black, fill=white}
+]
+\addplot[black, thick, mark=none]
+table [x=s, y=Ps] {figs/fig_parabola/parabola_case_a.txt};
+\addlegendentry{Success Curve}
+
+\addplot[only marks, mark=*, mark size=1.3pt, blue]
+table [x=T_opt, y=Ps_opt] {figs/fig_parabola/parabola_case_a_points.txt};
+\addlegendentry{Optimal Point}
+
+\addplot[only marks, mark=*, mark size=1.3pt, red]
+table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_a_points.txt};
+\addlegendentry{EER Point}
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with low variance.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$T$},
+    ylabel={$P_{\mathrm{success}}(T)$},
+    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    xtick={1.2,3,3.5,4},
+    xmin=1, xmax=4.5,
+    ymin=0, ymax=1.05,
+    ytick=\empty
+]
+\addplot[black, thick, mark=none]
+table [x=s, y=Ps] {figs/fig_parabola/parabola_case_b.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt, blue]
+table [x=T_opt, y=Ps_opt] {figs/fig_parabola/parabola_case_b_points.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt, red]
+table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_b_points.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with medium variance.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$T$},
+    ylabel={$P_{\mathrm{success}}(T)$},
+    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    xtick={0.6,3,3.5,4},
+    xmin=0.5, xmax=4.5,
+    ymin=0, ymax=1.05,
+    ytick=\empty
+]
+\addplot[black, thick, mark=none]
+table [x=s, y=Ps] {figs/fig_parabola/parabola_case_c.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt, blue]
+table [x=T_opt, y=Ps_opt] {figs/fig_parabola/parabola_case_c_points.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt, red]
+table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_c_points.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with high variance.}
+\end{subfigure}
+
+\medskip
+
+\pgfplotslegendfromname{successlegend}
+
+\Description{Three plots showing the success probability as a function of the threshold, with optimal and EER points marked.}
+\caption{Success probability for three quadratic attacker distributions.}
+\label{fig:success_per_attacker_1_quadratic_cred}
+\end{figure*}
 
 Moreover, we illustrate the FAR–FRR curves for each pair of user and attacker distributions, and mark both the optimal point and the EER point, as shown in Figure~\ref{fig:FAR_FRR_1_quadratic_cred}.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1.0\textwidth]{figs/fig_parabola/fig_FARvFRR_parabola.pdf}
-    \caption{FAR vs FRR curve quadratically distributed}
-    \label{fig:FAR_FRR_1_quadratic_cred}
-\end{figure}
+\begin{figure*}[t]
+\centering
 
-To quantify the effect of the variance on the deviation between the optimal operating point $T_{\text{opt}}$ and the equal error rate (EER) point $T_{\text{EER}}$, we numerically computed this gap as a function of the attacker's variance. Decreasing the variance of the attacker achieved by reducing the distance between its roots, corresponds to reduced separability between the two distributions. The simulations reveal that as the variance increases, the gap $\lvert T_{\text{opt}} - T_{\text{EER}} \rvert$ grows accordingly, until the operating threshold moves into a regime where it effectively minimizes only one of the error rates, either FAR or FRR, driving the other to zero. This phenomenon is shown in Figure~\ref{var_vs_gap_1_quadratic_cred}. These findings indicate that higher attacker variance enlarges the potential security advantage gained by operating at $T_{\text{opt}}$ rather than at the EER point.
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$\mathrm{FRR}(T)$},
+    ylabel={$\mathrm{FAR}(T)$},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    grid=none,
+    ytick =\empty,
+    xtick =\empty,
+    legend to name=farfrrlegend,
+    legend columns=3,
+    legend style={draw=black, fill=white}
+]
+\addplot[thick, myPurple, mark=none]
+table [x=FRR, y=FAR]
+{figs/fig_parabola/parabola_case_a.txt};
+\addlegendentry{Operating Curve}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.75\textwidth]{figs/fig_parabola/fig_gap_vs_variance_parabola.pdf}
-    \caption{Gap between optimal point and EER point vs Variance of the attacker quadratically distributed}
-    \label{var_vs_gap_1_quadratic_cred}
+\addplot[only marks, mark=*, mark size=1.3pt, blue]
+table [x=FRR_opt, y=FAR_opt]
+{figs/fig_parabola/parabola_case_a_points.txt};
+\addlegendentry{Optimal Point}
+
+\addplot[only marks, mark=*, mark size=1.3pt, red]
+table [x=FRR_eer, y=FAR_eer]
+{figs/fig_parabola/parabola_case_a_points.txt};
+\addlegendentry{EER Point}
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with low variance.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$\mathrm{FRR}(T)$},
+    ylabel={$\mathrm{FAR}(T)$},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    grid=none,
+    ytick =\empty,
+    xtick =\empty
+]
+\addplot[thick, myPurple, mark=none]
+table [x=FRR, y=FAR]
+{figs/fig_parabola/parabola_case_b.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt, blue]
+table [x=FRR_opt, y=FAR_opt]
+{figs/fig_parabola/parabola_case_b_points.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt, red]
+table [x=FRR_eer, y=FAR_eer]
+{figs/fig_parabola/parabola_case_b_points.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with medium variance.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.31\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=\linewidth,
+    height=0.60\linewidth,
+    xlabel={$\mathrm{FRR}(T)$},
+    ylabel={$\mathrm{FAR}(T)$},
+    xmin=0, xmax=1,
+    ymin=0, ymax=1,
+    grid=none,
+    ytick =\empty,
+    xtick =\empty
+]
+\addplot[thick, myPurple, mark=none]
+table [x=FRR, y=FAR]
+{figs/fig_parabola/parabola_case_c.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt, blue]
+table [x=FRR_opt, y=FAR_opt]
+{figs/fig_parabola/parabola_case_c_points.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt, red]
+table [x=FRR_eer, y=FAR_eer]
+{figs/fig_parabola/parabola_case_c_points.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Attacker with high variance.}
+\end{subfigure}
+
+\medskip
+
+\pgfplotslegendfromname{farfrrlegend}
+
+\Description{Three FAR versus FRR operating curves for different attacker distributions, each marking the optimal operating point and the equal error rate point.}
+\caption{FAR vs. FRR operating curves for different attacker distributions.}
+\label{fig:FAR_FRR_1_quadratic_cred}
+\end{figure*}
+
+To quantify the effect of the variance on the deviation between the optimal operating point $T_{\text{opt}}$ and the equal error rate (EER) point $T_{\text{EER}}$, we numerically computed this gap as a function of the attacker's variance. Decreasing the variance of the attacker achieved by reducing the distance between its roots, corresponds to reduced separability between the two distributions. The simulations reveal that as the variance increases, the gap $\lvert T_{\text{opt}} - T_{\text{EER}} \rvert$ grows accordingly, until the operating threshold moves into a regime where it effectively minimizes only one of the error rates, either FAR or FRR, driving the other to zero. This phenomenon is shown in Figure~\ref{fig:gap_vs_variance_parabola}. These findings indicate that higher attacker variance enlarges the potential security advantage gained by operating at $T_{\text{opt}}$ rather than at the EER point.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.50\columnwidth,
+    xlabel={Attacker Variance $\mathrm{Var}(s)$},
+    ylabel={$|T_{\mathrm{opt}}-T_{\mathrm{EER}}|$},
+    xtick=\empty,
+    ytick=\empty,
+    grid=none,
+    legend style={
+        at={(0.98,0.98)},
+        anchor=north east,
+        draw=black,
+        fill=white
+    }
+]
+\addplot[thick, myPurple,mark=none]
+table [x=variance, y=gap] {figs/fig_parabola/gap_vs_variance_parabola.txt};
+
+\end{axis}
+\end{tikzpicture}
+\Description{A curve showing the gap between the optimal threshold and EER threshold as a function of attacker variance.}
+\caption{Gap between optimal and EER thresholds as a function of attacker's variance.}
+\label{fig:gap_vs_variance_parabola}
 \end{figure}
 
 \section{Two Credentials}\label{sec:5}
-For a wallet $w$ comprised of two independently and identically distributed credentials, derived from either the same or different PDF’s, we defined the integrated system success as the probability of users successfully defend their wallets under two scenarios:
+For a mechanism $M$ comprised of two independently and identically distributed credentials, derived from either the same or different PDF’s, we defined the integrated system success as the probability of users successfully defend their wallets under two scenarios:
 
-a. \textbf{AND} Require both credentials to be satisfied. For success, we need both credentials to be either in safe state, or one in safe state and the other in leak state. If one of the credentials is either loss ot theft, the owner cannot satisfy the wallet and thus the wallet fails.
+a. \emph{AND}: The user has full availability to all credentials, while the attacker has limited or no availability. For successful authentication, we need both credentials to be either in safe state, or one in safe state and the other in leak state. If one of the credentials is either loss ot theft, the owner cannot satisfy the wallet and thus the wallet fails.
 
 \begin{equation}
     \label{eqn:andsuccess}
-P_{\text{Success}}(w^{\text{AND}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{leak}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{leak}}
+P_{\text{Success}}(M^{\text{AND}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{leak}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{leak}}
 \end{equation}
 
-b. \textbf{OR} Require at least one credential to be satisfied. For success, we need both credential to be either in safe state, or one in safe state and the other in loss state. If one of the credentials is either leak ot theft, the attacker can satisfy the wallet and thus the wallet fails.
+b. \emph{OR}: The user has availability to at least one credential, while the attacker has no availability neither of them. For success, we need both credential to be either in safe state, or one in safe state and the other in loss state. If one of the credentials is either leak ot theft, the attacker can satisfy the wallet and thus the wallet fails.
 
 \begin{equation}
     \label{eqn:orsuccess}
-P_{\text{Success}}(w^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{loss}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{loss}}
+P_{\text{Success}}(M^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{loss}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{loss}}
 \end{equation}
 
-For each wallet type, we analyzed the case of two independently and identically distributed credentials in 2 cases:
+For each mechanism type, we analyzed the case of two independently and identically distributed credentials in 2 cases:
 
 a. A mechanism comprised of 2 biometric credentials.
 
-b. A mechanism comprised of 1 discrete credential and 1 biometric credential.
+b. A mechanism comprised of 1 atomic credential and 1 biometric credential.
 
 We derived the optimal operating point for both \textbf{AND} and \textbf{OR} wallets by maximizing the respective success probabilities with respect to the thresholds of each credential.
 
 \subsection{2 Biometric Credentials}\label{sec:5.1}
 %%%
 %%%
-To analyze the case of a wallet $w$ comprised of two biometric credentials, we conduct a numerical study over several probability distribution functions. For each distribution pair, we derive the optimal operating point for both \textbf{AND} and \textbf{OR} wallets by maximizing the respective success probabilities with respect to the thresholds of each credential, using a LBFGS optimization algorithm. We additionally compare the optimal operating point to the EER point for each distribution type, thereby characterizing the conditions under which the \textbf{AND} or \textbf{OR} wallet yields superior performance. 
+To analyze the case of a mechanism $M$ comprised of two biometric credentials, we conduct a numerical study over several probability distribution functions. For each distribution pair, we derive the optimal operating point for both \emph{AND} and \emph{OR} mechanisms by maximizing the respective success probabilities with respect to the thresholds of each credential, using a LBFGS optimization algorithm. We additionally compare the optimal operating point to the EER point, thereby characterizing the conditions under which the \emph{AND} or \emph{OR} mechanisms yields superior performance. 
 We started by analyzing the case of Gaussian distributions. We defined the user and attacker distributions as $P_U(s) = \mathcal{N}(\mu_u, \sigma_u^2)$ and $P_A(s) = \mathcal{N}(\mu_a, \sigma_a^2)$ respectively. We set for the first credential $\mu_u = 0.8$, $\sigma_u = 0.12$, $\mu_a = 0.3$ and $\sigma_a = 1$ and for the second credential $\mu_u = 1.0$, $\sigma_u = 0.2$, $\mu_a = 0.4$ and $\sigma_a = 0.18$ as shown in Figure~\ref{fig:01_gaussians}.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.995\textwidth]{figs/fig_2continuous/01_gaussians.pdf}
-    \caption{Gaussian distributed credentials}
-    \label{fig:01_gaussians}
+\begin{figure}[t]
+\centering
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.45\columnwidth,
+    xlabel={$s$},
+    ylabel={Density},
+    grid=none,
+    legend style={
+        at={(0.98,0.98)},
+        anchor=north east,
+        draw=black,
+        fill=white
+    }
+]
+
+\addplot[blue, thick, mark=none]
+table [x=s, y=PU1] {figs/fig_2continuous/gaussians_2cred_data.txt};
+\addlegendentry{$P_U(s)$}
+
+\addplot[red, thick, mark=none]
+table [x=s, y=PA1] {figs/fig_2continuous/gaussians_2cred_data.txt};
+\addlegendentry{$P_A(s)$}
+
+\end{axis}
+\end{tikzpicture}
+\end{subfigure}
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.45\columnwidth,
+    xlabel={$s$},
+    ylabel={Density},
+    grid=none,
+]
+
+\addplot[blue, thick, mark=none]
+table [x=s, y=PU2] {figs/fig_2continuous/gaussians_2cred_data.txt};
+
+\addplot[red, thick, mark=none]
+table [x=s, y=PA2] {figs/fig_2continuous/gaussians_2cred_data.txt};
+
+\end{axis}
+\end{tikzpicture}
+\end{subfigure}
+
+\Description{Two Gaussian density plots for two continuous credentials, each showing user and attacker score distributions.}
+\caption{Gaussian user and attacker distributions.}
+\label{fig:01_gaussians}
 \end{figure}
 
-The optimal operating point for both wallet types was found to differ from the EER point, with the optimal point yielding a higher success probability than the EER point. Moreover, we found out that optimal point of both \textbf{AND} and \textbf{OR} wallets shifts from the individual optimum point of the credential. Hence, integrating the two credentials in a wallet improves performance over using them individually as shown in Figure~\ref{fig:02_far_vs_frr}. 
+The optimal operating point for both mechaninsms' types differ from the EER point, with the optimal points yielding higher success probabilities than the EER points. Moreover, we find out that the optimal points of both \emph{AND} and \emph{OR} mechanisms are not necessarily the same as the optimal threshold if used individually. We furtherly find that such integration of a biometric credential to a mechanism already comprised of a biometric credential, improves the mechanism success. Hence, integrating two biometric credentials into a mechanism improves its success over using them individually as shown in Figure~\ref{fig:02_far_vs_frr}. 
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.995\textwidth]{figs/fig_2continuous/02_far_vs_frr.pdf}
-    \caption{FAR vs FRR curves for the two Gaussian credentials}
-    \label{fig:02_far_vs_frr}
+\begin{figure}[t]
+\centering
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.45\columnwidth,
+    xlabel={$\mathrm{FAR}$},
+    ylabel={$\mathrm{FRR}$},
+    xmin=0, xmax=0.5,
+    ymin=0, ymax=0.5,
+    grid=major,
+    legend to name=farfrrtwocredlegend,
+    legend columns=2,
+    legend style={draw=black, fill=white}
+]
+
+\addplot[thick, myPurple, mark=none]
+table [x=FAR1, y=FRR1] {figs/fig_2continuous/far_vs_frr_2cred_data.txt};
+\addlegendentry{Operating Curve}
+
+\addplot[only marks,  mark=*, mark size=1.3pt]
+table [x=FAR1_and, y=FRR1_and] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
+\addlegendentry{AND Optimum}
+
+\addplot[only marks, myOrange, mark=x, mark size=1.8pt]
+table [x=FAR1_or, y=FRR1_or] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
+\addlegendentry{OR Optimum}
+
+\addplot[only marks, myGreen, mark=square*, mark size=1.3pt]
+table [x=FAR1_eer, y=FRR1_eer] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
+\addlegendentry{EER}
+
+\addplot[only marks, myRed, mark=triangle*, mark size=1.5pt]
+table [x=FAR1_safe, y=FRR1_safe] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
+\addlegendentry{Safe-opt}
+
+\end{axis}
+\end{tikzpicture}
+\end{subfigure}
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.45\columnwidth,
+    xlabel={$\mathrm{FAR}$},
+    ylabel={$\mathrm{FRR}$},
+    xmin=0, xmax=0.5,
+    ymin=0, ymax=0.5,
+    grid=major
+]
+
+\addplot[thick, myPurple, mark=none]
+table [x=FAR2, y=FRR2] {figs/fig_2continuous/far_vs_frr_2cred_data.txt};
+
+\addplot[only marks, mark=*, mark size=1.3pt]
+table [x=FAR2_and, y=FRR2_and] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
+
+\addplot[only marks, myOrange, mark=x, mark size=1.8pt]
+table [x=FAR2_or, y=FRR2_or] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
+
+\addplot[only marks, myGreen, mark=square*, mark size=1.3pt]
+table [x=FAR2_eer, y=FRR2_eer] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
+
+\addplot[only marks, myRed, mark=triangle*, mark size=1.5pt]
+table [x=FAR2_safe, y=FRR2_safe] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
+
+\end{axis}
+\end{tikzpicture}
+\end{subfigure}
+
+\medskip
+
+\pgfplotslegendfromname{farfrrtwocredlegend}
+
+\Description{Two FAR versus FRR operating curves for two Gaussian credentials, with AND optimum, OR optimum, EER, and standalone safe-opt points marked.}
+\caption{FAR vs. FRR operating curves for two biometric credentials.}
+\label{fig:02_far_vs_frr}
 \end{figure}
-We illustrated the success probability of both \textbf{AND} and \textbf{OR} wallets. We fixed a credential to its optimum found out using the LBFGS algorithm and showed how the success probability varies as a function of the thresholds of the other credential. The results are shown in Figure~\ref{fig:04_success_functions}.
+
+We illustrated the success probability of both \emph{AND} and \emph{OR} mechanisms. We fixed a credential to its optimum found out using the LBFGS algorithm and showed how the success probability varies as a function of the thresholds of the other credential. The results are shown in Figure~\ref{fig:04_success_functions}.
 In conclusion, all the results are summarized in Table~\ref{tab:wallet_success_gaussian}.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.995\textwidth]{figs/fig_2continuous/04_success_functions.pdf}
-    \caption{Success probability functions for the two Gaussian credentials}
-    \label{fig:04_success_functions}
-\end{figure}
+% \begin{figure}[t]
+% \centering
+
+% \begin{subfigure}{\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.82\columnwidth,
+%     height=0.45\columnwidth,
+%     xlabel={$T_1$},
+%     ylabel={$P_{\mathrm{success}}$},
+%     grid=major,
+%     legend to name=success2credlegend,
+%     legend columns=2,
+%     legend style={draw=black, fill=white}
+% ]
+
+% \addplot[thick, blue, mark=none]
+% table [x=T1, y=P_and_T1] {figs/fig_2continuous/success_functions_2cred_data.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}$}
+
+% \addplot[thick, myOrange, mark=none]
+% table [x=T1, y=P_or_T1] {figs/fig_2continuous/success_functions_2cred_data.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}$}
+
+% \addplot[only marks, black, mark=*, mark size=1.3pt, blue]
+% table [x=T1_and, y=P_and_opt] {figs/fig_2continuous/success_functions_2cred_points.txt};
+% \addlegendentry{AND Optimum}
+
+% \addplot[only marks, mark=x, mark size=1.8pt, myOrange]
+% table [x=T1_or, y=P_or_opt] {figs/fig_2continuous/success_functions_2cred_points.txt};
+% \addlegendentry{OR Optimum}
+
+% \addplot[only marks, mark=square*, mark size=1.3pt, myGreen]
+% table [x=T1_eer, y=P_and_T1_eer] {figs/fig_2continuous/success_functions_2cred_points.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(T_{1,\mathrm{eer}})$}
+
+% \addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
+% table [x=T1_eer, y=P_or_T1_eer] {figs/fig_2continuous/success_functions_2cred_points.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(T_{1,\mathrm{eer}})$}
+% \caption{Biometric credential 1 sweep.}
+
+% \end{axis}
+% \end{tikzpicture}
+% \end{subfigure}
+
+% \begin{subfigure}{\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.82\columnwidth,
+%     height=0.45\columnwidth,
+%     xlabel={$T_2$},
+%     ylabel={$P_{\mathrm{success}}$},
+%     grid=major
+% ]
+
+% \addplot[thick, blue, mark=none]
+% table [x=T2, y=P_and_T2] {figs/fig_2continuous/success_functions_2cred_data.txt};
+
+% \addplot[thick, myOrange, mark=none]
+% table [x=T2, y=P_or_T2] {figs/fig_2continuous/success_functions_2cred_data.txt};
+
+% \addplot[only marks, black, mark=*, mark size=1.3pt, blue]
+% table [x=T2_and, y=P_and_opt2] {figs/fig_2continuous/success_functions_2cred_points.txt};
+
+% \addplot[only marks, mark=x, mark size=1.8pt, myOrange]
+% table [x=T2_or, y=P_or_opt2] {figs/fig_2continuous/success_functions_2cred_points.txt};
+
+% \addplot[only marks, mark=square*, mark size=1.3pt, myGreen]
+% table [x=T2_eer, y=P_and_T2_eer] {figs/fig_2continuous/success_functions_2cred_points.txt};
+
+% \addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
+% table [x=T2_eer, y=P_or_T2_eer] {figs/fig_2continuous/success_functions_2cred_points.txt};
+% \caption{Biometric credential 2 sweep.}
+% \end{axis}
+% \end{tikzpicture}
+% \end{subfigure}
+
+% \medskip
+
+% \pgfplotslegendfromname{success2credlegend}
+
+% \Description{Two success probability curves for threshold sweeps over two biometric credentials, showing AND and OR mechanisms with optimum and EER thresholds.}
+% \caption{Success probability as a function of the threshold for two biometric credentials.}
+% \label{fig:04_success_functions}
+% \end{figure}
 
 \begin{table}[t]
 \centering

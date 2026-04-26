@@ -132,7 +132,7 @@ def set_symbolic_ticks(ax, b1, b2):
 # ============================================
 # DOMAIN
 # ============================================
-x = np.linspace(0, 5.0, 3000)
+x = np.linspace(0, 5.0, 1000)
 PU = user_pdf(x)
 
 # ============================================
@@ -247,6 +247,7 @@ for col, (b1, b2) in enumerate(attacker_roots):
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "figs" / "fig_parabola" / "fig_psuccess_parabola.pdf", format="pdf")
 
+case_names = ["a", "b", "c"]
 
 # ============================================
 # PLOT 3 — FAR vs FRR
@@ -254,6 +255,7 @@ plt.savefig(OUTPUT_DIR / "figs" / "fig_parabola" / "fig_psuccess_parabola.pdf", 
 fig3, axes3 = plt.subplots(1, 3, figsize=(24, 8))
 
 for col, (b1, b2) in enumerate(attacker_roots):
+    case = case_names[col]
     PA = attacker_pdf(x, b1, b2)
     FAR, FRR = compute_far_frr(x, PU, PA, b1, b2)
 
@@ -270,6 +272,32 @@ for col, (b1, b2) in enumerate(attacker_roots):
     diff = np.abs(frr_vals - far_vals)
     idx_eer = np.argmin(diff)
     eer = far_vals[idx_eer]
+    T_eer = x[idx_eer]
+    Ps_eer = Ps[idx_eer]
+    far_eer = far_vals[idx_eer]
+    frr_eer = frr_vals[idx_eer]
+    Ps_opt = Ps[idx_opt] 
+    DATA_FILE = OUTPUT_DIR / "figs" / "fig_parabola" / f"parabola_case_{case}.txt"
+    POINTS_FILE = OUTPUT_DIR / "figs" / "fig_parabola" / f"parabola_case_{case}_points.txt"
+
+    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(DATA_FILE, "w") as f:
+        f.write("s PU PA FAR FRR Ps\n")
+        for xi, pu, pa, far, frr, ps in zip(x, PU, PA, far_vals, frr_vals, Ps):
+            f.write(
+                f"{xi:.6f} {pu:.6f} {pa:.6f} "
+                f"{far:.6f} {frr:.6f} {ps:.6f}\n"
+            )
+
+    with open(POINTS_FILE, "w") as f:
+        f.write("T_opt Ps_opt T_eer Ps_eer FRR_opt FAR_opt FRR_eer FAR_eer\n")
+        f.write(
+            f"{T_opt:.6f} {Ps_opt:.6f} "
+            f"{T_eer:.6f} {Ps_eer:.6f} "
+            f"{frr_opt:.6f} {far_opt:.6f} "
+            f"{frr_eer:.6f} {far_eer:.6f}\n"
+        )
 
     ax = axes3[col]
     ax.plot(frr_vals, far_vals, color="purple", linewidth=2, label="Operating Curve")
@@ -345,6 +373,14 @@ for beta1 in beta1_sweep:
 
 variances = np.array(variances)
 gaps = np.array(gaps)
+
+GAP_VAR_DATA = OUTPUT_DIR / "figs" / "fig_parabola" / "gap_vs_variance_parabola.txt"
+GAP_VAR_DATA.parent.mkdir(parents=True, exist_ok=True)
+
+with open(GAP_VAR_DATA, "w") as f:
+    f.write("variance gap\n")
+    for var, gap in zip(variances, gaps):
+        f.write(f"{var:.8f} {gap:.8f}\n")
 
 fig_gap, ax_gap = plt.subplots(figsize=(10, 6))
 

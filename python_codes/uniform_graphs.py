@@ -92,21 +92,33 @@ max_sym = 1 / (a2_sym  - a1_sym)    # same as max_u by construction
 att_max = 1 / (a2_asym - a1_asym)
 
 PU = uniform_pdf(x, u1, u2)
+PA_sym = uniform_pdf(x, a1_sym, a2_sym)
 PA_asym = uniform_pdf(x, a1_asym, a2_asym)
 
 DATA_TXT = OUTPUT_DIR / "figs" / "fig_uniform" / "uniform_graphs.txt"
 DATA_TXT.parent.mkdir(parents=True, exist_ok=True)
+
+DATA_TXT_2 = OUTPUT_DIR / "figs" / "fig_uniform" / "uniform_graphs_2.txt"
+DATA_TXT_2.parent.mkdir(parents=True, exist_ok=True)
 
 with open(DATA_TXT, "w") as f:
     f.write("s PU PA\n")
     for xi, pu, pa in zip(x, PU, PA_asym):
         f.write(f"{xi:.6f} {pu:.6f} {pa:.6f}\n")
 
+with open(DATA_TXT_2, "w") as f:
+    f.write("s PU PA_sym PA_asym\n")
+    for xi, pu, pa_sym, pa_asym in zip(x, PU, PA_sym, PA_asym):
+        f.write(f"{xi:.6f} {pu:.6f} {pa_sym:.6f} {pa_asym:.6f}\n")
+
 print(f"[i] Data saved to: {DATA_TXT}")
+print(f"[i] Data saved to: {DATA_TXT_2}")
 
 # ============================================================
 #         FIGURE 1 – SYMMETRIC & ASYMMETRIC UNIFORMS
 # ============================================================
+
+a1_asym, a2_asym = 0.05, 0.42
 
 plt.figure(figsize=(10, 5))
 
@@ -198,6 +210,33 @@ max_idx    = np.argmax(safe)
 best_T     = x[max_idx]
 best_safe  = safe[max_idx]
 
+FAR_opt = FAR[max_idx]
+FRR_opt = FRR[max_idx]
+
+# ---- Compute EER point ----
+eer_idx = np.argmin(np.abs(FAR - FRR))
+FRR_eer = FRR[eer_idx]
+FAR_eer = FAR[eer_idx]
+
+SUCCESS_DATA_TXT = OUTPUT_DIR / "figs" / "fig_uniform" / "success_uniform_data.txt"
+SUCCESS_DATA_TXT.parent.mkdir(parents=True, exist_ok=True)
+
+with open(SUCCESS_DATA_TXT, "w") as f:
+    f.write("s FRR FAR loss leak theft safe FAR_opt FRR_opt FAR_eer FRR_eer\n")
+    for xi, frr, far, lo, le, th, sa in zip(x, FRR, FAR, loss, leak, theft, safe):
+        f.write(
+            f"{xi:.6f} "
+            f"{frr:.6f} "
+            f"{far:.6f} "
+            f"{lo:.6f} "
+            f"{le:.6f} "
+            f"{th:.6f} "
+            f"{sa:.6f} "
+            f"{FAR_opt:.6f} "
+            f"{FRR_opt:.6f} "
+            f"{FAR_eer:.6f} "
+            f"{FRR_eer:.6f}\n"
+        )
 
 plt.figure(figsize=(10, 5))
 plt.plot(x, safe, label=r"$P_{\text{success}}(T)$", color="purple")
@@ -226,14 +265,6 @@ plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_success_uniform.pdf")
 # ============================================================
 #                FAR vs FRR CURVE (WITH EER POINT)
 # ============================================================
-
-FAR_opt = FAR[max_idx]
-FRR_opt = FRR[max_idx]
-
-# ---- Compute EER point ----
-eer_idx = np.argmin(np.abs(FAR - FRR))
-FRR_eer = FRR[eer_idx]
-FAR_eer = FAR[eer_idx]
 
 plt.figure(figsize=(8, 4))
 plt.plot(FRR, FAR, color='purple', linewidth=2, label = "Operating Curve")
