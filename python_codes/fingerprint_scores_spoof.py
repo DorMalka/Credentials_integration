@@ -359,6 +359,19 @@ def plot_histograms(genuine_scores, impostor_scores):
     plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" / "livdet_sourceafis_histogram_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
+def export_histograms(genuine_scores, impostor_scores):
+    out_dir = OUTPUT_DIR / "figs" / "fig_spoofed_users"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    hist_genuine, edges = np.histogram(genuine_scores, bins=HIST_BINS)
+    hist_impostor, _ = np.histogram(impostor_scores, bins=HIST_BINS)
+
+    centers = (edges[:-1] + edges[1:]) / 2.0
+
+    with open(out_dir / "livdet_sourceafis_histogram_best_of_probes_data.txt", "w") as f:
+        f.write("score genuine impostor\n")
+        for s, g, i in zip(centers, hist_genuine, hist_impostor):
+            f.write(f"{s:.6f} {g:d} {i:d}\n")
 
 def build_hist_pdf(scores, bins):
     counts, edges = np.histogram(scores, bins=bins)
@@ -499,6 +512,18 @@ def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
     plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" /"livdet_sourceafis_far_frr_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
+def export_far_frr(thresholds, fars, frrs, eer, eer_threshold):
+    out_dir = OUTPUT_DIR / "figs" / "fig_spoofed_users"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    with open(out_dir / "livdet_sourceafis_far_frr_best_of_probes_data.txt", "w") as f:
+        f.write("T FAR FRR\n")
+        for t, fa, fr in zip(thresholds, fars, frrs):
+            f.write(f"{t:.6f} {fa:.6f} {fr:.6f}\n")
+
+    with open(out_dir / "livdet_sourceafis_far_frr_best_of_probes_points.txt", "w") as f:
+        f.write("T_eer EER\n")
+        f.write(f"{eer_threshold:.6f} {eer:.6f}\n")
 
 def compute_success_and_or(
     thresholds,
@@ -594,6 +619,48 @@ def plot_success_and_or(
     plt.tight_layout()
     plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" /"livdet_sourceafis_success_and_or_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
+
+def export_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold):
+    out_dir = OUTPUT_DIR / "figs" / "fig_spoofed_users"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    p_eer = float(np.interp(eer_threshold, thresholds, p_success))
+
+    with open(out_dir / "livdet_sourceafis_p_success_best_of_probes_data.txt", "w") as f:
+        f.write("T P_success\n")
+        for t, p in zip(thresholds, p_success):
+            f.write(f"{t:.6f} {p:.6f}\n")
+
+    with open(out_dir / "livdet_sourceafis_p_success_best_of_probes_points.txt", "w") as f:
+        f.write("T_eer P_eer T_opt P_opt\n")
+        f.write(f"{eer_threshold:.6f} {p_eer:.6f} {max_threshold:.6f} {max_success:.6f}\n")
+
+
+def export_success_and_or(
+    thresholds,
+    p_and,
+    p_or,
+    idx_and,
+    idx_or,
+    eer_threshold,
+    p_and_eer,
+    p_or_eer,
+):
+    out_dir = OUTPUT_DIR / "figs" / "fig_spoofed_users"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    with open(out_dir / "livdet_sourceafis_success_and_or_best_of_probes_data.txt", "w") as f:
+        f.write("T P_and P_or\n")
+        for t, pa, po in zip(thresholds, p_and, p_or):
+            f.write(f"{t:.6f} {pa:.6f} {po:.6f}\n")
+
+    with open(out_dir / "livdet_sourceafis_success_and_or_best_of_probes_points.txt", "w") as f:
+        f.write("T_and_opt P_and_opt T_or_opt P_or_opt T_eer P_and_eer P_or_eer\n")
+        f.write(
+            f"{thresholds[idx_and]:.6f} {p_and[idx_and]:.6f} "
+            f"{thresholds[idx_or]:.6f} {p_or[idx_or]:.6f} "
+            f"{eer_threshold:.6f} {p_and_eer:.6f} {p_or_eer:.6f}\n"
+        )
 
 # =========================
 # Sweep over P_safe configurations
@@ -973,6 +1040,7 @@ if __name__ == "__main__":
     print(f"[i] Normalized impostor scores: min={impostor.min():.4f} max={impostor.max():.4f} mean={impostor.mean():.4f}")
 
     plot_histograms(genuine, impostor)
+    export_histograms(genuine, impostor)
     plot_smoothed_pdfs(genuine, impostor, step=PDF_FINE_STEP, sigma_points=SMOOTH_SIGMA_POINTS)
 
     thresholds, fars, frrs = compute_far_frr_from_smoothed_pdf(
@@ -988,7 +1056,7 @@ if __name__ == "__main__":
     print(f"[i] EER threshold ≈ {eer_threshold:.4f}")
 
     plot_far_frr(thresholds, fars, frrs, eer, eer_threshold)
-
+    export_far_frr(thresholds, fars, frrs, eer, eer_threshold)
     p_success, max_success, max_threshold = compute_p_success(thresholds, fars, frrs)
 
     print(f"[i] Max P_success = {max_success:.4f}")
@@ -1006,7 +1074,7 @@ if __name__ == "__main__":
         P_loss=0.04,
         P_theft=0.01,
     )
-
+    export_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold)
     print(f"[i] AND max P_success = {p_and[idx_and]:.4f} at T={thresholds[idx_and]:.4f}")
     print(f"[i] OR  max P_success = {p_or[idx_or]:.4f} at T={thresholds[idx_or]:.4f}")
     print(f"[i] AND at EER = {p_and_eer:.4f}")
@@ -1022,7 +1090,16 @@ if __name__ == "__main__":
         p_and_eer,
         p_or_eer,
     )
-
+    export_success_and_or(
+        thresholds,
+        p_and,
+        p_or,
+        idx_and,
+        idx_or,
+        eer_threshold,
+        p_and_eer,
+        p_or_eer,
+    )
         # =========================
     # New sweep requested by user
     # =========================

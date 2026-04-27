@@ -1392,7 +1392,7 @@ Parabolic & 0.920 & 0.921 & 0.919 & 0.922 & 0.987 & 0.985 \\
 From~Table~\ref{tab:mechanism_success_gaussian}, we observe that the optimal operating point yields a higher success probability than the EER point by between 5\% to 7\%. 
 
 \subsection{1 Atomic and 1 Biometric Credential}\label{sec:5.2}
-We started by analyzing the case of an \emph{AND} mechanism comprised of 1 atomic credential and 1 biometric credential. Denote the state of credential by $s_i$, i.e, $i\in(Atomic,Biometric)$, we defined the atomic credential with a constant value of each probabilities' states as: $ P^1_{safe}, P^1_{loss}, P^1_{leak}, P^1_{theft} $ corrsponding respectively to each one of the states: ${\text{safe}}$, ${\text{loss}}$, ${\text{leak}}$ and ${\text{theft}}$. The biometric credential is defined by its PDFs for the user and the attacker, $P_U$ and $P_A$ respectively. We model the first order approximation of the biometric credential using uniform distribution between the bounds of $u_1$,$u_2$ corrsponding to the user distribution and $a_1$,$a_2$ corresponds to the attacker, as seen at $(\S\ref{sec:4.1})$. We derive the probability of the biometric credential as follows:
+We start by analyzing the case of an \emph{AND} mechanism comprised of 1 atomic credential and 1 biometric credential. Denote the state of credential by $s_i$, i.e, $i\in(Atomic,Biometric)$, we define the atomic credential with a constant value of each probabilities' states as: $ P^1_{safe}, P^1_{loss}, P^1_{leak}, P^1_{theft} $ corrsponding respectively to each one of the states: ${\text{safe}}$, ${\text{loss}}$, ${\text{leak}}$ and ${\text{theft}}$. The biometric credential is defined by its PDFs for the user and the attacker, $P_U$ and $P_A$ respectively. We model the first order approximation of the biometric credential using uniform distribution between the bounds of $u_1$,$u_2$ corrsponding to the user distribution and $a_1$,$a_2$ corresponds to the attacker, as seen at $(\S\ref{sec:4.1})$. We derive the probability of the biometric credential as follows:
 
 \[
 \begin{aligned}
@@ -1593,7 +1593,7 @@ And the maximum probability of success at this point is:
 \[P_{\text{success}}(T_{\text{opt}}) = \frac{\big(a_1 k_2 - u_2 (k_1 + k_2) + k_1 u_1\big)^2}
 {4 k_2 (a_2 - a_1)(u_2 - u_1)}\]
 
-For both mechanisms, we observed that the optimal operating point $T_{\text{opt}}$ differs from the equal error rate (EER) point $T_{\text{EER}}$. As the EER depends on the PDF's type solely, we calculate the EER point and show both mechanism's success in Figure~\ref{fig:biometric_atomic_success} 
+For both mechanisms, we observe that the optimal operating point $T_{\text{opt}}$ differs from the equal error rate (EER) point $T_{\text{EER}}$. As the EER depends on the PDF's type solely, we calculate the EER point and show both mechanism's success in Figure~\ref{fig:biometric_atomic_success} 
 \[T_{\text{EER}} = \frac{a_1 u_1 - a_2 u_2}{a_1 - a_2 + u_1 - u_2}
 \]
 
@@ -1676,7 +1676,7 @@ table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_
 \end{figure}
 
 \section{Characterizing Success Improvement}\label{sec:6}
-We will now characterize the conditions under which integrating a biometric credential into a mechanism composed of an atomic credential can enhance its success. First, we show that for any mechanism whose atomic credential characterized by non-zero probabilities $P_\text{safe} \text{ and } P_\text{theft}$ only, such integration cannot improve mechanism's success $(\S\ref{sec:6.1})$. Next, we present a necessary and sufficient condition establishing that, for any mechanism composed of an atomic credential with non zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$, integrating a biometric credential improves mechanism's success for both finite and infinite distributions $(\S\ref{sec:6.2})$. Finally, we provide a more intuitive sufficient condition under which a biometric credential enhances the mechanism's success composed of an atomic credential with non zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$ $(\S\ref{sec:6.3})$.
+We will now characterize the conditions under which integrating a biometric credential into a mechanism composed of an atomic credential can enhance its success. First, we show that for any mechanism whose atomic credential characterized by non-zero probabilities $P_\text{safe} \text{ and } P_\text{theft}$ only, such integration cannot improve mechanism's success $(\S\ref{sec:6.1})$. Next, we present a necessary and sufficient condition establishing that, for any mechanism composed of an atomic credential with non zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$, integrating a biometric credential improves mechanism's success for both finite and infinite distributions $(\S\ref{sec:6.2})$. Finally, we derive a more commong criterion that provides a sufficient condition under which a biometric credential improves the mechanism's success composed of an atomic credential with non zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$ $(\S\ref{sec:6.3})$.
 \subsection{No Success Gain in the Safe/Theft Case}\label{sec:6.1}
 \begin{proposition}
     For any mechanism $M$ composed of an atomic credential with non-zero probabilities $P_\text{safe}$ and $P_\text{theft}$ only, integrating the mechanism with a biometric credential does not enhance its mechanism's success.
@@ -1687,7 +1687,7 @@ We will now characterize the conditions under which integrating a biometric cred
     Since $P^2_{\text{safe}}(T) \le 1$ for every value of $T$, it follows that $P_{\text{success}}(T) \le P^1_\text{safe}$, and thus integrating a biometric credential does not enhance the success of the mechanism.
 \end{proof}
 \subsection{Sufficient And Necessary Condition for Integrating Biometric Credentials}\label{sec:6.2}
-First, we will define the notion of \emph{asymptotic separability} of a biometric credential. Then, we will show that its a necessary and sufficient condition for enhancing the mechanism's success for both finite and infinite distributions.
+First, we define the notion of \emph{asymptotic separability} of a biometric credential. Then, we will show that its a necessary and sufficient condition for enhancing the mechanism's success for both finite and infinite distributions.
 \begin{definition}
 A biometric credential with user distribution function $P_u(s)$
 and attacker distribution function $P_a(s)$ is said to be \emph{asymptotically separable} if
@@ -1703,11 +1703,11 @@ where $\mathrm{FAR}(t) = \int_{t}^{\infty} P_a(s) ds$ and $\mathrm{FRR}(t) = \in
 \end{definition}
 
 \begin{proposition}
-    For any mechanism $M$ composed of an atomic credential with non-zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$, integrating the mechanism with a biometric credential whose user and attacker distributions are asymptotically separable, enhances the success of the mechanism.
+    For any mechanism $M$ composed of an atomic credential with non-zero probabilities $P_\text{safe} \text{ and } P_\text{leak} \text{ or } P_\text{loss}$, integrating the mechanism with a biometric credential whose user and attacker distributions are asymptotically separable, enhances the success of the mechanism.
 \end{proposition}
 
 \begin{proof}
-    The success of a mechanism composed of an atomic credential with non-zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$ is given by $P^1_\text{safe}$. A biometric credential is characterized by 4 probability states as function of $T$: $P^{2}_{\text{safe}}(T), P^{2}_{\text{loss}}(T), P^{2}_{\text{leak}}(T), P^{2}_{\text{theft}}(T)$. We can describe each one of these probabilities as a function of False acceptance rate (FAR) and False rejection rate (FRR) as follows:
+    The success of a mechanism composed of an atomic credential with non-zero probabilities $P_\text{safe} \text{ and } P_\text{leak} \text{ or } P_\text{loss}$ is given by $P^1_\text{safe}$. A biometric credential is characterized by 4 probability states as function of $T$: $P^{2}_{\text{safe}}(T), P^{2}_{\text{loss}}(T), P^{2}_{\text{leak}}(T), P^{2}_{\text{theft}}(T)$. We can describe each one of these probabilities as a function of False acceptance rate (FAR) and False rejection rate (FRR) as follows:
     \contprobabilities
     The success probability of the integrated mechanism comprised of 2 credentials is described by Equation~\ref{eqn:andsuccess} and Equation~\ref{eqn:orsuccess}. Thus, by placing the biometric credential in each configuration we can express the success probability of the integrated mechanism as a function of the operating threshold $T$:
     \begin{equation}
@@ -1720,12 +1720,11 @@ where $\mathrm{FAR}(t) = \int_{t}^{\infty} P_a(s) ds$ and $\mathrm{FRR}(t) = \in
     \end{equation}
     We need to show that there exists an operating threshold $T$ such that either 
     $P^{\text{AND}}_{\text{success}}(T) > P^1_{\text{safe}}$ or $P^{\text{OR}}_{\text{success}}(T) > P^1_{\text{safe}}$.
-
     By algebraic manipulation of Equation~\ref{eqn:andineq} we can demand $P^{\text{AND}}_{\text{success}}(T) > P^1_{\text{safe}}$ if and only if:
     \[
     \frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} < \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}\cdot(1-\mathrm{FAR}(T))}
     \]
-    Since $P^{1}_{\text{leak}}\cdot(1-\mathrm{FAR}(T)) < P^{1}_{\text{leak}}$, a sufficient condition for the above inequality is:
+    Since $P^{1}_{\text{leak}}\cdot(1-\mathrm{FAR}(T)) \le P^{1}_{\text{leak}}$, a sufficient condition for the above inequality is:
 
     \begin{equation}
         \label{eqn:FRRineq}
@@ -1734,7 +1733,7 @@ where $\mathrm{FAR}(t) = \int_{t}^{\infty} P_a(s) ds$ and $\mathrm{FRR}(t) = \in
 
     Similarly, we can deduce that $P^{\text{OR}}_{\text{success}}(T) > P^1_{\text{safe}}$ if and only if:
     \[\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} < \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}\cdot(1-\mathrm{FRR}(T))}\]
-    Since $P^{1}_{\text{loss}}\cdot(1-\mathrm{FRR}(T)) < P^{1}_{\text{loss}}$, a sufficient condition for the above inequality is:
+    Since $P^{1}_{\text{loss}}\cdot(1-\mathrm{FRR}(T)) \le P^{1}_{\text{loss}}$, a sufficient condition for the above inequality is:
     \begin{equation}
         \label{eqn:FARineq}
         \frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} < \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}}
@@ -1747,43 +1746,43 @@ where $\mathrm{FAR}(t) = \int_{t}^{\infty} P_a(s) ds$ and $\mathrm{FRR}(t) = \in
     \right\}
     = 0.
     \] 
-    Equivalently, $\forall \varepsilon > 0, \exists T$ such that either $\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} < \varepsilon$ or $\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} < \varepsilon$. Thus, we can choose $T$ such that $\varepsilon$ satisfies either Equation~\ref{eqn:FRRineq} or Equation~\ref{eqn:FARineq}. More precisely, if \[\inf_{T}\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} = 0,\] 
+    Equivalently, $\forall \varepsilon > 0, \exists T$ such that either $\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} < \varepsilon$ or $\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} < \varepsilon$. Thus, we can choose $\varepsilon$ that equals the right hand side of either Equation~\ref{eqn:FRRineq} or Equation~\ref{eqn:FARineq} and by definition we know that a $T$ satisfies the inequality exists. More precisely, if \[\inf_{T}\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} = 0,\] 
     then the \textsc{OR} mechanism composition is preferable, whereas if \[\inf_{T}\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} = 0,\] then the \textsc{AND} mechanism composition is preferable. Therefore, integrating an asymptotically separable biometric credential enhances the success of the mechanism.
 
 \end{proof}
 
 \begin{proposition}
-Suppose there $\exists T$ such that the integrated mechanism $M$ composed of biometric credential and atomic credential with non zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$ achieves a strictly higher success probability than the atomic-only mechanism, i.e.,\[P^{\text{integrated}}_{\text{success}}(T) > P^{\text{atomic}}_{\text{success}}.\] Then necessarily, the biometric credential is asymptotically separable.
+Suppose there $\exists T$ such that the integrated mechanism $M$ composed of biometric credential and atomic credential with non zero probabilities $P_\text{safe} \text{ and } P_\text{leak} \text{ or } P_\text{loss}$ achieves a strictly higher success probability than an atomic credential mechanism, i.e.,\[P^{\text{integrated}}_{\text{success}}(T) > P^{\text{atomic}}_{\text{success}}.\] Then necessarily, the biometric credential is asymptotically separable.
 \end{proposition} 
 
 \begin{proof}
-    We prove by contradiction. Assume for the sake of contradiction, that the biometric credential is not asymptotically separable. Then $\exists \varepsilon > 0$ such that $\forall T$ either $\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} \ge \varepsilon$ or $\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} \ge \varepsilon$. Since it's given that the integrated mechanism $M$ achieves a strictly higher success probability than the atomic-only mechanism, then there exists an operating threshold $T$ such that either $P^{\text{AND}}_{\text{success}}(T) > P^1_{\text{safe}}$ or $P^{\text{OR}}_{\text{success}}(T) > P^1_{\text{safe}}$. Thus, either Equation~\ref{eqn:FRRineq} or Equation~\ref{eqn:FARineq} holds for every value of $P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ in the range of $(0,1)$. In particular, we can choose $P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that $\forall \varepsilon > 0: \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}} < \varepsilon$ and $\frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}} < \varepsilon$. Thus, we can deduce that both $\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} \ge \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}}$ and $\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} \ge \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}}$, which contradicts the assumption that the integrated mechanism achieves a strictly higher success probability than the atomic-only mechanism. Therefore, the biometric credential must be asymptotically separable.
+    We prove by contradiction. Assume for the sake of contradiction, that the biometric credential is not asymptotically separable. Then $\exists \varepsilon > 0$ such that $\forall T$ both $\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} \ge \varepsilon$ and $\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} \ge \varepsilon$. Since it's given that the integrated mechanism $M$ achieves a strictly higher success probability than an atomic credential mechanism, then there exists a threshold $T$ such that either $P^{\text{AND}}_{\text{success}}(T) > P^1_{\text{safe}}$ or $P^{\text{OR}}_{\text{success}}(T) > P^1_{\text{safe}}$. Thus, either Equation~\ref{eqn:FRRineq} or Equation~\ref{eqn:FARineq} holds for every value of $P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ in the range of $(0,1)$. In particular, we can choose $P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that either $\frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}} < \varepsilon$ or $\frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}} < \varepsilon$ since the equation holds $\forall \varepsilon > 0$, but both $\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} \ge \varepsilon$ and $\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} \ge \varepsilon$ derive by the sake of contradiction assumption. Thus, we can deduce that both $\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} \ge \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}}$ and $\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} \ge \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}}$, which contradicts both Equation~\ref{eqn:FRRineq} and Equation~\ref{eqn:FARineq} under the strictly higher success probability assumption. Therefore, the biometric credential must be asymptotically separable.
 
 \end{proof}
-We showed that \emph{asymptotic separability} of the user and attacker distributions is a sufficient and necessary condition for enhancing the success of a mechanism composed of an atomic credential with non zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$ by integrating it with a biometric credential.
+We show that \emph{asymptotic separability} of the user and attacker distributions is a sufficient and necessary condition for enhancing the success of a mechanism composed of an atomic credential with non zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$ by integrating it with a biometric credential.
 
-\subsection{Intuitive Sufficient Condition}\label{sec:6.3}
+\subsection{Common Sufficient Condition}\label{sec:6.3}
 
 \begin{definition}
 \label{def:User and Attacker distribution functions}
 A biometric credential with user distribution fucntion $P_u(s)$ and attacker distribution function $P_a(s)$
 is said to be \emph{asymptotically dominated } if:
 \[
-\forall c>0\;\exists T\; \text{s.t.}:\forall x \ge T:
-p_a(x)\le c\,p_u(x)
+\forall c>0\;\exists T\; \text{s.t.}:\forall s \ge T:
+p_a(s)\le c\,p_u(s)
 \]
 \[\quad\text{or}\quad\] 
 \[
-\forall c>0\;\exists T\; \text{s.t.}:\forall x \le T:
-p_u(x)\le c\,p_a(x)
+\forall c>0\;\exists T\; \text{s.t.}:\forall s \le T:
+p_u(s)\le c\,p_a(s)
 \]
 \end{definition}
 
-We will show that \emph{asymptotically dominancy} of user and attacker distribution functions is a sufficient condition for enhancing an atomic mechanism's success.
+We will show that \emph{asymptotically dominancy} of user and attacker distribution functions is a sufficient condition for enhancing an atomic credential mechanism's success.
 
 \begin{proposition}
 \label{thm:biometric-improves-security}
-For any mechanism $M$ composed of an atomic credential and success function $P^{\text{atomic}}_{\text{success}}$, augmenting the mechanism with an asymptotically dominated biometric credential improves its achievable success. That is,
+For any mechanism $M$ composed of an atomic credential and success function $P^{\text{atomic}}_{\text{success}}$, integrating the mechanism with an asymptotically dominated biometric credential improves its achievable success. That is,
 \[
 P^{\text{integrated}}_{\text{success}}(T) > P^{\text{atomic}}_{\text{success}} .
 \]
@@ -1791,10 +1790,8 @@ P^{\text{integrated}}_{\text{success}}(T) > P^{\text{atomic}}_{\text{success}} .
 
 \begin{proof}
 An atomic credential is characterized by fixed probability states $P^{1}_{\text{safe}}, P^{1}_{\text{loss}}, P^{1}_{\text{leak}}, P^{1}_{\text{theft}}$. Thus the success probability of a mechanism composed solely of this atomic credential is constant and given by: 
-\[P^{\text{atomic}}_{\text{success}} = 
-P^{1}_{\text{safe}}
-\]
-A biometric credential is characterized by 4 probability states that depend on the operating threshold $T$: $P^{2}_{\text{safe}}(T), P^{2}_{\text{loss}}(T), P^{2}_{\text{leak}}(T), P^{2}_{\text{theft}}(T)$. We can describe each one of these probabilities as a function of False acceptance rate (FAR) and False rejection rate (FRR) as follows:
+\[P^{\text{atomic}}_{\text{success}} = P^{1}_{\text{safe}}\]
+A biometric credential is characterized by 4 probability states that depend on the operating threshold $T$: $P^{2}_{\text{safe}}(T)$, $P^{2}_{\text{loss}}(T)$, $P^{2}_{\text{leak}}(T)$, $P^{2}_{\text{theft}}(T)$. We can describe each one of these probabilities as a function of False acceptance rate (FAR) and False rejection rate (FRR) as follows:
 \contprobabilities
 The success probability of the integrated mechanism comprised of 2 credentials is described by Equation~\ref{eqn:andsuccess} and Equation~\ref{eqn:orsuccess}. Thus, we can express the success probability of the integrated mechanism as a function of the operating threshold $T$ as shown in Equation~\ref{eqn:andineq} and Equation~\ref{eqn:orineq}. We previously observed that a sufficient condition for improvement of mechanism's success is described by Equation~\ref{eqn:FRRineq} and Equation~\ref{eqn:FARineq}. Thus, we need to show that there exists an operating threshold $T$ such that either:
 \[\frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} < \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}}\]
@@ -1802,7 +1799,7 @@ The success probability of the integrated mechanism comprised of 2 credentials i
 \[
     \frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} < \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}}
 \]
-We will expand left hand side of Equation~\ref{eqn:FRRineq}. 
+We expand left hand side of Equation~\ref{eqn:FRRineq}. 
 \[
 \frac{\mathrm{FRR}(T)}{1-\mathrm{FAR}(T)} = \frac{\int_{-\infty}^{T} P_u(s) ds}{\int_{-\infty}^{T} P_a(s) ds}
 \]
@@ -1810,8 +1807,9 @@ By Definition~\ref{def:User and Attacker distribution functions}, since the biom
 \[
 \frac{\int_{-\infty}^{T} P_u(s) ds}{\int_{-\infty}^{T} P_a(s) ds} \le \frac{\int_{-\infty}^{T} c \cdot P_a(s) ds}{\int_{-\infty}^{T} P_a(s) ds} = c
 \]
-This is true $\forall c > 0,$ thus we can choose $c$ such that it satisfies Equation~\ref{eqn:FRRineq}.\\
-We will expand left hand side of Equation~\ref{eqn:FARineq}. 
+This is true $\forall c > 0,$ thus we can choose $c$ such that satisfies Equation~\ref{eqn:FRRineq}.
+
+We expand left hand side of Equation~\ref{eqn:FARineq}. 
 \[
 \frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} = \frac{\int_{T}^{\infty} P_a(s) ds}{\int_{T}^{\infty} P_u(s) ds}
 \]
@@ -1823,115 +1821,360 @@ We showed that $\forall c>0$  either $\frac{\mathrm{FAR}(T)}{1-\mathrm{FRR}(T)} 
 \end{proof}
 
 This proof is not trivial, as the integration of another atomic credential to an atomic credential mechanism, does not always enhance its success. For example, if the mechanism is comprised of 1 atomic credential with high safe values and low leak values, adding an atomic credential with low safe values and high leak values would decrease the overall mechanism's success. Thus, Proposition~\ref{thm:biometric-improves-security} shows that by using an \emph{asymptotically dominated} biometric credential, we can always improve the success of all mechanism's composed of an atomic credential .
-Moreover, \emph{asymptotically dominancy} condition supports practicale scenarios, as we expect that for very low values of score $s$ the attacker distribution dominates the user while vise versa for very high values of $s$. We will show measuremens supports this claim in Section~\ref{sec:6}.
+Moreover, \emph{asymptotically dominancy} condition supports practical scenarios, as we expect that for very low values of score $s$ the attacker distribution dominates the user, vice versa for very high values of $s$. We supports this claim in with real public biometric data in Section~\ref{sec:7}.
 
 
 \section{Measuremens}\label{sec:7}
-We will now present measurements based on fingerprint taken from FVC2002 database~\cite{fvc2002} and FVC2004 database~\cite{fvc2004}. We used SourceAFIS an opensource algorithm created by Vazan~\cite{sourceafis} for scoring fingerprints out of their images based on minutiae triplets. We chose to use fingerprints, as it is a widely common and used example of a biometric credential in authentication mechanisms. For a test set, we took a template out of FVC2002 database 1 of user 103 and compare them against the whole database of both FVC2002 and FVC2004. A geniune will be considered the template of user 103 against its other templates while imposter will be all the other combinations. We maintained same approach as Jain et al~\cite{Anil1997} and Cappelli et al~\cite{Cappelli2006} and first built histogram of the geniune and imposter combinations as shown in Figure~\ref{fig:real_histogram}. Then, we turned the histogram into a smoothed probability distribution function as shown in Figure~\ref{fig:real_smoothed_pdf}. We found the False rejection rate and False acceptance rate and computed the Equal Error Rate (EER) as shown in Figure~\ref{fig:real_far_frr}. The most important outcome from this approach was to achieve similar EER rate of around 2\% as achieved from Maio et al.~\cite{Maio2002} so we could objectively make a comparison. We computed the probability success function as given in Equation~\ref{eqn:safesuccess} of a mechanism composed of a biometric credential and showed that the optimal operating point is different from the EER point and achieves higher success probability as shown in Figure~\ref{fig:real_p_success}. Finally, we computed the probability success function of a mechanism composed of an atomic credential with $P_\text{safe} = 0.9$ and $P_\text{leak} = 0.04$ $P_\text{loss} = 0.04$ and integrated it with the biometric credential. 
+We now present measurements based on fingerprints taken from FVC2002 database~\cite{fvc2002} and FVC2004 database~\cite{fvc2004}. We used a standard fingerprint verification algorithm $\text{SourceAFIS}$ created by Vazan~\cite{sourceafis} for scoring fingerprints out of their images based on minutiae triplets. We chose to use fingerprints, as it is a widely common and used example of a biometric credential in authentication mechanisms. For a test set, we took a template out of FVC2002 database 1 of user 103 and compare them against the whole database of both FVC2002 and FVC2004. A geniune will be considered the template of user 103 against its other templates while imposter considered as all the other combinations. For scoring methodology, we define the final score as the maximum similarity across all 5 user templates. For example, if the matching scores between a sample and the 5 probes are [0.1,0.3,0.6,0.9,0.4], then the resulting score is 0.9. We maintain same approach as Jain et al~\cite{Anil1997} and Cappelli et al~\cite{Cappelli2006} and first built histogram of the geniune and imposter combinations as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we turn the histogram into a smoothed probability distribution function. We find the False rejection rate and False acceptance rate and calculate the Equal Error Rate (EER) as shown in Figure~\ref{fig:sourceafis_far_frr}. The most important outcome from this approach was to achieve similar EER rate of around 2\% as achieved from Maio et al.~\cite{Maio2002}, to objectively make a comparison with state-of-the-art algorithms. We calculate the probability success function as given in Equation~\ref{eqn:safesuccess} of a mechanism composed of a biometric credential and show that the optimal operating point is different from the EER point and achieves higher success probability as shown in Figure~\ref{fig:sourceafis_success}. Finally, we illustrate the probability success function of a mechanism composed of an atomic credential with $P_\text{safe} = 0.9$ and $P_\text{leak} = 0.04$ $P_\text{loss} = 0.04$ and integrate it with the biometric credential.
 
-% % ===============================
-% % Histogram + PDF
-% % ===============================
-% \begin{figure}[ht]
-%     \centering
-%     \begin{subfigure}[t]{0.49\textwidth}
-%         \centering
-%         \includegraphics[width=\linewidth]{figs/fig_different_users_sourceafsi/sourceafis_histogram.pdf}
-%         \caption{Histogram of the genuine and imposter combinations of the fingerprint scores}
-%         \label{fig:real_histogram}
-%     \end{subfigure}\hfill
-%     \begin{subfigure}[t]{0.49\textwidth}
-%         \centering
-%         \includegraphics[width=\linewidth]{figs/fig_different_users_sourceafsi/sourceafis_smoothed_pdf.pdf}
-%         \caption{Smoothed probability distribution function of the genuine and imposter combinations of the fingerprint scores}
-%         \label{fig:real_smoothed_pdf}
-%     \end{subfigure}
-%     \caption{From histogram to probability distribution function}
-% \end{figure}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    bar width=3pt,
+    width=0.9\columnwidth,
+    height=0.65\columnwidth,
+    xlabel={Normalized similarity score (\%)},
+    ylabel={Count},
+    grid=major,
+    legend pos=north east,
+    legend style={draw=black, fill=white, font=\scriptsize}
+]
 
+\addplot+[ybar, fill=blue, fill opacity=0.5]
+table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
+\addlegendentry{Genuine}
 
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.49\textwidth]{figs/fig_different_users_sourceafsi/sourceafis_far_frr.pdf}
-%     \caption{FAR vs.\ FRR curves for the fingerprint scores}
-%     \label{fig:real_far_frr}
-% \end{figure}
+\addplot+[ybar, fill=red, fill opacity=0.5]
+table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
+\addlegendentry{Impostor}
 
-
-% \begin{figure}[ht]
-%     \centering
-%     \begin{subfigure}[t]{0.49\textwidth}
-%         \centering
-%         \includegraphics[width=\linewidth]{figs/fig_different_users_sourceafsi/sourceafis_p_success.pdf}
-%         \caption{Success probability function of a mechanism composed of a single biometric credential}
-%         \label{fig:real_p_success}
-%     \end{subfigure}\hfill
-%     \begin{subfigure}[t]{0.49\textwidth}
-%         \centering
-%         \includegraphics[width=\linewidth]{figs/fig_different_users_sourceafsi/sourceafis_success_and_or.pdf}
-%         \caption{Success probability function of a mechanism composed of a single atomic credential and a single biometric credential}
-%         \label{fig:real_success_and_or}
-%     \end{subfigure}
-%     \caption{Biometric credential achieves higher success probability than the EER point in both biometric credential based mechanism and integrated mechanism}
-%     \label{fig:continuous_credential_success}
-% \end{figure}
+\end{axis}
+\end{tikzpicture}
+\caption{Score histogram for genuine and impostor comparisons.}
+\label{fig:sourceafis_histogram}
+\end{figure}
 
 
-% We showed that the optimal operating point of the integrated mechanism is different from the EER point and achieves higher success probability by around 1.6\% than the EER point, as the EER itself is only 1.8\%. In addition, we can observe that the optimal point of the mechanism achieves higher success probability than both the discrete only and continuous only mechanism as shown in Figure~\ref{fig:real_success_and_or}. Although there is an improvement in the success probability of the integrated mechanism, we can observe the improvement is not as significant as the one observed in the theoretical analysis. This can be explained by the fact that the EER point of the biometric credential is already very low, thus there is not much room for improvement. In that scenario, we compared several templates of user 103 against templates of different users. However, our main approach in this paper was to increase the mechanism's success in scenarios where an imposter will try to spoof the user templates and authenticate into the user account. Hence, we expect the imposter to use spoofing tools, producing distribution function that much more similar to the genuine distribution function, which might lead to increased EER point. 
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.85\columnwidth,
+    height=0.5\columnwidth,
+    xlabel={Threshold (\%)},
+    ylabel={Error Rate},
+    ymin=0, ymax=1,
+    grid=major,
+    legend style={
+        anchor=north east,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    },
+    each nth point=2,
+    filter discard warning=false
+]
 
-% To support this claim, we used the LivDet2015 database~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale dataset of live and spoof fingerprint samples. We followed the same methodology as before and used the SourceAFIS algorithm~\cite{sourceafis}. As probe templates, we selected six Digital Persona scanner images of user 002\_0. Each probe was matched against 14 additional images of the same user to generate genuine scores. For each target image, we define the final score as the maximum similarity across all probe templates. For example, if the matching scores between a target image and the six probes are [0.3, 0.5, 0.4, 0.8, 0.9, 0.7], then the resulting score is 0.9. To simulate a spoofing scenario, we used fake fingerprint images of the same user (002\_0) produced using gelatine and matched them against the probe templates to obtain the imposter score distribution. The same maximum-score aggregation was applied in this case as well. We present the resulting histogram and the smoothed probability distribution functions in Figures~\ref{fig:livdet2015_histogram} and~\ref{fig:livdet2015_smoothed}. We then computed the EER point and plotted the FAR-FRR curve, as shown in Figure~\ref{fig:livdet2015_far_frr}. As expected, the EER increased significantly to 17.8\%. Finally, we evaluated the success probability for both a single biometric credential, as shown in Figure~\ref{fig:livdet2015_single_success}, and for a mechanism composed of a single atomic credential and a single biometric credential, as shown in Figure~\ref{fig:livdet2015_success_and_or}. We can observe that the optimal operating point achieves a success probability approximately 14\% higher than the EER point when integrating it with an atomic credential with $P_{\text{safe}} = 0.8, P_{\text{loss}} = 0.04, P_{\text{leak}} = 0.15, P_{\text{theft}} = 0.01$ parameters, using the same algorithm.
+% FAR
+\addplot[thick, red]
+table [x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{FAR (smoothed-PDF integral)}
 
-% \begin{figure}[ht]
-%     \centering
-%     \begin{subfigure}[t]{0.49\textwidth}
-%         \centering
-%         \includegraphics[width=\linewidth]{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes.pdf}
-%         \caption{Histogram of the genuine and imposter combinations of the fingerprint scores}
-%         \label{fig:livdet2015_histogram}
-%     \end{subfigure}\hfill
-%     \begin{subfigure}[t]{0.49\textwidth}
-%         \centering
-%         \includegraphics[width=\linewidth]{figs/fig_spoofed_users/livdet_sourceafis_smoothed_pdf_best_of_probes.pdf}
-%         \caption{Smoothed probability distribution function of the genuine and imposter combinations of the fingerprint scores}
-%         \label{fig:livdet2015_smoothed}
-%     \end{subfigure}
-%     \caption{From histogram to probability distribution function}
-% \end{figure}
+% FRR
+\addplot[thick, blue]
+table [x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{FRR (smoothed-PDF integral)}
 
+% EER point
+\addplot[only marks, mark=*, mark size=1.8pt, black]
+table [x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_points.txt};
+\addlegendentry{EER}
 
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.49\textwidth]{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes.pdf}
-%     \caption{FAR vs.\ FRR curves for the fingerprint scores}
-%     \label{fig:livdet2015_far_frr}
-% \end{figure}
-
-
-% \begin{figure}[ht]
-%     \centering
-%     \begin{subfigure}[t]{0.49\textwidth}
-%         \centering
-%         \includegraphics[width=\linewidth]{figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes.pdf}
-%         \caption{Success probability function of a mechanism composed of a single biometric credential}
-%         \label{fig:livdet2015_single_success}
-%     \end{subfigure}\hfill
-%     \begin{subfigure}[t]{0.49\textwidth}
-%         \centering
-%         \includegraphics[width=\linewidth]{figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes.pdf}
-%         \caption{Success probability function of a mechanism composed of a single biometric credential and a single atomic credential with probabilities $P_{\text{safe}} = 0.8$,\\$P_{\text{loss}} = 0.04, P_{\text{leak}} = 0.15, P_{\text{theft}} = 0.01.$}
-%         \label{fig:livdet2015_success_and_or}
-%     \end{subfigure}
-%     \caption{Biometric credential achieves higher success probability than the EER point in both biometric credential based mechanism and integrated mechanism}
-%     \label{fig:spoofed_continuous_credential_success}
-% \end{figure}
+\end{axis}
+\end{tikzpicture}
+\caption{FAR and FRR as a function of the decision threshold, with the Equal Error Rate (EER) point.}
+\label{fig:sourceafis_far_frr}
+\end{figure}
 
 
-% \section{Conclusion}\label{sec:8}
-% We formalize the authentication mechanism model consisting, for the first time, of both biometric alone and multi-credentials mechanisms. We analyze the success of each mechanism type and present a new operating point that achieves higher success probability by modelling each credential with four probability states.
-% We show every mechanism comprised of atomic credentials can be enhanced by integrating it with asymptotically separable biometric credential. 
-% Our analysis shows significant improvement of the success probability under spoofing attack scenarios, which became prevalant and easier on biometric systems in today's artificial intelligence era. 
-% Building new mechanisms, based on the suggested dynamic operating point done $(\S\ref{sec:4})$ and stricting the threshold when adversaries are using spoofing tools to attack the biometric system is a promising direction for future work.
-% Our findings have important and impactful implications for the design of secure authentication biometric systems. Harnessing our approach, will affect millions of users around the world and improve their privacy and security of their digital assets.
+\begin{figure}[t]
+\centering
+
+\pgfplotsset{
+    sourceafissuccess/.style={
+        scale only axis,
+        width=0.88\columnwidth,
+        height=0.50\columnwidth,
+        xlabel={Threshold (\%)},
+        ylabel={Success Probability},
+        ymin=0,
+        ymax=1,
+        grid=major,
+        legend style={
+            anchor=north east,
+            legend columns=2,
+            draw=black,
+            fill=white,
+            font=\scriptsize
+        },
+        each nth point=2,
+        filter discard warning=false
+    }
+}
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    sourceafissuccess
+]
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=P_success] {figs/fig_different_users_sourceafsi/sourceafis_p_success_data.txt};
+\addlegendentry{$P_{\mathrm{success}}(T)$}
+
+\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+table [x=T_eer, y=P_eer] {figs/fig_different_users_sourceafsi/sourceafis_p_success_points.txt};
+\addlegendentry{$P_{\mathrm{success}}(T_{\mathrm{EER}})$}
+
+\addplot[only marks, mark=*, mark size=1.6pt, myRed]
+table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_success_points.txt};
+\addlegendentry{Optimal point}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Single biometric credential mechanism's success.}
+\end{subfigure}
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    sourceafissuccess
+]
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=P_and] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_data.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(T)$}
+
+\addplot[thick, myOrange, mark=none]
+table [x=T, y=P_or] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_data.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(T)$}
+
+\addplot[only marks, mark=*, mark size=1.5pt, blue]
+table [x=T_and_opt, y=P_and_opt] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+\addlegendentry{AND optimum}
+
+\addplot[only marks, mark=x, mark size=1.9pt, myOrange]
+table [x=T_or_opt, y=P_or_opt] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+\addlegendentry{OR optimum}
+
+\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+table [x=T_eer, y=P_and_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+\addlegendentry{AND at EER}
+
+\addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
+table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+\addlegendentry{OR at EER}
+
+\end{axis}
+\end{tikzpicture}
+\caption{biometric credential integrated with an atomic credential into AND and OR mechanisms.}
+\end{subfigure}
+
+\Description{Success probability curves as a function of threshold, including EER and optimal operating points.}
+\caption{
+Success probability as a function of the threshold.
+The AND and OR mechanisms achieve success probabilities of 
+$0.93$ and $0.94$ at the EER point, and 
+$0.96$ and $0.95$ at their respective optimal operating points.
+}
+\label{fig:sourceafis_success}
+\end{figure}
+
+
+We show that the optimal operating point of the integrated mechanism is different from the EER point and achieves higher success probability by around 3\% compared to the EER point, as the EER itself is only 1.8\%. In addition, we can observe that the optimal point in both mechanisms achieves higher success probability than both the atomic credetial mechanisms and biometric credential mechanism when tested individually as shown in Figure~\ref{fig:sourceafis_success}. Although there is an improvement in the success probability of the integrated mechanism, we can observe the improvement is not as significant as the one observed in the theoretical analysis. This can be explained by the fact that the EER point of the biometric credential is already very low, indicating high seperability between a user and an attacker and thus, there is no much room for improvement. In that scenario, we compared several templates of user 103 against templates of different users. However, our main approach in this paper was to increase the mechanism's success in scenarios where an imposter will try to spoof the user templates and authenticate into the user account. Hence, we expect the imposter to use spoofing tools, producing samples resamble with score distribution function that much more similar to the genuine distribution function, which might lead to increased EER point. 
+
+To support this claim, we used the LivDet2015 database~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale database of live and spoof fingerprint samples. We follow the same methodology as before and used the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As probe templates, we selected six Digital Persona scanner images of user 002\_0. Each probe was matched against 14 additional images of the same user to generate genuine scores. For each target image, we define the final score methodolodgy as the maximum similarity across 6 probe templates. For example, if the matching scores between a target image and the six probes are [0.3, 0.5, 0.4, 0.8, 0.9, 0.7], then the resulting score is 0.9. To simulate a spoofing attack, we used fake fingerprint images of the same user (002\_0) produced by Gelatine, Woodglue, Latex and Ecoflex and match them against the probe templates to obtain the imposter score distribution. The same maximum-score aggregation was applied in this case as well. We present the resulting histogram in Figure~\ref{fig:livdet_sourceafis_histogram}. We then compute the EER point and plot the FAR-FRR curve, as shown in Figure~\ref{fig:livdet_sourceafis_far_frr}. As expected, the EER increased significantly to 17.8\%. Finally, we evaluated the success probability for both a single biometric credential and for a mechanism composed of an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We can observe that the optimal operating point reducing the failure probability of an AND mechanism by 60\% and Or mechanism by 44\% compared to the EER point. Moreover, we reduced the failure probability by 50\% when integrating into AND mechanism compared to an atomic credential mechanism with $P_{\text{safe}} = 0.8, P_{\text{loss}} = 0.04, P_{\text{leak}} = 0.15, P_{\text{theft}} = 0.01$ probabilities.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    bar width=2pt,
+    width=0.9\columnwidth,
+    height=0.5\columnwidth,
+    xlabel={Normalized similarity score (\%)},
+    ylabel={Count},
+    grid=major,
+    legend pos=north east,
+    legend style={draw=black, fill=white, font=\scriptsize},
+]
+
+\addplot[
+    ybar,
+    fill=blue,
+    fill opacity=0.5,
+    draw=blue
+]
+table [x=score, y=genuine] {figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+\addlegendentry{Genuine}
+
+\addplot[
+    ybar,
+    fill=red,
+    fill opacity=0.5,
+    draw=red
+]
+table [x=score, y=impostor] {figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+\addlegendentry{Impostor}
+
+\end{axis}
+\end{tikzpicture}
+\Description{Histogram of normalized similarity scores for genuine and impostor comparisons using the best score over six probe templates.}
+\caption{LivDet score histogram using the best score over probe templates.}
+\label{fig:livdet_sourceafis_histogram}
+\end{figure}
+
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.9\columnwidth,
+    height=0.5\columnwidth,
+    xlabel={Threshold (\%)},
+    ylabel={Error Rate},
+    ymin=0,
+    ymax=1,
+    grid=major,
+    legend pos=south east,
+    legend style={draw=black, fill=white, font=\scriptsize},
+    each nth point=2,
+    filter discard warning=false
+]
+
+\addplot[thick, red, mark=none]
+table [x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+\addlegendentry{FAR}
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+\addlegendentry{FRR}
+
+\addplot[only marks, mark=*, mark size=1.6pt, black]
+table [x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_points.txt};
+\addlegendentry{EER}
+
+\end{axis}
+\end{tikzpicture}
+\Description{FAR and FRR curves as a function of threshold for LivDet SourceAFIS scores using the best score over six probe templates, with the EER point marked.}
+\caption{FAR and FRR as a function of the threshold using the best score over probe templates. The Equal Error Rate (EER) occurs at $\approx 17.8\%$.
+}
+\label{fig:livdet_sourceafis_far_frr}
+\end{figure}
+
+
+\begin{figure}[t]
+\centering
+
+\pgfplotsset{
+    livdetsuccess/.style={
+        scale only axis,
+        width=0.88\columnwidth,
+        height=0.50\columnwidth,
+        xlabel={Threshold (\%)},
+        ylabel={Success Probability},
+        ymin=0,
+        ymax=1,
+        grid=major,
+        legend pos=north east,
+        legend style={draw=black, fill=white, font=\scriptsize},
+        each nth point=2,
+        filter discard warning=false
+    }
+}
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[livdetsuccess]
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=P_success] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_data.txt};
+\addlegendentry{$P_{\mathrm{success}}(T)$}
+
+\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+table [x=T_eer, y=P_eer] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_points.txt};
+\addlegendentry{$P_{\mathrm{success}}(T_{\mathrm{EER}})$}
+
+\addplot[only marks, mark=*, mark size=1.6pt, myRed]
+table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_points.txt};
+\addlegendentry{Optimal point}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Single continuous credential.}
+\end{subfigure}
+
+\medskip
+
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[livdetsuccess]
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=P_and] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(T)$}
+
+\addplot[thick, myOrange, mark=none]
+table [x=T, y=P_or] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(T)$}
+
+\addplot[only marks, mark=*, mark size=1.5pt, blue]
+table [x=T_and_opt, y=P_and_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+\addlegendentry{AND optimal point}
+
+\addplot[only marks, mark=x, mark size=1.9pt, myOrange]
+table [x=T_or_opt, y=P_or_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+\addlegendentry{OR optimal point}
+
+\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+table [x=T_eer, y=P_and_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+\addlegendentry{AND at EER}
+
+\addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
+table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+\addlegendentry{OR at EER}
+
+\end{axis}
+\end{tikzpicture}
+\caption{AND and OR mechanisms.}
+\end{subfigure}
+
+\Description{Success probability as a function of threshold for the LivDet SourceAFIS scores using the best score over probe templates.}
+\caption{
+Success probability as a function of the decision threshold using the best score over probe templates.
+The AND mechanism achieves a maximal success probability of $0.896$, while the OR mechanism achieves $0.826$.
+At the EER operating point, the success probabilities are $0.759$ and $0.684$ for the AND and OR mechanisms, respectively.
+}
+\label{fig:livdet_sourceafis_success}
+\end{figure}
+
+
+\section{Conclusion}\label{sec:8}
+We formalize the authentication mechanism model consisting, for the first time, of both biometric and atomic credential mechanisms. We analyze the success of each mechanism type and present a new operating point that achieves higher success probability by modelling each credential with four probability states.
+We show every mechanism comprised of atomic credentials can be enhanced by integrating it with asymptotically separable biometric credential. 
+Our analysis shows significant reduction of the failure probability under spoofing attempts, which became prevalant and easier on biometric systems in today's artificial intelligence era. 
+Building new mechanisms, based on the suggested dynamic operating point done $(\S\ref{sec:4})$ is a promising direction for future work.
+Our findings have important and impactful implications for the design of secure authentication biometric systems, as we suggest letting the integrators to set the thresholds of the biometric sensors. Harnessing our approach, amy affect millions of users around the world to enhace their security of digital and physical assets.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{main}

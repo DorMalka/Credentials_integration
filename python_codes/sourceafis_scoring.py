@@ -160,6 +160,23 @@ def plot_histograms(genuine_scores, impostor_scores):
     plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_histogram.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
+def export_histograms(genuine_scores, impostor_scores):
+    out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    bins = HIST_BINS
+
+    # Compute histograms
+    hist_g, edges = np.histogram(genuine_scores, bins=bins)
+    hist_i, _     = np.histogram(impostor_scores, bins=bins)
+
+    # Bin centers
+    centers = (edges[:-1] + edges[1:]) / 2
+
+    with open(out_dir / "sourceafis_histogram_data.txt", "w") as f:
+        f.write("bin genuine impostor\n")
+        for c, g, i in zip(centers, hist_g, hist_i):
+            f.write(f"{c:.4f} {g} {i}\n")
 
 def build_hist_pdf(scores, bins):
     counts, edges = np.histogram(scores, bins=bins)
@@ -303,6 +320,20 @@ def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
     plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_far_frr.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
+def export_far_frr(thresholds, fars, frrs, eer, eer_threshold):
+    out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Curve data
+    with open(out_dir / "sourceafis_far_frr_data.txt", "w") as f:
+        f.write("T FAR FRR\n")
+        for t, fa, fr in zip(thresholds, fars, frrs):
+            f.write(f"{t:.6f} {fa:.6f} {fr:.6f}\n")
+
+    # EER point
+    with open(out_dir / "sourceafis_far_frr_points.txt", "w") as f:
+        f.write("T_eer EER\n")
+        f.write(f"{eer_threshold:.6f} {eer:.6f}\n")
 
 def compute_success_and_or(
     thresholds,
@@ -413,6 +444,47 @@ def plot_success_and_or(
     plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_success_and_or.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
+def export_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold):
+    out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    p_eer = float(np.interp(eer_threshold, thresholds, p_success))
+
+    with open(out_dir / "sourceafis_p_success_data.txt", "w") as f:
+        f.write("T P_success\n")
+        for t, p in zip(thresholds, p_success):
+            f.write(f"{t:.6f} {p:.6f}\n")
+
+    with open(out_dir / "sourceafis_p_success_points.txt", "w") as f:
+        f.write("T_eer P_eer T_opt P_opt\n")
+        f.write(f"{eer_threshold:.6f} {p_eer:.6f} {max_threshold:.6f} {max_success:.6f}\n")
+
+
+def export_success_and_or(
+    thresholds,
+    p_and,
+    p_or,
+    idx_and,
+    idx_or,
+    eer_threshold,
+    p_and_eer,
+    p_or_eer,
+):
+    out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    with open(out_dir / "sourceafis_success_and_or_data.txt", "w") as f:
+        f.write("T P_and P_or\n")
+        for t, pa, po in zip(thresholds, p_and, p_or):
+            f.write(f"{t:.6f} {pa:.6f} {po:.6f}\n")
+
+    with open(out_dir / "sourceafis_success_and_or_points.txt", "w") as f:
+        f.write("T_and_opt P_and_opt T_or_opt P_or_opt T_eer P_and_eer P_or_eer\n")
+        f.write(
+            f"{thresholds[idx_and]:.6f} {p_and[idx_and]:.6f} "
+            f"{thresholds[idx_or]:.6f} {p_or[idx_or]:.6f} "
+            f"{eer_threshold:.6f} {p_and_eer:.6f} {p_or_eer:.6f}\n"
+        )
 
 # =========================
 # Main
@@ -432,6 +504,7 @@ if __name__ == "__main__":
     print(f"[i] Normalized impostor scores: min={impostor.min():.4f} max={impostor.max():.4f} mean={impostor.mean():.4f}")
 
     plot_histograms(genuine, impostor)
+    export_histograms(genuine, impostor)
     plot_smoothed_pdfs(genuine, impostor, step=PDF_FINE_STEP, sigma_points=SMOOTH_SIGMA_POINTS)
 
     thresholds, fars, frrs = compute_far_frr_from_smoothed_pdf(
@@ -447,14 +520,14 @@ if __name__ == "__main__":
     print(f"[i] EER threshold ≈ {eer_threshold:.4f}")
 
     plot_far_frr(thresholds, fars, frrs, eer, eer_threshold)
-
+    export_far_frr(thresholds, fars, frrs, eer, eer_threshold)
     p_success, max_success, max_threshold = compute_p_success(thresholds, fars, frrs)
 
     print(f"[i] Max P_success = {max_success:.4f}")
     print(f"[i] Max P_success threshold = {max_threshold:.4f}")
 
     plot_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold)
-
+    export_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold)
     p_and, p_or, idx_and, idx_or, p_and_eer, p_or_eer = compute_success_and_or(
         thresholds,
         fars,
@@ -472,6 +545,16 @@ if __name__ == "__main__":
     print(f"[i] OR  at EER = {p_or_eer:.4f}")
 
     plot_success_and_or(
+        thresholds,
+        p_and,
+        p_or,
+        idx_and,
+        idx_or,
+        eer_threshold,
+        p_and_eer,
+        p_or_eer,
+    )
+    export_success_and_or(
         thresholds,
         p_and,
         p_or,
