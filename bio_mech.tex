@@ -1,11 +1,15 @@
-\documentclass[sigconf]{acmart}
+\documentclass[conference,compsoc]{IEEEtran}
 \usepackage[utf8]{inputenc}
-\usepackage{geometry}
 \usepackage{xspace}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{subcaption}
 \usepackage{pgfplots}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage[nocompress]{cite}
+\usepackage[colorlinks=false, pdfborder={0 0 0}, hidelinks]{hyperref}
 \pgfplotsset{compat=1.16}
 \usepgfplotslibrary[colorbrewer]
 \usetikzlibrary{pgfplots.colorbrewer}
@@ -20,46 +24,26 @@
 \definecolor{myGreen}{HTML}{1B9E77}
 \definecolor{myRed}{HTML}{D7191C}
 
-\AtBeginDocument{%
-  \providecommand\BibTeX{{%
-    Bib\TeX}}}
-
-\setcopyright{acmlicensed}
-\copyrightyear{2018} %% CCS: DO NOT REMOVE
-\acmYear{2018} %% CCS: DO NOT REMOVE
-\acmDOI{XXXXXXX.XXXXXXX} %% CCS: DO NOT REMOVE
-\acmConference[Conference acronym 'XX]{Make sure to enter the correct
-  conference title from your rights confirmation email}{June 03--05,
-  2018}{Woodstock, NY}  %% CCS: DO NOT REMOVE
-\acmISBN{978-1-4503-XXXX-X/2018/06}
 \newtheorem{proposition}{Proposition}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 
 \begin{document}
-
 \sloppy
 
 \title{Biometric Authentication Mechanisms}
 
-% \author{Dor Malka}
-% \affiliation{%
-%   \institution{Technion}
-%   \city{Haifa}
-%   \country{Israel}
-% }
-% \email{dm29@campus.technion.ac.il}
-
-% \author{Ittay Eyal}
-% \affiliation{%
-%   \institution{Technion}
-%   \city{Haifa}
-%   \country{Israel}
-% }
-% \email{ittay@technion.ac.il}
+% \author{\IEEEauthorblockN{Dor Malka}
+% \IEEEauthorblockA{Technion,\\
+% Email: dm29@campus.technion.ac.il}
+% \and
+% \IEEEauthorblockN{Ittay Eyal}
+% \IEEEauthorblockA{Technion,\\
+% Email: ittay@technion.ac.il}}
 
 % \renewcommand{\shortauthors}{Malka et al.}
+\maketitle
 
 \begin{abstract}
 %%% 
@@ -82,35 +66,6 @@ Our optimized threshold reduces mechanism failure probability by~30-70\% compare
 These results imply that biometric sensors should allow integrators to set thresholds according to the authentication mechanism.
 \end{abstract}
 
-\begin{CCSXML}
-<ccs2012>
-   <concept>
-       <concept_id>10002978.10002986</concept_id>
-       <concept_desc>Security and privacy~Formal methods and theory of security</concept_desc>
-       <concept_significance>500</concept_significance>
-       </concept>
-   <concept>
-       <concept_id>10002978.10002991.10002992</concept_id>
-       <concept_desc>Security and privacy~Authentication</concept_desc>
-       <concept_significance>500</concept_significance>
-       </concept>
-   <concept>
-       <concept_id>10002978.10002991.10002992.10003479</concept_id>
-       <concept_desc>Security and privacy~Biometrics</concept_desc>
-       <concept_significance>500</concept_significance>
-       </concept>
- </ccs2012>
-\end{CCSXML}
-
-\ccsdesc[500]{Security and privacy~Formal methods and theory of security}
-\ccsdesc[500]{Security and privacy~Authentication}
-\ccsdesc[500]{Security and privacy~Biometrics}
-
-\keywords{Authentication Mechanisms, Biometrics}
-
-
-\maketitle
-
 \section{Introduction}
 %%%
 %%%
@@ -118,7 +73,59 @@ These results imply that biometric sensors should allow integrators to set thres
 \newcommand{\FAR}{\ensuremath{\textit{FAR}}\xspace}
 \newcommand{\FRR}{\ensuremath{\textit{FRR}}\xspace}
 \newcommand{\EER}{\ensuremath{\textit{EER}}\xspace}
+\newcommand{\ANDintegration}{\ensuremath{
+P^{\text{AND}}_{\text{success}}(T)
+=
+\bigl(1-\FRR(T)\bigr)
+\Bigl(
+P^{1}_{\text{safe}}
++
+P^{1}_{\text{leak}}\bigl(1-\FAR(T)\bigr)
+\Bigr).
+}\xspace}
+\newcommand{\ORintegration}{\ensuremath{
+    P^{\text{OR}}_{\text{success}}(T)
+=
+\bigl(1-\FAR(T)\bigr)
+\Bigl(
+P^{1}_{\text{safe}}
++
+P^{1}_{\text{loss}}\bigl(1-\FRR(T)\bigr)
+\Bigr).
+}\xspace}
+\newcommand{\Psuccess}{\ensuremath{
+P_{\text{success}}(T)=
+\begin{cases}
+P^{1}_{\text{safe}}, 
+& T \le a_1, \\[10pt]
 
+(P^{1}_{\text{safe}} + P^{1}_{\text{leak}})
+- P^{1}_{\text{leak}}\,\dfrac{a_2 - T}{a_2 - a_1}, 
+& a_1 < T \le u_1, \\[14pt]
+
+\dfrac{u_2 - T}{u_2 - u_1}
+\left[
+(P^{1}_{\text{safe}} + P^{1}_{\text{leak}})
+- P^{1}_{\text{leak}}\,\dfrac{a_2 - T}{a_2 - a_1}
+\right],
+& u_1 < T \le a_2, \\[16pt]
+
+\dfrac{u_2 - T}{u_2 - u_1}
+(P^{1}_{\text{safe}} + P^{1}_{\text{leak}}),
+& a_2 < T \le u_2, \\[12pt]
+
+0, 
+& T > u_2
+\end{cases}
+}\xspace}
+\newcommand{\contprobabilities}{
+\begin{align*}
+P^{2}_{\text{safe}}(T) &= 1 - \FAR(T) - \FRR(T) + \FAR(T) \cdot \FRR(T),\\
+P^{2}_{\text{loss}}(T) &= \FRR(T)\bigl(1 - \FAR(T)\bigr),\\
+P^{2}_{\text{leak}}(T) &= \FAR(T)\bigl(1 - \FRR(T)\bigr),\\
+P^{2}_{\text{theft}}(T) &= \FAR(T) \cdot \FRR(T).
+\end{align*}
+}
 Biometric credentials are one of the most prevalent keys in modern authentication. Historically, they were used in signatures and handprints on royal documents and contracts, as they rely on unique physical characteristics of the user made them unforgeable. In the early days of the Internet, biometric credentials were not applicable and therefore \emph{atomic credentials}, like physical devices or passwords, either a perfect match or wrong, were adopted. With the rapid growth of online services, more daily activities has transitioned to digital platforms. This expansion led companies to deploy advanced authentication mechanisms, such as multi-factor authentication (MFA)~\cite{Abhishek2013}, increasing significantly the number of atomic credentials a user must have or remember to authenticate. However, password vulnerabilities persist: 59\% of users in the U.S. reported leaks and 22\% frequently forget their passwords, as of 2026~\cite{password_leak}. Consequently, biometric credentials are increasingly adopted, present in most modern user devices, where access to most smartphones relies on FaceID or Fingerprint. The biometric sensors obtain a sample, calculate a similarity score between a sample and a reference stored in the database, and output accept if the score is above a set match threshold or reject otherwise.
 
 Previous work~$(\S\ref{sec:2})$ has conducted extensive analysis of biometric credentials in isolation, primarily focusing on system accuracy and performance, aiming to reduce the false acceptance (\FAR) and false rejection (\FRR) rates~\cite{Anil1997,prabhakar2003}. Sarkar et al.~\cite{sarkar2020} introduce the Equal Error Rate (\EER, where \FAR = \FRR) a heuristic operating point of biometric sensors. Hong et al.~\cite{hong1998} propose a fused biometric system in which the final decision is based on the matching scores of both face and fingerprint. While these works widely cover biometric credentials, none of them analyze their integration into an authentication mechanism. Other works proposed authentication mechanisms defined as predicate of credential possession~\cite{maram2024,mouallem2024,Eyal2021,Abhishek2013}, where each credential is treated as atomic. However, such settings are partially applicable to our framework. While we adopt their definition of \emph{mechanism's success} as the probability it accepts users and rejects attackers, they treat biometric as atomic credntials. This leaves open the question of whether adapting biometric credentials in the presence of other credentials, can form the authentication mechanism to enhance its success.
@@ -229,12 +236,11 @@ P_{\text{loss}} = \FRR(t) \cdot (1 - \FAR(t))
 P_{\text{leak}} = \FAR(t) \cdot (1 - \FRR(t))
 \]
 \[
-P_{\text{stolen}}= \FRR(t) \cdot \FAR(t)
+P_{\text{stolen}} = \FRR(t) \cdot \FAR(t)
 \]
 \[
-P_{{\text{safe}}}=1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{stolen}}}=(1 - \FAR(t)) \cdot (1 - \FRR(t))
+P_{{\text{safe}}} =1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{stolen}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t))
 \]
-
 Where \FAR and \FRR are given by:
 \[
 \FAR(t) = \int_{t}^{a_2} f_A[s] ds
@@ -250,7 +256,7 @@ Where \FAR and \FRR are given by:
 
 An authentication mechanism $M$ intercact with two players: a user $U$ and an attacker $A$. Both players, try to satisfy the mechanism with their own set of credentials $\{c_1, c_2, \ldots, c_n\}$ in order to reach the asset. The decision of the authentication mechanism is based on the mechanism's logic. 
 
-\begin{definition} (Mechanism Logic) Mechanism logic $L$ is the decision rule that maps credential's availability $\sigma_i$ to a final outcome \emph{accept} or \emph{reject} under certain logical conditions. 
+\begin{definition} (Mechanism Logic) A mechanism logic $L$ is the decision rule that maps credential's availability $\sigma_i$ to a final outcome \emph{accept} or \emph{reject} under certain logical conditions. 
 \end{definition}
 
 For example, in an \emph{AND mechanism}, the mechanism grants access to a user if and only if all credentials are available to the user and at least one of them not available to the attacker. In an \emph{OR mechanism}, the mechanism grants access to a user if at least one credential is available to the user and none are available to the attacker. We are now ready to define the mechanism's success.
@@ -281,8 +287,7 @@ P_{\text{Success}}(M^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}
 
 \section{Single Biometric Credential}\label{sec:4}
 
-
-Until now, it has been common practice to select the operating point at the Equal Error Rate (\EER), where $\FAR = \FRR$ following Sarkar et al.~\cite{sarkar2020}. Our findings indicate that a different operating point can yield a higher $P_{\text{safe}}$, thereby enhancing the mechanism's success. Furthermore, We found a link between the operating point and the variance of the PDFs. We will further explore this in the following sections for different distributions.
+Until now, it has been common practice~\cite{sarkar2020} to select the operating point at the Equal Error Rate (\EER), where $\FAR = \FRR$. Having defined different mechanisms success, we proceed to analyze a mechanism comprises first~$(\S\ref{sec:4.1})$ and second~$(\S\ref{sec:4.2})$ order approximations for a single biometric credential. We show that the optiomal threshold differs from the \EER and explore the relation between the mechaism success and the \EER.
 
 \subsection{Uniformly Distributed Credential}\label{sec:4.1}
 As a first-order approximation, we model the biometric credential as a uniform distribution.
@@ -295,7 +300,7 @@ f_U(s) = \frac{1}{u_2-u_1} \quad \text{for } u_1 \leq s \leq u_2
 f_A(s) = \frac{1}{a_2-a_1} \quad \text{for } a_1 \leq s \leq a_2
 \] 
 
-We calculate the \FAR(t) and \FRR(t) are given by:
+The \FAR(t) and \FRR(t) are given by:
 
 \[
 \FAR(t) = \int_{t}^{a_2} \frac{1}{a_2-a_1} ds =
@@ -318,29 +323,29 @@ We calculate the \FAR(t) and \FRR(t) are given by:
 \end{array}
 \right.
 \]
+Denote:
+\[
+\alpha(t)=\frac{t-u_1}{u_2-u_1},
+\qquad
+\beta(t)=\frac{a_2-t}{a_2-a_1}.
+\]
 
 We expect the user distribution to be characterized by higher values of the matching score $s$ than the attacker. Otherwise, the attacker would be more likely to produce scores that lead to successful authentication, rendering the biometric credential ineffective. Thus, we assume that $a_2 < u_2$.
 We analyze three different cases: 
 
 (1)~$a_2 < u_1$: In this case, the attacker and user distributions are completely seperated. Any threshold $t$ chosen within the separation region results in perfect mehcanism success. 
 
-(2)~$u_1 < a_1 < a_2 < u_2$: The attacker distribution is fully contained by the user distribution. The probability of success is given by Equation~\ref{eqn:safesuccess}. By setting the $\FAR(t)$ and $\FRR(t)$ into Equation~\ref{eqn:safesuccess}, the probability of success is given by:
+(2)~$u_1 < a_1 < a_2 < u_2$: The attacker distribution is fully contained by the user distribution. The probability of success is given by Equation~\ref{eqn:safesuccess}. By setting the $\FAR(t)$ and $\FRR(t)$ into Equation~\ref{eqn:safesuccess}, we cacluclate the probability of success.
 
 \[
 P_{\text{success}}(t) = 
-\left\{
-\begin{array}{ll}
-    0 & \text{if } t \le u_1 \\
-    \\
-    0 & \text{if } u_1 < t \le a_1 \\
-    \\
-    1 - \frac{t - u_1}{u_2 - u_1} - \frac{a_2 - t}{a_2 - a_1} + \frac{t - u_1}{u_2 - u_1}\cdot\frac{a_2 - t}{a_2 - a_1} & \text{if } u_1 < t \le a_2 \\
-    \\
-    1 - \frac{t - u_1}{u_2 - u_1} & \text{if } a_2 < t \le u_2 \\
-    \\
-    0 & \text{if } t > u_2
-    \end{array}
-\right.
+\begin{cases}
+    0, & t \le u_1 \\
+    0, & u_1 < t \le a_1 \\
+    1 - \alpha(t) - \beta(t) + \alpha(t)\cdot\beta(t), & u_1 < t \le a_2\\
+    1 - \alpha(t), & a_2 < t \le u_2 \\
+    0, & t > u_2
+\end{cases}
 \]
 
 (3)~$a_1 < u_1 < a_2 < u_2$: The user and attacker distributions partially overlap. Figure~\ref{fig:uniforms_distributions} illustrates this case where the user and attacker PDF's are symmetrically and asymmetrically distributed both as function of the matching score $s$.
@@ -422,19 +427,13 @@ By setting the $\FAR(t)$ and $\FRR(t)$ into Equation~\ref{eqn:safesuccess}, the 
 
 \[
 P_{\text{success}}(t) = 
-\left\{
-\begin{array}{ll}
-    0 & \text{if } t \le a_1 \\
-    \\
-    1 - \frac{a_2-t}{a_2 - a_1} & \text{if } a_1 < t \le u_1 \\
-    \\
-    1 - \frac{t - u_1}{u_2 - u_1} - \frac{a_2 - t}{a_2 - a_1} + \frac{t-u_1}{u_2 - u_1}\cdot\frac{a_2 - t}{a_2 - a_1} & \text{if } u_1 < t \le a_2 \\
-    \\
-    1 - \frac{t - u_1}{u_2 - u_1} & \text{if } a_2 < t \le u_2 \\
-    \\
-    0 & \text{if } t > u_2
-    \end{array}
-\right.
+\begin{cases}
+    0, & t \le a_1 \\
+    1 - \beta(t), & a_1 < t \le u_1 \\
+    1 - \alpha(t) - \beta(t) + \alpha(t)\cdot\beta(t), & u_1 < t \le a_2\\
+    1 - \alpha(t), & a_2 < t \le u_2 \\
+    0, & t > u_2
+\end{cases}
 \]
 
 We analyze the probability of success and find the optimal threshold that maximizes the mechanism's success in each interval. We note that the third and fourth regions in both second and third cases are the same. Thus, we can analyze them together to find the optimal threshold in each region. The success function is linearly increasing in the second region of the third case, thus the maximum is achieved at the right bound of the region where $t = u_1$. The success function is linearly decreasing in the fourth region in both second and third cases, thus the optimal threshold in this region is at the left bound of the region, which is $T = a_2$. Since $P_{\text{success}}(T)$ is a continuous function, the global maximum is expected to achieve in the third region in both cases. Then, we analyze the third region and find the global maximum and optimal threshold:
@@ -549,12 +548,12 @@ table [x=FRR_eer, y=FAR_eer] {figs/fig_uniform/success_uniform_data.txt};
 
 \end{axis}
 \end{tikzpicture}
-\Description{A \FAR versus \FRR operating curve showing the operating curve, the optimal operating point, and the equal error rate point.}
+% \Description{A \FAR versus \FRR operating curve showing the operating curve, the optimal operating point, and the equal error rate point.}
 \caption{\FAR vs. \FRR operating curve with optimal and \EER points.}
 \label{fig:FAR_FRR_uniform_1_cred}
 \end{figure}
 
-\subsection{Quadratic Distributed Credential}
+\subsection{Quadratic Distributed Credential}\label{sec:4.2}
 %%%
 %%%
 %%%
@@ -874,7 +873,7 @@ table [x=s, y=PA] {figs/fig_parabola/parabola_case_c.txt};
 
 \pgfplotslegendfromname{distlegend}
 
-\Description{Three plots showing quadratic user and attacker probability density functions for three attacker configurations.}
+% \Description{Three plots showing quadratic user and attacker probability density functions for three attacker configurations.}
 \caption{Quadratic user and attacker distributions.}
 \label{fig:different_attackers_pdf_1_quadratic_cred}
 \end{figure*}
@@ -976,7 +975,7 @@ table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_c_points.txt};
 
 \pgfplotslegendfromname{successlegend}
 
-\Description{Three plots showing the success probability as a function of the threshold, with optimal and \EER points marked.}
+% \Description{Three plots showing the success probability as a function of the threshold, with optimal and \EER points marked.}
 \caption{Success probability for three quadratic attacker distributions.}
 \label{fig:success_per_attacker_1_quadratic_cred}
 \end{figure*}
@@ -1088,7 +1087,7 @@ table [x=FRR_eer, y=FAR_eer]
 
 \pgfplotslegendfromname{farfrrlegend}
 
-\Description{Three \FAR versus \FRR operating curves for different attacker distributions, each marking the optimal operating point and the equal error rate point.}
+% \Description{Three \FAR versus \FRR operating curves for different attacker distributions, each marking the optimal operating point and the equal error rate point.}
 \caption{\FAR vs. \FRR operating curves for different attacker distributions.}
 \label{fig:FAR_FRR_1_quadratic_cred}
 \end{figure*}
@@ -1119,7 +1118,7 @@ table [x=variance, y=gap] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 
 \end{axis}
 \end{tikzpicture}
-\Description{A curve showing the gap between the optimal threshold and \EER threshold as a function of attacker variance.}
+% \Description{A curve showing the gap between the optimal threshold and \EER threshold as a function of attacker variance.}
 \caption{Gap between optimal and \EER thresholds as a function of attacker's variance.}
 \label{fig:gap_vs_variance_parabola}
 \end{figure}
@@ -1208,7 +1207,7 @@ table [x=s, y=PA2] {figs/fig_2continuous/gaussians_2cred_data.txt};
 \end{tikzpicture}
 \end{subfigure}
 
-\Description{Two Gaussian density plots for two biometric credentials, each showing user and attacker score distributions.}
+% \Description{Two Gaussian density plots for two biometric credentials, each showing user and attacker score distributions.}
 \caption{Gaussian user and attacker distributions.}
 \label{fig:01_gaussians}
 \end{figure}
@@ -1296,7 +1295,7 @@ table [x=FAR2_safe, y=FRR2_safe] {figs/fig_2continuous/far_vs_frr_2cred_points.t
 
 \pgfplotslegendfromname{farfrrtwocredlegend}
 
-\Description{Two \FAR versus \FRR operating curves for two Gaussian credentials, with AND optimum, OR optimum, \EER, and standalone safe-opt points marked.}
+% \Description{Two \FAR versus \FRR operating curves for two Gaussian credentials, with AND optimum, OR optimum, \EER, and standalone safe-opt points marked.}
 \caption{\FAR vs. \FRR operating curves for two biometric credentials.}
 \label{fig:02_far_vs_frr}
 \end{figure}
@@ -1393,7 +1392,7 @@ table [x=T2_eer, y=P_or_T2_eer] {figs/fig_2continuous/success_functions_2cred_po
 \medskip
 \pgfplotslegendfromname{success2credlegend}
 
-\Description{Two success probability curves for threshold sweeps over two biometric credentials, showing AND and OR mechanisms with optimum and \EER thresholds.}
+% \Description{Two success probability curves for threshold sweeps over two biometric credentials, showing AND and OR mechanisms with optimum and \EER thresholds.}
 \caption{Success probability as a function of the threshold for two biometric credentials.}
 \label{fig:04_success_functions}
 \end{figure}
@@ -1440,85 +1439,31 @@ P^2_{safe} &= 1 - \FAR(T) - \FRR(T) + \FAR(T) \cdot \FRR(T),\\
 P^2_{leak} &=\FAR(T)\,\bigl(1 - \FRR(T)\bigr).
 \end{aligned}
 \]
-To analyze the probability of success for the \emph{AND} mechanism, we set the above probabilities into Equation~\ref{eqn:andsuccess}. Thus, the probability of success is a function of the threshold $T$ and divided into 5 intervals.
-
-\newcommand{\Psuccess}{\ensuremath{
-P_{\text{success}}(T)=
-\begin{cases}
-P^{1}_{\text{safe}}, 
-& T \le a_1, \\[10pt]
-
-(P^{1}_{\text{safe}} + P^{1}_{\text{leak}})
-- P^{1}_{\text{leak}}\,\dfrac{a_2 - T}{a_2 - a_1}, 
-& a_1 < T \le u_1, \\[14pt]
-
-\dfrac{u_2 - T}{u_2 - u_1}
-\left[
-(P^{1}_{\text{safe}} + P^{1}_{\text{leak}})
-- P^{1}_{\text{leak}}\,\dfrac{a_2 - T}{a_2 - a_1}
-\right],
-& u_1 < T \le a_2, \\[16pt]
-
-\dfrac{u_2 - T}{u_2 - u_1}
-(P^{1}_{\text{safe}} + P^{1}_{\text{leak}}),
-& a_2 < T \le u_2, \\[12pt]
-
-0, 
-& T > u_2
-\end{cases}
-}\xspace}
-
-\newcommand{\contprobabilities}{
-\begin{align*}
-P^{2}_{\text{safe}}(T) &= 1 - \FAR(T) - \FRR(T) + \FAR(T) \cdot \FRR(T),\\
-P^{2}_{\text{loss}}(T) &= \FRR(T)\bigl(1 - \FAR(T)\bigr),\\
-P^{2}_{\text{leak}}(T) &= \FAR(T)\bigl(1 - \FRR(T)\bigr),\\
-P^{2}_{\text{theft}}(T) &= \FAR(T) \cdot \FRR(T).
-\end{align*}
-}
-\newcommand{\ANDintegration}{\ensuremath{
-P^{\text{AND}}_{\text{success}}(T)
-=
-\bigl(1-\FRR(T)\bigr)
-\Bigl(
-P^{1}_{\text{safe}}
-+
-P^{1}_{\text{leak}}\bigl(1-\FAR(T)\bigr)
-\Bigr).
-}\xspace}
-\newcommand{\ORintegration}{\ensuremath{
-    P^{\text{OR}}_{\text{success}}(T)
-=
-\bigl(1-\FAR(T)\bigr)
-\Bigl(
-P^{1}_{\text{safe}}
-+
-P^{1}_{\text{loss}}\bigl(1-\FRR(T)\bigr)
-\Bigr).
-}\xspace}
-
-Define: $L(T) = \dfrac{u_2 - T}{u_2 - u_1}
+To analyze the probability of success for the \emph{AND} mechanism, we set the above probabilities into Equation~\ref{eqn:andsuccess}. Thus, the probability of success is a function of the threshold $T$ and divided into 5 intervals. Denote:
+\[
+\alpha(t)=\dfrac{u_2 - t}{u_2 - u_1},
+\qquad
+\beta(t)=\dfrac{a_2 - t}{a_2 - a_1}.
+\]
+\[L(t) = \alpha(t)
 \left[
 (P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{leak}})
-- P^{1}_{\mathrm{leak}}\,\dfrac{a_2 - T}{a_2 - a_1}
-\right]$.
-
+- P^{1}_{\mathrm{leak}}\cdot\beta(t)
+\right].\]
 \[
 P_{\mathrm{success}}(T)=
 \begin{cases}
 P^{1}_{\mathrm{safe}}, 
-& T \le a_1, \\[6pt]
+& T \le a_1, \\
 
-(P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{leak}})
-- P^{1}_{\mathrm{leak}}\,\dfrac{a_2 - T}{a_2 - a_1}, 
-& a_1 < T \le u_1, \\[10pt]
+P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{leak}}(1-\beta(t)), 
+& a_1 < T \le u_1, \\
 
-L(T),
-& u_1 < T \le a_2, \\[12pt]
+L(t),
+& u_1 < T \le a_2, \\
 
-\dfrac{u_2 - T}{u_2 - u_1}
-(P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{leak}}),
-& a_2 < T \le u_2, \\[8pt]
+\alpha(t)\cdot(P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{leak}}),
+& a_2 < T \le u_2, \\
 
 0, 
 & T > u_2 .
@@ -1709,7 +1654,7 @@ table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_
 \caption{AND mechanism.}
 \end{subfigure}
 
-\Description{Success probability curves for OR and AND mechanisms composed of an atomic and a biometric credential, highlighting the \EER and optimal operating points.}
+% \Description{Success probability curves for OR and AND mechanisms composed of an atomic and a biometric credential, highlighting the \EER and optimal operating points.}
 \caption{Success probability as a function of the threshold for OR and AND mechanisms composed of an atomic and a biometric credential.}
 \label{fig:biometric_atomic_success}
 \end{figure}
@@ -1742,11 +1687,11 @@ where $\FAR(t) = \int_{t}^{\infty} P_a(s) ds$ and $\FRR(t) = \int_{-\infty}^{t} 
 \end{definition}
 
 \begin{proposition}
-    For any mechanism $M$ composed of an atomic credential with non-zero probabilities $P_\text{safe} \text{ and } P_\text{leak} \text{ or } P_\text{loss}$, integrating the mechanism with a biometric credential whose user and attacker distributions are asymptotically separable, enhances the success of the mechanism.
+    For any mechanism $M$ composed of an atomic credential with non-zero probabilities $P_\text{safe}$ $\text{and}$ $P_\text{leak}$ $\text{or}$ $P_\text{loss}$, integrating the mechanism with a biometric credential whose user and attacker distributions are asymptotically separable, enhances the success of the mechanism.
 \end{proposition}
 
 \begin{proof}
-    The success of a mechanism composed of an atomic credential with non-zero probabilities $P_\text{safe} \text{ and } P_\text{leak} \text{ or } P_\text{loss}$ is given by $P^1_\text{safe}$. A biometric credential is characterized by 4 probability states as function of $T$: $P^{2}_{\text{safe}}(T), P^{2}_{\text{loss}}(T), P^{2}_{\text{leak}}(T), P^{2}_{\text{theft}}(T)$. We can describe each one of these probabilities as a function of False acceptance rate (\FAR) and False rejection rate (\FRR) as follows:
+    The success of a mechanism composed of an atomic credential with non-zero probabilities $P_\text{safe}$ $\text{and}$ $P_\text{leak}$ $\text{or}$ $P_\text{loss}$ is given by $P^1_\text{safe}$. A biometric credential is characterized by 4 probability states as function of $T$: $P^{2}_{\text{safe}}(T)$, $P^{2}_{\text{loss}}(T)$, $P^{2}_{\text{leak}}(T)$, $P^{2}_{\text{theft}}(T)$. We can describe each one of these probabilities as a function of False acceptance rate (\FAR) and False rejection rate (\FRR) as follows:
     \contprobabilities
     The success probability of the integrated mechanism comprised of 2 credentials is described by Equation~\ref{eqn:andsuccess} and Equation~\ref{eqn:orsuccess}. Thus, by placing the biometric credential in each configuration we can express the success probability of the integrated mechanism as a function of the operating threshold $T$:
     \begin{equation}
@@ -1791,7 +1736,7 @@ where $\FAR(t) = \int_{t}^{\infty} P_a(s) ds$ and $\FRR(t) = \int_{-\infty}^{t} 
 \end{proof}
 
 \begin{proposition}
-Suppose there $\exists T$ such that the integrated mechanism $M$ composed of biometric credential and atomic credential with non zero probabilities $P_\text{safe} \text{ and } P_\text{leak} \text{ or } P_\text{loss}$ achieves a strictly higher success probability than an atomic credential mechanism, i.e.,\[P^{\text{integrated}}_{\text{success}}(T) > P^{\text{atomic}}_{\text{success}}.\] Then necessarily, the biometric credential is asymptotically separable.
+Suppose there $\exists t$ such that the integrated mechanism $M$ composed of a biometric credential and an atomic credential with non zero probabilities $P_\text{safe}$ $\text{and}$ $P_\text{leak}$ $\text{or}$ $P_\text{loss}$ achieves a strictly higher success probability than an atomic credential mechanism, i.e.,\[P^{\text{integrated}}_{\text{success}}(T) > P^{\text{atomic}}_{\text{success}}.\] Then necessarily, the biometric credential is asymptotically separable.
 \end{proposition} 
 
 \begin{proof}
@@ -2026,7 +1971,7 @@ table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_succ
 \caption{biometric credential integrated with an atomic credential into AND and OR mechanisms.}
 \end{subfigure}
 
-\Description{Success probability curves as a function of threshold, including \EER and optimal operating points.}
+% \Description{Success probability curves as a function of threshold, including \EER and optimal operating points.}
 \caption{
 Success probability as a function of the threshold.
 The AND and OR mechanisms achieve success probabilities of 
@@ -2076,7 +2021,7 @@ table [x=score, y=impostor] {figs/fig_spoofed_users/livdet_sourceafis_histogram_
 
 \end{axis}
 \end{tikzpicture}
-\Description{Histogram of normalized similarity scores for genuine and impostor comparisons using the best score over six probe templates.}
+% \Description{Histogram of normalized similarity scores for genuine and impostor comparisons using the best score over six probe templates.}
 \caption{LivDet score histogram using the best score over probe templates.}
 \label{fig:livdet_sourceafis_histogram}
 \end{figure}
@@ -2114,7 +2059,7 @@ table [x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of
 
 \end{axis}
 \end{tikzpicture}
-\Description{\FAR and \FRR curves as a function of threshold for LivDet SourceAFIS scores using the best score over six probe templates, with the \EER point marked.}
+% \Description{\FAR and \FRR curves as a function of threshold for LivDet SourceAFIS scores using the best score over six probe templates, with the \EER point marked.}
 \caption{\FAR and \FRR as a function of the threshold using the best score over probe templates. The Equal Error Rate (\EER) occurs at $\approx 17.8\%$.
 }
 \label{fig:livdet_sourceafis_far_frr}
@@ -2199,7 +2144,7 @@ table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_an
 \caption{AND and OR mechanisms.}
 \end{subfigure}
 
-\Description{Success probability as a function of threshold for the LivDet SourceAFIS scores using the best score over probe templates.}
+% \Description{Success probability as a function of threshold for the LivDet SourceAFIS scores using the best score over probe templates.}
 \caption{
 Success probability as a function of the decision threshold using the best score over probe templates.
 The AND mechanism achieves a maximal success probability of $0.896$, while the OR mechanism achieves $0.826$.
@@ -2213,22 +2158,13 @@ At the \EER operating point, the success probabilities are $0.759$ and $0.684$ f
 We formalize the authentication mechanism model consisting, for the first time, of both biometric and atomic credential mechanisms. We analyze the success of each mechanism type and present a new operating point that achieves higher success probability by modelling each credential with four probability states.
 We show every mechanism comprised of atomic credentials can be enhanced by integrating it with asymptotically separable biometric credential. 
 Our analysis shows significant reduction of the failure probability under spoofing attempts, which became prevalant and easier on biometric systems in today's artificial intelligence era. 
-Building new mechanisms, based on the suggested dynamic operating point done $(\S\ref{sec:4})$ is a promising direction for future work.
+Building new mechanisms, based on the suggested dynamic operating point done~$(\S\ref{sec:4})$ is a promising direction for future work.
 Our findings have important and impactful implications for the design of secure authentication biometric systems, as we suggest letting the integrators to set the thresholds of the biometric sensors. Harnessing our approach, amy affect millions of users around the world to enhace their security of digital and physical assets.
 
-\bibliographystyle{ACM-Reference-Format}
+\bibliographystyle{IEEEtran}
 \bibliography{main}
 
 \appendix
-
-\section{Open Science}
-Each submitted paper must include an “Open Science” appendix that:
-\begin{itemize}
-\item Enumerates all artifacts needed to evaluate the paper’s core contributions (e.g., code, datasets, models, configuration files, scripts, documentation, benchmarks).
-\item Clearly describes how the program committee can access each artifact during double-blind review (including anonymous URLs or credentials, where applicable).
-\item Explicitly justifies any artifact that cannot be shared (e.g., due to licensing restrictions, responsible disclosure concerns, safety or privacy of study subjects, or deployment risks if adversarial methods are released prematurely). When full sharing is not possible, authors are encouraged to provide partial, synthetic, or redacted artifacts that still allow reviewers to assess the methodology.
-\item In case no artifact is needed to evaluate the paper’s core contributions, the authors should state it explicitly.
-\end{itemize}
 
 
 \end{document}
