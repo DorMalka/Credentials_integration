@@ -13,6 +13,49 @@ DATA_TXT = OUTPUT_DIR / "uniform_pdfs.txt"
 def uniform_pdf(x, a, b):
     return np.where((x >= a) & (x <= b), 1 / (b - a), 0)
 
+def compute_success_gap(u1, u2, a1, a2, N=2000):
+    x = np.linspace(min(u1, a1), max(u2, a2), N)
+
+    user_pdf = uniform_pdf(x, u1, u2)
+    attacker_pdf = uniform_pdf(x, a1, a2)
+
+    # FRR
+    FRR = np.array([
+        0.0 if T <= u1 else
+        1.0 if T >= u2 else
+        np.trapezoid(
+            user_pdf[(x >= u1) & (x <= T)],
+            x[(x >= u1) & (x <= T)]
+        )
+        for T in x
+    ])
+
+    # FAR
+    FAR = np.array([
+        1.0 if T <= a1 else
+        0.0 if T >= a2 else
+        np.trapezoid(
+            attacker_pdf[(x >= T) & (x <= a2)],
+            x[(x >= T) & (x <= a2)]
+        )
+        for T in x
+    ])
+
+    # Success
+    loss  = FRR * (1 - FAR)
+    leak  = FAR * (1 - FRR)
+    theft = FRR * FAR
+    safe  = 1 - loss - leak - theft
+
+    # Optimal
+    opt_idx = np.argmax(safe)
+    P_opt = safe[opt_idx]
+
+    # EER
+    eer_idx = np.argmin(np.abs(FAR - FRR))
+    P_eer = safe[eer_idx]
+
+    return P_opt - P_eer
 
 # ============================================================
 #    COMPUTE T_opt, T_EER and GAP for uniform PDFs (ATTACKER LEFT)
@@ -369,9 +412,80 @@ plt.legend(handles=legend_elements, loc="upper right")
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_uniforms_sweep.pdf")
 
+u1_values = np.linspace(0.05, 0.75, 40)
+deltas_u1 = []
+
+u2 = 0.9
+a1 = 0.1
+a2 = 0.5
+
+for u1 in u1_values:
+    delta = compute_success_gap(u1, u2, a1, a2)
+    deltas_u1.append(delta)
+
+plt.figure(figsize=(7, 4))
+
+plt.plot(u1_values, deltas_u1, linewidth=2, label=r"$\Delta$ vs $u_1$")
+plt.scatter(u1_values, deltas_u1)
+
+plt.xlabel(r"$u_1$")
+plt.ylabel(r"$P_{\max} - P_{\mathrm{EER}}$")
+plt.title("Improvement vs $u_1$")
+plt.grid(True)
+
+plt.legend()
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_delta_vs_u1.pdf")
+
+a2_values = np.linspace(0.4, 0.75, 40)  
+deltas_a2 = []
+
+u1 = 0.2
+u2 = 0.9
+a1 = 0.05
+
+for a2 in a2_values:
+    delta = compute_success_gap(u1, u2, a1, a2)
+    deltas_a2.append(delta)
+
+plt.figure(figsize=(7, 4))
+
+plt.plot(a2_values, deltas_a2, linewidth=2, label=r"$\Delta$ vs $a_2$")
+plt.scatter(a2_values, deltas_a2)
+
+plt.xlabel(r"$a_2$")
+plt.ylabel(r"$P_{\max} - P_{\mathrm{EER}}$")
+plt.title("Improvement vs decreasing $a_2$")
+plt.grid(True)
+
+plt.legend()
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "figs" / "fig_uniform" / "fig_delta_vs_a2.pdf")
+
+DELTA_U1_TXT = OUTPUT_DIR / "figs" / "fig_uniform" / "delta_vs_u1.txt"
+DELTA_U1_TXT.parent.mkdir(parents=True, exist_ok=True)
+
+DELTA_A2_TXT = OUTPUT_DIR / "figs" / "fig_uniform" / "delta_vs_a2.txt"
+DELTA_A2_TXT.parent.mkdir(parents=True, exist_ok=True)
+
+with open(DELTA_U1_TXT, "w") as f:
+    f.write("u1 delta\n")
+    for ui, di in zip(u1_values, deltas_u1):
+        f.write(f"{ui:.4f} {di:.4f}\n")
+
+with open(DELTA_A2_TXT, "w") as f:
+    f.write("a2 delta\n")
+    for ai, di in zip(a2_values, deltas_a2):
+        f.write(f"{ai:.4f} {di:.4f}\n")
+
+print(f"[i] Data saved to: {DELTA_U1_TXT}")
+print(f"[i] Data saved to: {DELTA_A2_TXT}")
 print("Saved all uniform figures:")
 print("  - fig_uniforms.pdf")
 print("  - fig_success_uniform.pdf")
 print("  - fig_FARvFRR_uniform.pdf")
 print("  - fig_gap_uniform.pdf")
 print("  - fig_uniforms_sweep.pdf")
+print("  - fig_delta_vs_u1.pdf")
