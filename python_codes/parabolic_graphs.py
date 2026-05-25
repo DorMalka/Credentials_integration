@@ -344,6 +344,8 @@ beta1_sweep = np.linspace(0.5, 2.5, 120)  # all between 1 and 2
 
 variances = []
 gaps = []
+Pmax_values = []
+PEER_values = []
 beta2 = attacker_roots[0][1]
 for beta1 in beta1_sweep:
     PA = attacker_pdf(x, beta1, beta2)
@@ -368,19 +370,29 @@ for beta1 in beta1_sweep:
     diff = np.abs(far_vals - frr_vals)
     idx_eer = np.argmin(diff)
     T_eer = x[idx_eer]
-
+    Pmax = Ps[idx_opt]
+    PEER = Ps[idx_eer]
     gaps.append(abs(T_opt - T_eer))
+    Pmax_values.append(Pmax)
+    PEER_values.append(PEER)
 
 variances = np.array(variances)
 gaps = np.array(gaps)
-
+Pmax_values = np.array(Pmax_values)
+PEER_values = np.array(PEER_values)
 GAP_VAR_DATA = OUTPUT_DIR / "figs" / "fig_parabola" / "gap_vs_variance_parabola.txt"
 GAP_VAR_DATA.parent.mkdir(parents=True, exist_ok=True)
 
+
 with open(GAP_VAR_DATA, "w") as f:
-    f.write("variance gap\n")
-    for var, gap in zip(variances, gaps):
-        f.write(f"{var:.4f} {gap:.4f}\n")
+    f.write("variance gap Pmax PEER\n")
+    for var, gap, pmax, peer in zip(
+        variances,
+        gaps,
+        Pmax_values,
+        PEER_values
+    ):
+        f.write(f"{var:.4f} {gap:.4f} {pmax:.4f} {peer:.4f}\n")
 
 fig_gap, ax_gap = plt.subplots(figsize=(10, 6))
 
@@ -391,7 +403,97 @@ ax_gap.grid(True, linestyle=":")
 
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "figs" / "fig_parabola" / "fig_gap_vs_variance_parabola.pdf", format="pdf")
+# ============================================================
+# EXPORT QUADRATIC PDF DATA + GENERATE TIKZ TEMPLATE
+# ============================================================
 
+def quadratic_pdf_from_roots(x, r1, r2):
+    """
+    Normalized quadratic PDF supported on [r1, r2].
+    The curve is zero at r1 and r2 and positive inside.
+    """
+    a = 6 / (r1 - r2) ** 3
+    b = -6 * (r1 + r2) / (r1 - r2) ** 3
+    c = 6 * r1 * r2 / (r1 - r2) ** 3
+
+    y = a * x**2 + b * x + c
+    y[(x < r1) | (x > r2)] = 0
+    return y
+
+
+def generate_quadratic_pdf_documents():
+    """
+    Generates one data file for the three quadratic PDF cases:
+
+        figs/fig_parabola/quadratic_three_cases.txt
+
+    Columns:
+        s PU_case1 PA_case1 PU_case2 PA_case2 PU_case3 PA_case3
+
+    Cases:
+        case 1: separated distributions
+        case 2: attacker range lies inside the user range
+        case 3: partial overlap
+    """
+
+    x = np.linspace(0, 1.0, 1000)
+
+    # ------------------------------------------------------------
+    # Case 1: separated quadratic PDFs
+    # attacker is left of user
+    # a1 < a2 < u1 < u2
+    # ------------------------------------------------------------
+    a1_case1, a2_case1 = 0.15, 0.40
+    u1_case1, u2_case1 = 0.60, 0.85
+
+    PA_case1 = quadratic_pdf_from_roots(x, a1_case1, a2_case1)
+    PU_case1 = quadratic_pdf_from_roots(x, u1_case1, u2_case1)
+
+    # ------------------------------------------------------------
+    # Case 2: attacker range lies inside the user range
+    # u1 < a1 < a2 < u2
+    # ------------------------------------------------------------
+    u1_case2, u2_case2 = 0.20, 0.85
+    a1_case2, a2_case2 = 0.40, 0.65
+
+    PU_case2 = quadratic_pdf_from_roots(x, u1_case2, u2_case2)
+    PA_case2 = quadratic_pdf_from_roots(x, a1_case2, a2_case2)
+
+    # ------------------------------------------------------------
+    # Case 3: partial overlap
+    # a1 < u1 < a2 < u2
+    # ------------------------------------------------------------
+    a1_case3, a2_case3 = 0.15, 0.65
+    u1_case3, u2_case3 = 0.40, 0.85
+
+    PA_case3 = quadratic_pdf_from_roots(x, a1_case3, a2_case3)
+    PU_case3 = quadratic_pdf_from_roots(x, u1_case3, u2_case3)
+
+    out_file = DATA_DIR / "quadratic_three_cases.txt"
+
+    np.savetxt(
+        out_file,
+        np.column_stack([
+            x,
+            PU_case1, PA_case1,
+            PU_case2, PA_case2,
+            PU_case3, PA_case3,
+        ]),
+        header=(
+            "s "
+            "PU_case1 PA_case1 "
+            "PU_case2 PA_case2 "
+            "PU_case3 PA_case3"
+        ),
+        comments="",
+        fmt="%.10f"
+    )
+
+    print(f"Saved: {out_file}")
+
+# Run this after all your plots are generated
+
+generate_quadratic_pdf_documents()
 print("Saved all parabolic figures:")
 print("  - Parabola_figure.pdf")
 print("  - fig_distributions_parabola.pdf")

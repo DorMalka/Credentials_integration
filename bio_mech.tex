@@ -7,6 +7,7 @@
 \usepackage{pgfplots}
 \usepackage{amsthm}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage[nocompress]{cite}
 \usepackage[colorlinks=false, pdfborder={0 0 0}, hidelinks]{hyperref}
@@ -206,33 +207,95 @@ We quantitatively demonstrate our theoretical analysis with experiments using re
 In summary~$(\S\ref{sec:8})$ our contributions are both theoretical and practical: (1)~Formalization of the mechanism's success function composed of biometric and atomic credentials; (2)~Symbolic analysis of the optimal threshold for biometric and atomic authentication mechanisms. (3)~Characterization of the conditions under which biometric credential integration enhances the mechanism's success; (4)~Proof that any biometric credential, under a specified condition, always enhances the mechanism's success. (5)~Empirical analysis using real biometric data, demonstrating the theoretical analysis. (6)~Direct implications to how fingerprint readers should work in practice for immediate security improvements.
 
 \section{Related Work}\label{sec:2}
-Authentication remains an active and prominent research area, with prior work broadly categorized into two main aspects: credentials and mechanisms. Credentials form the core of the authentication process, commonly manifested as passwords~\cite{password1979}, OTPs~\cite{otp2017}, physical devices~\cite{FIDO2021} or biometric features such as fingerprints, face recognition or iris~\cite{anil2004}. An authentication mechanism is a decision making protocol that evaluates a set of credentials provided by a player and output accept or reject~\cite{MattBishop2004,schneider_auth_people}. Examples include multi-factor authentication (MFA)~\cite{Abhishek2013}, an authentication mecahnism composes multiple and different credentials' categories treating each one as an atomic credential. 
+Authentication remains an active and prominent research area, with prior work broadly categorized into two main aspects: credentials and mechanisms. Credentials form the core of the authentication process, commonly manifested as passwords~\cite{password1979}, OTPs~\cite{otp2017}, physical devices~\cite{FIDO2021} or biometric features such as fingerprints, face recognition or iris~\cite{anil2004}. 
 
-Extensive work has evaluated and improved the latency and accuracy of biometric systems~\cite{Cappelli2006,Maio2002,Anil1997,LivDet2009,LivDet2011,LivDet2013,LivDet2015}. Prabhakar et al.~\cite{prabhakar2003} examine the tradeoff between two key error metrics of a biometric system, namely False Acceptance Rate (\FAR) and False Rejection Rate (\FRR). Sarkar et al.~\cite{sarkar2020} introduce the heuristic Equal Error Rate (\EER), the point where \FAR and \FRR are equal, and determine it as an operating point of the biometric system. Hong et al.~\cite{hong1998} integrate fingerprint and face recognition to design a fused biometric system that combines the matching scores of both modalities to make a final decision. 
+Extensive work has evaluated and improved the accuracy of biometric systems~\cite{Cappelli2006,Maio2002,Anil1997,LivDet2009,LivDet2011,LivDet2013,LivDet2015}. Prabhakar et al.~\cite{prabhakar2003} examine the tradeoff between two key error metrics of a biometric system, namely False Acceptance Rate~(\FAR) and False Rejection Rate~(\FRR). Sarkar et al.~\cite{sarkar2020} introduce the heuristic Equal Error Rate~(\EER), the point where~\FAR and~\FRR are equal and heuristically suggest it as an operating point of biometric credentials. However, none of these works define an optimizable success criterion for biometric systems, nor do they explore how the presence of additional credentials can influence the optimal matching threshold of the biometric system. Hong et al.~\cite{hong1998} integrate fingerprint and face recognition to design a fused biometric system that combines the matching scores of both modalities to make a final decision. While their work is closely related to our domain, it doesn't explore the influence of one biometric credential on the other, nor does it analyze the integration of biometric credentials along with other credential types within an authenticaion mechanism.
 
-Critically, none of these works define an optimizable success criterion for biometric systems. While Hong et al. closely related to our domain, they don't explore the influence of one biometric credential on the other nor do they analyze the integration of biometric credentials along with other credential types in the authenticaion mechanism. Moreover, Sarkar et al. assume a heuristic operating threshold for the biometric system and do not explore how the presence of additional credentials can influence the optimal matching threshold of the biometric system.
-
-Other work has explored authentication mechanism defined as predicate of credential possession. Maram et al.~\cite{maram2024} study interactive authentication mechanisms, where the user and attacker interact with the authentication mechanism. Mouallem et al.~\cite{mouallem2024} compare mechanisms' success and aim to identify mechanisms with maximal success when composed of a large number of homogeneous credentials. Eyal~\cite{Eyal2021} analyzes mechanisms modeled as Boolean functions of the credentials. However, these works are partially applicable to our setting. While we adopt their mechanism's success definition and the way they define the credential possession states, they model biometric credentials as atomic credentials. This leaves open the question of whether the integration of biometric credentials along with other credentials, can form the authentication mechanisms to improve its success, which is the focus of our work.
+An authentication mechanism is a decision making protocol that evaluates a set of credentials provided by a player and output accept or reject~\cite{MattBishop2004,schneider_auth_people}. Examples include multi-factor authentication (MFA)~\cite{Abhishek2013}, an authentication mecahnism composes multiple and different credentials' categories treating each one as an atomic credential. Recent work has explored authentication mechanism defined as predicate of credential possession. Maram et al.~\cite{maram2024} study interactive authentication mechanisms, where the user and attacker interact with the authentication mechanism. Mouallem et al.~\cite{mouallem2024} compare mechanisms' success and aim to identify mechanisms with maximal success when composed of a large number of homogeneous credentials. Eyal~\cite{Eyal2021} analyzes mechanisms modeled as Boolean functions of the credentials. However, these works are partially applicable to our setting. While we adopt their mechanism's success definition and the way they define the credential possession states, they model biometric credentials as atomic credentials. This leaves open the question of whether biometric credentials can be integrated with other credential types to form the authentication mechanisms with improved success, which is the focus of our work.
 
 %%%
 %%%
 %%%
-\section{Authentication Model}\label{sec:3}
-We formalize the authentication problem specifying the system components~$(\S\ref{sec:3.1})$. We furtherly define each credential's type and their characteritics~$(\S\ref{sec:3.2})$, the authentication mechanism~$(\S\ref{sec:3.3})$ and the relation between different mechanisms. 
+\section{Model}\label{sec:3}
+We formalize the authentication problem by specifying the system participants~$(\S\ref{sec:3.1})$, Credential types and their characteritics~$(\S\ref{sec:3.2})$, the authentication mechanism~$(\S\ref{sec:3.3})$, and mechanism success~$(\S\ref{sec:3.4})$. 
 
-\subsection{System Components}\label{sec:3.1}
-The system comprises three main components: a set of credentials $\{c_1, c_2, \ldots, c_n\}$, an authentication mechanism $M$ and two players: a user $U$ and an attacker $A$. All three are finite and deterministic automata. 
+\subsection{System Participants}\label{sec:3.1}
+The system comprises: an authentication mechanism~$M$ and two players: a user $U$ and an attacker $A$. All three are finite and deterministic automata. Each player interacts with the mechanism~$M$ by sending and receiving messages. We abstract away
+the concrete implementation of the credential and model only the evidence that a player can present to the mechanism. Let:
+\[
+    \mathcal{C}=\{c_1,c_2,\ldots,c_n\}
+\]
+be the set of credentials used by the mechanism.
+\begin{definition} (Availability Vector)
+    An availability vector represents the availability of all credentials to a user $U$ or an attacker $A$. Denote by $\sigma^U$,$\sigma^A$ the availability vectors of the user and the attacker, respectively.
+\end{definition}
+A scenario~$\sigma$ is the vector of states of each credential in the mechanism. We denote by~$\sigma_i$ the state of credential~$c_i$ in scenario~$\sigma$.
 
-To authenticate into the user assets, each player take advantage of his private information to satisfy the authentication mechanism. The private information of a player is represented by the credentials available to him. Credentials can be represented in different forms like data (e.g, passwords), physical devices (e.g, security keys, smartphones and laptops) or biometric features (e.g, fingerprint or FaceID). Each credential has a public part, known to the mechanism and a secret part, known only to the player. For example, when trying to access a website using a username and a passwords, a public part is the hash stored in the database and its secret part is the password and username themselves.
+Before an authentication execution begins, the world fixes a scenario~$\sigma = (\sigma^U,\sigma^A)$, where~$\sigma^U,\sigma^A \in \{0,1\}^{n}$.
 
-\subsection{Credential}\label{sec:3.2}
-\begin{definition} (Credential) A credential $c$ is a tuple $c=(c^P,c^S)$ that can be either \emph{atomic} or \emph{biometric}. $c^P$ represents the public part of the credential and $c^S$ represents the secret part.
+For a player~$P\in\{U,A\}$, the entry~$\sigma_i^P=1$ means that credential $c_i$ is available to~$P$, and~$\sigma_i^P=0$ means that it is not. We denote by
+\[
+    C_P(\sigma)=\{c_i\in\mathcal{C}:\sigma_i^P=1\}
+\]
+the set of credentials available to player~$P$ in scenario~$\sigma$. A player can attempt to present evidence for any credential. For each credential~$c_i$, we denote by~$\mathsf{present}_i(P,\sigma)$ the evidence produced by player~$P$ for credential~$c_i$ under scenario~$\sigma$. If~$c_i\notin C_P(\sigma)$, then the player cannot produce valid evidence for this credential, and we write
+\[
+    \mathsf{present}_i(P,\sigma)=\bot.
+\]
+Otherwise, the player produces an evidence value
+\[
+    e_i^P=\mathsf{present}_i(P,\sigma).
+\]
+
+Each player's evidence is evaluated using a credential evaluation function:
+\[
+    y_i^P = \mathsf{eval}_i(e_i^P).
+\]
+Where the type of the evaluation function~$\mathsf{eval}_i(e_i^P)$ depends on the credential type.
+
+\subsection{Credentials}\label{sec:3.2}
+
+To authenticate, a player uses credentials to convince the mechanism that it is the legitimate user. A credential may correspond to secret data, such as a password or one time password~(OTP); a physical object, such as a phone or security
+key; or a biometric property, such as a fingerprint or face.
+\begin{definition} (Atomic Credential)
+An atomic credential $c^{\mathrm{atm}}$ is evaluated as a binary outcome: either the presented evidence~$e_i^P$ perfectly matches the reference value, or the attempt is rejected as incorrect. For a player~$P \in \{U,A\}$ and credential~$c^{\mathrm{atm}}$, we define
+\[
+x_{c^{\mathrm{atm}}}^P \in \{0,1\},
+\]
+where~$x_{c^{\mathrm{atm}}}^P=1$ means that player $P$ perfectly satisfies credential~$c^{\mathrm{atm}}$, and~$x_{c^{\mathrm{atm}}}^P=0$ means that player~$P$ does not satisfy it. The probability of satisfying the credential is defined by~$\Pr[x_{c^{\mathrm{atm}}}^P]$ and the evaluation function is given by:
+\[
+f_{c^{\mathrm{atm}}}^P(x)
+=
+\Pr[x_{c^{\mathrm{atm}}}^P=1]\delta(x-1)
++
+\Pr[x_{c^{\mathrm{atm}}}^P=0]\delta(x),
+\]
+where $\delta(\cdot)$ denotes the Dirac delta function.
 \end{definition}
 
-The system uses a set of credentials $\{c_1, c_2, \ldots, c_n\}$. Each credential $c_i$ can be either \emph{atomic} or \emph{biometric} and can belong to one of the states:~\emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. We define the probability associated with each state as follows: $P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and $P_{\text{stolen}}$. An attacker $A$ and a user $U$ have different availability to each credential. For example, a password may be available to the user but not to the attacker, while a leaked password may be available to both. An \emph{availability vecotr} represents the availability of all credentials to a user $U$ or an attacker $A$. Denote by $\sigma^U$,$\sigma^A$ the availability vector of the user and the attacker respectively. A scenario $\sigma$ is the vector of states of each credential. Denote by $\sigma_i$ the state of credential $c_i$ in scenario $\sigma$. For example, if $\sigma_i = \text{leak}$ then $\sigma_i^U = \text{True}$ and $\sigma_i^A = \text{True}$. 
+\begin{definition} (Biometric Credential)
+A biometric credential $c^{\mathrm{bio}}$ is evaluated by a biometric sensor. For a player $P \in \{U,A\}$ let $s^P$ denote the \emph{matching score} which quantifies the similarity between the input of $P$ obtained by the sensor and the reference associated with $c^{\mathrm{bio}}$. Let $t$ denote the \emph{match threshold}. If the score is above the threshold, the output of the biometric sensor is \emph{accept}, otherwise \emph{reject}.
+A biometric credential evaluation function is given by
+\[
+f_{c^{\mathrm{bio}}}^P(s) = 
+\begin{cases}
+    1, & s_{c^{\mathrm{bio}}}^P \geq t,\\
+    0, & s_{c^{\mathrm{bio}}}^P < t.
+\end{cases},
+\]
+\end{definition}
 
-An \emph{atomic credential} is either available or not to a player. The system checks a perfect match of the atomic credential between an input of a player and a reference. If a user $U$ provides an atomic credential and $\sigma_i = \text{leak}$ then both $\sigma_i^U = \text{True}$ and $\sigma_i^A = \text{True}$ means the system grant access to both players. A \emph{biometric credential} is evaluated by a biometric sensor. Denote by $s$ the \emph{matching score} that quantifies the similarity between an input obtained by the sensor and the reference stored. Let $t$ denote the \emph{match threshold}. If the score is above the threshold, the system approves an access to the player, otherwise it denies~\cite{prabhakar2003,anil2004}. The matching score produced by the biometric sensor characterizes the players distributions: The genuine distribution $f_U[s]$ in the bounds $[u_1, u_2]$, is generated when a sample obtained by the sensor belongs to the real user. The impostor distribution $f_A[s]$ in the bounds $[a_1, a_2]$, is generated when a sample obtained by the sensor belongs to an attacker. These distributions establish two error metrics: \FAR and \FRR both are functions of the match threshold $t$. If a user $U$ provides a biometric credential and $\sigma_i = \text{safe}$ then $\sigma_i^U = \text{True}$ and $\sigma_i^A = \text{False}$. We use the \FAR and \FRR to define the biometric credential availability states:
+Each player uses a set of credentials $\{c_1, c_2, \ldots, c_n\}$. Each credential $c_i$ can be either \emph{atomic} or \emph{biometric} and can belong to one of the states:~\emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. We define the probability associated with each state as follows: $P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and $P_{\text{stolen}}$. An attacker $A$ and a user $U$ have different availability to each credential. For example, a password may be available to the user but not to the attacker, while a leaked password may be available to both. 
 
+For example, if~$\sigma_i = \text{leak}$ then the credential is available to both players, namely~$\sigma_i^U = \text{True}$ and~$\sigma_i^A = \text{True}$. If~$c_i$ is an atomic credential, we can deduce that~$x_{c_i^{\mathrm{atm}}}^{U}=1$ $\ \text{and}\ x_{c_i^{\mathrm{atm}}}^{A}=1$. In the case where~$c_i$ is a biometric credential, this implies~$f_{c_i^{\mathrm{bio}}}^{U}(s)=1 \ \text{and}\ f_{c_i^{\mathrm{bio}}}^{A}(s)=1$.
+
+The biometric sensor compares the obtained sample with the enrolled reference template and calculates a matching score $s$. The genuine distribution~$f_U(s)$ denotes the score distribution induced by samples produced by the legitimate user, whereas the impostor distribution~$f_A(s)$ denotes the score distribution induced by samples produced by the attacker. These distributions establish two error metrics:~\FAR and~\FRR both are functions of the match threshold~$t$. 
+\[
+\FAR(t) = \int_{t}^{a_2} f_A[s] ds
+\]
+\[
+\FRR(t) = \int_{u_1}^{t} f_U[s] ds
+\]
+We use the~\FAR and~\FRR to find the probability of the biometric credential availability states. The user has access to the biometric cedential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$1-\FRR(t)$. The attacker has access to the biometric credential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$\FAR(t)$. Thus, the probabilities of the four states are given by: 
 \[
 P_{\text{loss}} = \FRR(t) \cdot (1 - \FAR(t))
 \]
@@ -245,66 +308,139 @@ P_{\text{stolen}} = \FRR(t) \cdot \FAR(t)
 \[
 P_{{\text{safe}}} =1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{stolen}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t))
 \]
-Where \FAR and \FRR are given by:
-\[
-\FAR(t) = \int_{t}^{a_2} f_A[s] ds
-\]
-\[
-\FRR(t) = \int_{u_1}^{t} f_U[s] ds
-\]
 
 \subsection{Mechanism}\label{sec:3.3}
 
-\begin{definition} (Authentication Mechanism) An authentication mechanism $M$ is a finite deterministic function that takes as input a set of credentials $\{c_1, c_2, \ldots, c_n\}$ and outputs a decision of either \emph{accept} or \emph{reject}.
-\end{definition}
-
-An authentication mechanism $M$ intercact with two players: a user $U$ and an attacker $A$. Both players, try to satisfy the mechanism with their own set of credentials $\{c_1, c_2, \ldots, c_n\}$ in order to reach the asset. The decision of the authentication mechanism is based on the mechanism's logic. 
-
-\begin{definition} (Mechanism Logic) A mechanism logic $L$ is the decision rule that maps credential's availability $\sigma_i$ to a final outcome \emph{accept} or \emph{reject} under certain logical conditions. 
+An authentication mechanism $M$ interacts with two players: a user $U$ and an attacker $A$. The mechanism receives the evaluation of each player's credential evidence and outputs a decision which is a function of the mechanism's logic.
+\begin{definition} (Authentication Mechanism) An authentication mechanism $M$ is a finite deterministic function that takes as input:
+\begin{itemize}
+     \item~$C_P(\sigma)$ the set of credentials available to player~$P$ in scenario~$\sigma$ (perhaps no set, represented by~$\bot$).
+     \item~$\sigma_i$ the state of each credential~$c_i$ in scenario~$\sigma$.
+     \item~$y_i^P$ the evaluation of each credential~$c_i$ for player~$P$ (perhaps no evaluation, represented by~$\bot$).
+\end{itemize}
+and outputs a variable~$\text{decide}_M$, where~$\text{decide}_M=1$ means that the mechanism accepts the player and~$\text{decide}_M=0$ means that the mechanism rejects the player.
 \end{definition}
 
 For example, in an \emph{AND mechanism}, the mechanism grants access to a user if and only if all credentials are available to the user and at least one of them not available to the attacker. In an \emph{OR mechanism}, the mechanism grants access to a user if at least one credential is available to the user and none are available to the attacker. We are now ready to define the mechanism's success.
 
-\begin{definition} (Mechanism Success) Mechanism success is the probability that the authentication mechanism $M$ successfully accepts a user $U$ and rejects an attacker $A$ given their set of credentials $\{c_1, c_2, \ldots, c_n\}$ and the mechanism logic $L$.
+\subsection{Mechanism Success}\label{sec:3.4}
+A mechanism is successful in a scenario~$\sigma$ if the user is accepted and the attacker is rejected when the credentials available to them in~$\sigma$ are given as input. Formally, 
+\begin{definition} (Mechanism Success) Mechanism success is the probability that the authentication mechanism~$M$ accepts a user~$U$ and rejects an attacker~$A$ given~$C_P(\sigma)$,~$\sigma_i$ and~$y_i^P$. For a player~$P$ the mechanism success is
+\[
+P_{\text{Success}}(M)=\Pr[\mathrm{decide}_M(U)=1 \wedge \mathrm{decide}_M(A)=0].
+\]
 \end{definition}
 
-For a mechanism $M$ comprised of a single credential $c_1$, the mechanism success is simply the probability that the credential is neither theft, loss or leaked for every mechanism logic $L$. i.e.,
-\begin{equation}
-    \label{eqn:safesuccess}
-    P_{\text{success}}(M^{\text{single}}) = P_{{\text{safe}}}
-\end{equation}
-
-For a mechanism $M$ comprised of two credentials $c_1$ and $c_2$, the mechanism logic $L$ determines the relation between the two credentials and thus the mechanism's success. There are two scenarios determines the mechanism succes:
-
-a. \emph{AND}: The user has full availability to all credentials, while the attacker has limited or no availability. For successful authentication, we need both credentials to be either in safe state, or one in safe state and the other in leak state. If one of the credentials is either loss ot theft, the owner cannot satisfy the mechanism and thus the mechanism fails.
-\begin{equation}
-    \label{eqn:andsuccess}
-P_{\text{Success}}(M^{\text{AND}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{leak}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{leak}}
-\end{equation}
-
-b. \emph{OR}: The user has availability to at least one credential, while the attacker has availability to neither of them. For successful authentication, we need both credential to be either in safe state, or one in safe state and the other in loss state. If one of the credentials is either leak ot theft, the attacker can satisfy the mechanism and thus the mechanism fails.
-
-\begin{equation}
-    \label{eqn:orsuccess}
-P_{\text{Success}}(M^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{loss}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{loss}}
-\end{equation}
-
 \section{Single Biometric Credential}\label{sec:4}
+The optimal threshold differs from the~\EER. We explore the change in optimal mechanism success probability as a function of the attacker's and user's variance. We start by analyzing single biometric credential mechanisms comprises first~$(\S\ref{sec:4.1})$ and second~$(\S\ref{sec:4.2})$ order approximations.
 
-Until now, it has been common practice~\cite{sarkar2020} to select the operating point at the Equal Error Rate (\EER), where $\FAR = \FRR$. Having defined different mechanisms success, we proceed to analyze a mechanism comprises first~$(\S\ref{sec:4.1})$ and second~$(\S\ref{sec:4.2})$ order approximations for a single biometric credential. We show that the optiomal threshold differs from the \EER and explore the relation between the mechaism success and the \EER.
+\begin{figure*}[t]
+\centering
 
-\subsection{Uniformly Distributed Credential}\label{sec:4.1}
-As a first-order approximation, we model the biometric credential as a uniform distribution.
-Denote by $u_1, u_2$ the user PDFs' bounds and $a_1, a_2$ are the attacker PDFs' bounds. We defined the probability distribution functions for the user and the attacker, $f_U$ and $f_A$ as follows:
+\begin{subfigure}[t]{0.30\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\linewidth,
+    height=0.5\linewidth,
+    xlabel={Matching Score},
+    ylabel={Probability Density},
+    xmin=0, xmax=1,
+    ymin=0, ymax=4.8,
+    grid=major,
+    xtick={0,0.15,0.40,0.60,0.85},
+    xticklabels={$0$,$a_1$,$a_2$,$u_1$,$u_2$},
+    ytick=\empty,
+    legend to name=uniformthreecaseslegend,
+    legend columns=2,
+    legend style={draw=black, fill=white}
+]
+\addplot+[blue, thick, mark=none, const plot]
+table [x=s, y=PU_case1] {figs/fig_uniform/uniform_three_cases.txt};
+\addlegendentry{User}
+
+\addplot+[red, thick, mark=none, const plot]
+table [x=s, y=PA_case1] {figs/fig_uniform/uniform_three_cases.txt};
+\addlegendentry{Attacker}
+\end{axis}
+\end{tikzpicture}
+\caption{Separated uniform PDFs.}
+\label{fig:uniform_case1_pdf}
+\end{subfigure}
+\begin{subfigure}[t]{0.30\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\linewidth,
+    height=0.5\linewidth,
+    xlabel={Matching Score},
+    ylabel={},
+    xmin=0, xmax=1,
+    ymin=0, ymax=4.8,
+    grid=major,
+    xtick={0,0.20,0.40,0.65,0.85},
+    xticklabels={$0$,$u_1$,$a_1$,$a_2$,$u_2$},
+    ytick=\empty
+]
+\addplot+[blue, thick, mark=none, const plot]
+table [x=s, y=PU_case2] {figs/fig_uniform/uniform_three_cases.txt};
+
+\addplot+[red, thick, mark=none, const plot]
+table [x=s, y=PA_case2] {figs/fig_uniform/uniform_three_cases.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{The attacker range lies within the user range.}
+\label{fig:uniform_case2_pdf}
+\end{subfigure}
+\begin{subfigure}[t]{0.30\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\linewidth,
+    height=0.5\linewidth,
+    xlabel={Matching Score},
+    ylabel={},
+    xmin=0, xmax=1,
+    ymin=0, ymax=4.8,
+    grid=major,
+    xtick={0,0.15,0.40,0.65,0.85},
+    xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$},
+    ytick=\empty
+]
+\addplot+[blue, thick, mark=none, const plot]
+table [x=s, y=PU_case3] {figs/fig_uniform/uniform_three_cases.txt};
+
+\addplot+[red, thick, mark=none, const plot]
+table [x=s, y=PA_case3] {figs/fig_uniform/uniform_three_cases.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Partial overlap of the distributions.}
+\label{fig:uniform_case3_pdf}
+\end{subfigure}
+
+\ref*{uniformthreecaseslegend}
+
+\caption{Quantitative illustration of three distinct cases of uniform attacker and user score distributions. In case (1), the distributions are separated. Case (2) illustrate the case where an attacker is fully contained in the user distribution, and (3) illustrate two overlapping configurations.}
+\label{fig:uniform_three_cases}
+\end{figure*}
+
+\subsection{First-Order Approximation}\label{sec:4.1}
+
+We consider uniform distibution as a first-order approximation of a biometric credential.
+Denote by~$u_1 \textit{ and } u_2$ the user PDF bounds and by~$a_1 \textit{ and } a_2$  the attacker PDF bounds. The probability distribution functions for the user and the attacker, $f_U$ and $f_A$ are thus:
 
 \[
-f_U(s) = \frac{1}{u_2-u_1} \quad \text{for } u_1 \leq s \leq u_2
+\begin{gathered}
+f_U(s) = \frac{1}{u_2-u_1} \quad \text{for } u_1 \leq s \leq u_2 
+\text{ and}\\
+f_A(s) = \frac{1}{a_2-a_1} \quad \text{for } a_1 \leq s \leq a_2.
+\end{gathered}
 \]
-\[
-f_A(s) = \frac{1}{a_2-a_1} \quad \text{for } a_1 \leq s \leq a_2
-\] 
 
-The \FAR(t) and \FRR(t) are given by:
+The error metrics~\FAR and~\FRR are both functions of the match threshold~$t$ and given by:
 
 \[
 \FAR(t) = \int_{t}^{a_2} \frac{1}{a_2-a_1} ds =
@@ -316,7 +452,7 @@ The \FAR(t) and \FRR(t) are given by:
 \end{array}
 \right.
 \]
-
+\[\textit{and}\]
 \[
 \FRR(t) = \int_{u_1}^{t} \frac{1}{u_2-u_1} ds =
 \left\{
@@ -327,32 +463,39 @@ The \FAR(t) and \FRR(t) are given by:
 \end{array}
 \right.
 \]
-Denote:
+
+Intuitively, genuine users are expected to produce higher matching scores than
+attackers. Therefore, the user score distribution is expected to be shifted toward higher matching scores $s$ compared to the attacker distribution. Otherwise, the attacker would be more likely to produce scores that lead to successful authentication, rendering the biometric credential ineffective. Thus, we assume that $a_2 < u_2$. There are three distinct cases: 
+
+(1)~$a_2 < u_1$, Figure~\ref{fig:uniform_case1_pdf}: In this case, the attacker and user distributions are separated. Any threshold $t$ chosen within the range~$a_2 \le t \le u_1$ yield zero~\FAR and~\FRR, and therefore achieves maximal mehcanism success probability.
+
+(2)~$u_1 < a_1 < a_2 < u_2$, Figure~\ref{fig:uniform_case2_pdf}: The attacker distribution bounds lies between the range of the user distribution bounds. For a mechanism $M$ with a single credential $c_1$, the mechanism's success probability is simply the probability that the credential is safe:
+\begin{equation}
+    \label{eqn:safesuccess}
+    P_{\text{success}}(M^{\text{single}}) = P_{{\text{safe}}}
+\end{equation}
+The probability of success of a mechanism comprises single credential is given by Equation~\ref{eqn:safesuccess}. Since the credential is biometric, the safe probability is given by: 
+\[
+P_{{\text{safe}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t))
+\]
+By setting the~$\FAR(t)$ and~$\FRR(t)$, we can cacluclate the probability of success. Denote:
 \[
 \alpha(t)=\frac{t-u_1}{u_2-u_1},
 \qquad
 \beta(t)=\frac{a_2-t}{a_2-a_1}.
 \]
 
-We expect the user distribution to be characterized by higher values of the matching score $s$ than the attacker. Otherwise, the attacker would be more likely to produce scores that lead to successful authentication, rendering the biometric credential ineffective. Thus, we assume that $a_2 < u_2$.
-We analyze three different cases: 
-
-(1)~$a_2 < u_1$: In this case, the attacker and user distributions are completely seperated. Any threshold $t$ chosen within the separation region results in perfect mehcanism success. 
-
-(2)~$u_1 < a_1 < a_2 < u_2$: The attacker distribution is fully contained by the user distribution. The probability of success is given by Equation~\ref{eqn:safesuccess}. By setting the $\FAR(t)$ and $\FRR(t)$ into Equation~\ref{eqn:safesuccess}, we cacluclate the probability of success.
-
 \[
 P_{\text{success}}(t) = 
 \begin{cases}
-    0, & t \le u_1 \\
-    0, & u_1 < t \le a_1 \\
-    1 - \alpha(t) - \beta(t) + \alpha(t)\cdot\beta(t), & u_1 < t \le a_2\\
+    0, & t \le a_1 \\
+    1 - \alpha(t) - \beta(t) + \alpha(t)\cdot\beta(t), & a_1 < t \le a_2\\
     1 - \alpha(t), & a_2 < t \le u_2 \\
     0, & t > u_2
 \end{cases}
 \]
 
-(3)~$a_1 < u_1 < a_2 < u_2$: The user and attacker distributions partially overlap. Figure~\ref{fig:uniforms_distributions} illustrates this case where the user and attacker PDF's are symmetrically and asymmetrically distributed both as function of the matching score $s$.
+(3)~$a_1 < u_1 < a_2 < u_2$, Figure~\ref{fig:uniform_case3_pdf}: The user and attacker distributions partially overlap. There are 2 distinct scenarios in this case, where the user and attacker PDF's are symmetrically and asymmetrically distributed as shown in Figure~\ref{fig:uniforms_distributions}.
 
 \begin{figure}[t]
 \centering
@@ -362,8 +505,8 @@ P_{\text{success}}(t) =
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.8\columnwidth,
-    height=0.42\columnwidth,
+    width=0.65\columnwidth,
+    height=0.35\columnwidth,
     title={Symmetric},
     xlabel={Matching Score},
     ylabel={Probability Density},
@@ -391,8 +534,8 @@ table [x=s, y=PA_sym] {figs/fig_uniform/uniform_graphs_2.txt};
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.8\columnwidth,
-    height=0.42\columnwidth,
+    width=0.65\columnwidth,
+    height=0.35\columnwidth,
     title={Asymmetric},
     xlabel={Matching Score},
     ylabel={Probability Density},
@@ -404,7 +547,7 @@ table [x=s, y=PA_sym] {figs/fig_uniform/uniform_graphs_2.txt};
     ytick={0,2.5,3.3333},
     yticklabels={$0$,$\frac{1}{u_2-u_1}$,$\frac{1}{a_2-a_1}$},
     legend style={
-        at={(0.5,-0.32)},
+        at={(0.4,-0.32)},
         anchor=north,
         legend columns=2,
         draw=black
@@ -427,7 +570,7 @@ table [x=s, y=PA_asym] {figs/fig_uniform/uniform_graphs_2.txt};
 \label{fig:uniforms_distributions}
 \end{figure}
 
-By setting the $\FAR(t)$ and $\FRR(t)$ into Equation~\ref{eqn:safesuccess}, the probability of success is given by:
+We maintain same approach as the second case to calculate the probability of success. By setting the $\FAR(t)$ and $\FRR(t)$ into safe probability, the probability of success is given by:
 
 \[
 P_{\text{success}}(t) = 
@@ -440,9 +583,9 @@ P_{\text{success}}(t) =
 \end{cases}
 \]
 
-We analyze the probability of success and find the optimal threshold that maximizes the mechanism's success in each interval. We note that the third and fourth regions in both second and third cases are the same. Thus, we can analyze them together to find the optimal threshold in each region. The success function is linearly increasing in the second region of the third case, thus the maximum is achieved at the right bound of the region where $t = u_1$. The success function is linearly decreasing in the fourth region in both second and third cases, thus the optimal threshold in this region is at the left bound of the region, which is $T = a_2$. Since $P_{\text{success}}(T)$ is a continuous function, the global maximum is expected to achieve in the third region in both cases. Then, we analyze the third region and find the global maximum and optimal threshold:
+We analyze the probability of success in both the second and third cases and find the optimal threshold that maximizes the mechanism's success in each interval. The third and fourth regions of the third case are similar to the second and third intervals in the second case, thus we analyze them together. The success function is linearly increasing in the second region of the third case, thus the maximum is achieved at the right boundary, $t = u_1$. In the fourth region of third case the success function is linearly decreasing, thus the maximum is achieved at the left boundary,~$t = a_2$. Since $P_{\text{success}}(t)$ is a continuous function, the global maximum is expected to be achieved in the third region. Therefore, we analyze the third region to find the optimal threshold:
 
-We deriviate the success function in the third region and set it to zero to find the horizontal tangent points:
+We differentiate the success function in the third region and set it to zero to find the horizontal tangent points:
 \[\frac{d}{dt} P_{\text{success}}(t) = 0.\] 
 
 The horizontal tangent point is:
@@ -452,24 +595,20 @@ t = \frac{a_1+u_2}{2}
 \]
 
 \[\frac{d}{dt} P_{\text{success}}(t) > 0 \text{, For every } t \in (u_1, \frac{a_1+u_2}{2}) \]
-
+\[\textit{and}\]
 \[\frac{d}{dt} P_{\text{success}}(t) < 0 \text{, For every } t \in (\frac{a_1+u_2}{2}, a_2) \]
 
-Thus, by the First Derivative Test the maximum point is at $t_{\text{Max}} = \frac{a_1 + u_2}{2}$.
+Thus, the maximum point is at~$t_{\text{Max}} = \frac{a_1 + u_2}{2}$ and the probability of success at this point is:
 \[
 P_{\text{success}}(t_{\text{Max}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}
 \]
-We calculate the \EER point and show it is not equal to the optimal point:
+
+We note that in general the~\EER point is not equal to the optimal point:
 \[
 t_{\EER} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{a_1 - a_2 + u_1 - u_2} \neq \frac{a_1 + u_2}{2} = t_{\text{Max}}
 \] 
-The maximum point represnents the optimal threshold of the mechanism. The optimal point indicates that increasing the offset between the two uniform distributions is likely to improve the mechanism's success. Moreover, it suggest an asymmetry between the user’s and the attacker’s distribution intervals. Figure~\ref{fig:uniform_success_1_cred} illustrates the probability of success for a single biometric credential mechanism as function of threshold $t$. We show how the operating point influence the error metrics \FAR and \FRR in Figure~\ref{fig:FAR_FRR_uniform_1_cred}. The $\FAR$ and $\FRR$ at the optimal point are given by:
-
-\[\FAR(t_{\text{opt}}) = \frac{2a_2 - a_1 - u_2}{2(a_2 - a_1)}\]
-
-\[\FRR(t_{\text{opt}}) = \frac{a_1 + u_2 - 2u_1}{2(u_2 - u_1)}\]
-
-Indicating that symmetry between the user and attacker distributions implies that the optimal operating point coincides with the \EER. We illustrate the improvement of the mechanism's success between the optimal point and the \EER point when shifting $u_1$ to lower values of the score $s$ and shifting $a_1$ to higher values of the score $s$ in Figure~\ref{fig:delta_uniform_sweep}.
+The maximum point represents the optimal threshold of the mechanism. The optimal point indicates that increasing the offset between the two uniform distributions is likely to improve the mechanism's success. In particular, a biometric sensor that produces higher scores for genuine users and lower scores for attackers is expected to achieve better mechanism's success. 
+Figure~\ref{fig:uniform_success_1_cred} illustrates our analysis of the probability of success for a single biometric credential mechanism as a function of threshold $t$. The figure shows that in the second interval the success function is monotonically increasing, while in the fourth interval it is monotonically decreasing. Therefore, the optimal operating point is achieved in the third interval, where $u_1 \le t \le a_2$. Moreover, we calculate the~$\FAR$ and~$\FRR$ at the optimal point: 
 
 \begin{figure}[t]
 \centering
@@ -478,8 +617,8 @@ Indicating that symmetry between the user and attacker distributions implies tha
     scale only axis,
     width=0.8\columnwidth,
     height=0.42\columnwidth,
-    xlabel={$T$},
-    ylabel={$P_{\mathrm{success}}(T)$},
+    xlabel={$t$},
+    ylabel={$P_{\mathrm{success}}(t)$},
     grid=none,
     xmin=0, xmax=0.75,
     ymin=0, ymax=0.8,
@@ -493,7 +632,7 @@ Indicating that symmetry between the user and attacker distributions implies tha
         draw=black
     },
     xtick={0,0.05,0.30,0.375,0.42,0.70},
-    xticklabels={$0$,$a_1$,$u_1$,$T_{\mathrm{opt}}$,$a_2$,$u_2$},
+    xticklabels={$0$,$a_1$,$u_1$,$t_{\mathrm{opt}}$,$a_2$,$u_2$},
     ytick={0,0.7137},
     yticklabels={
         $0$
@@ -503,13 +642,21 @@ Indicating that symmetry between the user and attacker distributions implies tha
 \addplot[thick, myPurple, mark=none]
 table [x=s, y=safe] {figs/fig_uniform/success_uniform_data.txt};
 
-\addlegendentry{$P_{\mathrm{success}}(T)$}
+\addlegendentry{$P_{\mathrm{success}}(t)$}
 
 \end{axis}
 \end{tikzpicture}
 \caption{Success probability as a function of the threshold.}
 \label{fig:uniform_success_1_cred}
 \end{figure}
+
+\[\FAR(t_{\text{opt}}) = \frac{2a_2 - a_1 - u_2}{2(a_2 - a_1)}\]
+\[\textit{and}\]
+\[\FRR(t_{\text{opt}}) = \frac{a_1 + u_2 - 2u_1}{2(u_2 - u_1)}.\]
+
+These results indicate that when the user and attacker distributions are symmetric, the optimal operating point coincides with the \EER. 
+We show how the optimal point differs from the~\EER in the error metrics 
+curve~\FAR vs~\FRR in Figure~\ref{fig:FAR_FRR_uniform_1_cred} for a user and attacker asymmerically distributed. 
 
 \begin{figure}[t]
 \centering
@@ -558,67 +705,159 @@ table [x=FRR_eer, y=FAR_eer] {figs/fig_uniform/success_uniform_data.txt};
 \label{fig:FAR_FRR_uniform_1_cred}
 \end{figure}
 
-\begin{figure}[t]
-\centering
+% \begin{figure}[t]
+% \centering
 
-\begin{subfigure}{0.48\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=\columnwidth,
-    height=0.8\columnwidth,
-    xmin=0.4, xmax=0.75,
-    xlabel={$u_1$},
-    ylabel={$P_{\max}-P_{\mathrm{EER}}$},
-    grid=major,
-    legend to name=sharedlegend,
-    legend columns=2
-]
+% \begin{subfigure}{0.48\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=\columnwidth,
+%     height=0.8\columnwidth,
+%     xmin=0.4, xmax=0.75,
+%     xlabel={$u_1$},
+%     ylabel={$P_{\max}-P_{\mathrm{EER}}$},
+%     grid=major,
+%     legend to name=sharedlegend,
+%     legend columns=2
+% ]
 
-\addplot[thick, blue]
-table [x=u1, y=delta] {figs/fig_uniform/delta_vs_u1.txt};
-\addlegendentry{$u_1$ sweep}
+% \addplot[thick, blue]
+% table [x=u1, y=delta] {figs/fig_uniform/delta_vs_u1.txt};
+% \addlegendentry{$u_1$ sweep}
 
-% Dummy entry for red
-\addplot[thick, red] coordinates {(0,0)};
-\addlegendentry{$a_2$ sweep}
+% % Dummy entry for red
+% \addplot[thick, red] coordinates {(0,0)};
+% \addlegendentry{$a_2$ sweep}
 
-\end{axis}
-\end{tikzpicture}
-\caption{$u_1$ sweep}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.5\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=\columnwidth,
-    height=0.8\columnwidth,
-    xmin=0.4, xmax=0.75,
-    xlabel={$a_2$},
-    grid=major
-]
+% \end{axis}
+% \end{tikzpicture}
+% \caption{$u_1$ sweep}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}{0.5\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=\columnwidth,
+%     height=0.8\columnwidth,
+%     xmin=0.4, xmax=0.75,
+%     xlabel={$a_2$},
+%     grid=major
+% ]
 
-\addplot[thick, red]
-table [x=a2, y=delta] {figs/fig_uniform/delta_vs_a2.txt};
+% \addplot[thick, red]
+% table [x=a2, y=delta] {figs/fig_uniform/delta_vs_a2.txt};
 
-\end{axis}
-\end{tikzpicture}
-\caption{$a_2$ sweep}
-\end{subfigure}
+% \end{axis}
+% \end{tikzpicture}
+% \caption{$a_2$ sweep}
+% \end{subfigure}
 
-\centering
-\ref{sharedlegend}
-\caption{Difference between the optimal success probability and the success probability at EER under parameter sweeps.}
-\label{fig:delta_uniform_sweep}
+% \centering
+% \ref{sharedlegend}
+% \caption{Difference between the optimal success probability and the success probability at EER under parameter sweeps.}
+% \label{fig:delta_uniform_sweep}
 
-\end{figure}
+% \end{figure}
 
 \subsection{Quadratic Distributed Credential}\label{sec:4.2}
 %%%
 %%%
 %%%
-Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:7})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005} on Eigenfinger and Eigenpalm feature distributions. Accordingly, we define two probability density functions (PDFs) for the user and the attacker, denoted by $f_U$ and $f_A$, respectively.
+\begin{figure*}[t]
+\centering
+
+\begin{subfigure}[t]{0.30\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\linewidth,
+    height=0.5\linewidth,
+    xlabel={Matching Score},
+    ylabel={Probability Density},
+    xmin=0, xmax=1,
+    ymin=0, ymax=7,
+    grid=major,
+    xtick={0,0.15,0.40,0.60,0.85},
+    xticklabels={$0$,$\beta_1$,$\beta_2$,$\alpha_1$,$\alpha_2$},
+    ytick=\empty,
+    legend to name=quadraticthreecaseslegend,
+    legend columns=2,
+    legend style={draw=black, fill=white}
+]
+\addplot+[blue, thick, mark=none]
+table [x=s, y=PU_case1] {figs/fig_parabola/quadratic_three_cases.txt};
+\addlegendentry{User}
+
+\addplot+[red, thick, mark=none]
+table [x=s, y=PA_case1] {figs/fig_parabola/quadratic_three_cases.txt};
+\addlegendentry{Attacker}
+\end{axis}
+\end{tikzpicture}
+\caption{Separated quadratic PDFs.}
+\label{fig:quadratic_case1_pdf}
+\end{subfigure}
+\begin{subfigure}[t]{0.30\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\linewidth,
+    height=0.5\linewidth,
+    xlabel={Matching Score},
+    ylabel={},
+    xmin=0, xmax=1,
+    ymin=0, ymax=7,
+    grid=major,
+    xtick={0,0.20,0.40,0.65,0.85},
+    xticklabels={$0$,$\alpha_1$,$\beta_1$,$\beta_2$,$\alpha_2$},
+    ytick=\empty
+]
+\addplot+[blue, thick, mark=none]
+table [x=s, y=PU_case2] {figs/fig_parabola/quadratic_three_cases.txt};
+
+\addplot+[red, thick, mark=none]
+table [x=s, y=PA_case2] {figs/fig_parabola/quadratic_three_cases.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{The attacker roots lies within the user roots.}
+\label{fig:quadratic_case2_pdf}
+\end{subfigure}
+\begin{subfigure}[t]{0.30\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.8\linewidth,
+    height=0.5\linewidth,
+    xlabel={Matching Score},
+    ylabel={},
+    xmin=0, xmax=1,
+    ymin=0, ymax=7,
+    grid=major,
+    xtick={0,0.15,0.40,0.65,0.85},
+    xticklabels={$0$,$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+    ytick=\empty
+]
+\addplot+[blue, thick, mark=none]
+table [x=s, y=PU_case3] {figs/fig_parabola/quadratic_three_cases.txt};
+
+\addplot+[red, thick, mark=none]
+table [x=s, y=PA_case3] {figs/fig_parabola/quadratic_three_cases.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Partial overlap of the distributions.}
+\label{fig:quadratic_case3_pdf}
+\end{subfigure}
+
+\ref*{quadraticthreecaseslegend}
+
+\caption{Illustration of three distinct cases of quadratic attacker and user score distributions. In case (1), the distributions are separated. Case (2) illustrates the case where the attacker distribution is fully contained within the user distribution, and case (3) illustrates partial overlap between the two distributions.}
+\label{fig:quadratic_three_cases}
+\end{figure*}
+Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:7})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005} on Eigenfinger and Eigenpalm feature distributions. Accordingly, we define two probability density functions (PDFs). Let $f_U$ denote the user distribution with roots $\alpha_{1}, \alpha_{2}$ and let $f_A$ denote the attacker distribution with roots $\beta_{1}, \beta_{2}$. Donte by $a, b, c$ and $d, e, f$ the quadratic coefficients of the user and attacker distributions, respectively, hence:
 \[
 f_U(s) = 
 \left\{
@@ -638,75 +877,25 @@ f_A(s) =
 \right.
 \]
 
-Here, $a, b, c$ and $d, e, f$ denote the quadratic coefficients of the user and attacker distributions, respectively. The parameters $\alpha_{1}, \alpha_{2}$ are the roots of the user's PDF, while $\beta_{1}, \beta_{2}$ are the roots of the attacker's PDF. 
-Similarly, to the analysis of the uniform distribution, the x axis represents the matching score, such that higher values of score will be corrspondant to the reference template stored in the database $X_U$. If $\beta_{2} < \alpha_{1}$, the two distributions do not overlap, and the problem becomes trivial. Conversely, if $\alpha_{1} > \beta_{1}$ and $\beta_{2} < \alpha_{2}$, the attacker's distribution is fully contained within the user's, resulting in a non-separable scenario. 
-We therefore focus on the intermediate and most meaningful configuration, where
+To reduce the degrees of freedom of the quadratic distributions while maintaining a symbolic analysis, we express the coefficients directly in terms of their roots. The integral of each PDF over its roots interval is set to~1, which enforces the normalization condition. This condition unsures that the resulting error metrics,~\FAR and~\FRR are bounded to~1. Under this condition, the coefficients become fully determined. Accordingly, we define the coefficients as follows.
+
 \[
-    \beta_{1} \le \alpha_{1} \le \beta_{2} \le \alpha_{2},
+\alpha_1 \cdot \alpha_2 = \frac{c}{a} \rightarrow a = \frac{c}{\alpha_1 \cdot \alpha_2} \\
 \]
-as illustrated in Figure~\ref{fig:quadratic_pdf_1_cred}.
-
-\begin{figure}[t]
-\centering
-
-\begin{tikzpicture}
-\pgfplotsset{compat=1.18}
-
-\begin{axis}[
-    scale only axis,
-    width=0.80\columnwidth,
-    height=0.45\columnwidth,
-    xlabel={Matching Score},
-    ylabel={Probability Density},
-    xmin=1.5, xmax=4.5,
-    ymin=-0.1, ymax=1.65,
-    grid=none,
-    xtick={2,3,3.5,4},
-    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-    ytick=\empty,
-    legend style={
-        at={(0.3,0.92)},
-        anchor=north east,
-        font=\scriptsize,
-        fill=white,
-        fill opacity=0.85,
-        text opacity=1,
-        draw=black
-    },
-]
-
-\addplot+[blue, thick, mark=none]
-table [x=s, y=PU] {figs/fig_parabola/parabola_graphs.txt};
-\addlegendentry{User}
-
-\addplot+[red, thick, mark=none]
-table [x=s, y=PA] {figs/fig_parabola/parabola_graphs.txt};
-\addlegendentry{Attacker}
-
-\end{axis}
-\end{tikzpicture}
-
-\caption{Quadratic user and attacker distributions.}
-\label{fig:quadratic_pdf_1_cred}
-\end{figure}
-
-To reduce the degrees of freedom of the quadratic functions while maintaining a symbolic analysis, we express the coefficients directly in terms of their roots. Under the additional assumption that the integral of each PDF over its roots interval equals~1, the coefficients become fully determined. Accordingly, we define the coefficients as follows.
-
 \[
-\begin{array}{ll}
-    \alpha_1 \cdot \alpha_2 = \frac{c}{a} \rightarrow a = \frac{c}{\alpha_1 \cdot \alpha_2} \\
-    \\
-    \alpha_1 + \alpha_2 = -\frac{b}{a} \rightarrow b = - \frac{c \cdot (\alpha_1 + \alpha_2)}{\alpha_1 \cdot \alpha_2} \\
-    \\
-    \beta_1 \cdot \beta_2 = \frac{f}{d} \rightarrow d = \frac{f}{\beta_1 \cdot \beta_2}\\
-    \\
-    \beta_1 + \beta_2 = -\frac{e}{d} \rightarrow e = - \frac{f \cdot (\beta_1 + \beta_2)}{\beta_1 \cdot \beta_2} \\
-    \\
-    \int_{\alpha_1}^{\alpha_2} (a \cdot x^2+b \cdot x+c) dx = 1 \Rightarrow c = \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3} \\
-    \\
-    \int_{\beta_1}^{\beta_2} (d \cdot x^2+e \cdot x+f) dx = 1 \Rightarrow f = \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} \\
-    \\
-    \end{array}
+\alpha_1 + \alpha_2 = -\frac{b}{a} \rightarrow b = - \frac{c \cdot (\alpha_1 + \alpha_2)}{\alpha_1 \cdot \alpha_2} \\
+\]
+\[
+\beta_1 \cdot \beta_2 = \frac{f}{d} \rightarrow d = \frac{f}{\beta_1 \cdot \beta_2}\\
+\]
+\[
+\beta_1 + \beta_2 = -\frac{e}{d} \rightarrow e = - \frac{f \cdot (\beta_1 + \beta_2)}{\beta_1 \cdot \beta_2} \\
+\]
+\[
+\int_{\alpha_1}^{\alpha_2} (a \cdot x^2+b \cdot x+c) dx = 1 \Rightarrow c = \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3} \\
+\]
+\[
+\int_{\beta_1}^{\beta_2} (d \cdot x^2+e \cdot x+f) dx = 1 \Rightarrow f = \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} \\
 \]
 Therefore, we can write the quadratic PDFs as:
 \[
@@ -725,8 +914,8 @@ f_A(s) =
     \end{cases}
 \]
 
-We will find \FAR and \FRR as a function of the threshold $t$ and define the probability of success based on a single credential mechanism as shown in~$(\S\ref{sec:4.1})$.
-Define:
+These distributions establish the error metrics,~\FAR and~\FRR, as a function of the match threshold~$t$. Denote:
+
 \[
 A(t)=
 \frac{
@@ -749,7 +938,6 @@ U(t)=
 }.
 \]
 
-Thus,
 \[
 \FAR(t)=
 \begin{cases}
@@ -758,7 +946,7 @@ A(t), & \beta_1 < t \le \beta_2,\\
 0, & t > \beta_2,
 \end{cases}
 \]
-
+\[\textit{and}\]
 \[
 \FRR(t)=
 \begin{cases}
@@ -766,8 +954,15 @@ A(t), & \beta_1 < t \le \beta_2,\\
 U(t), & \alpha_1 < t \le \alpha_2,\\
 1, & t > \alpha_2.
 \end{cases}
-\]
+\] 
 
+Similarly to the analysis of the uniform distribution, the x axis represents the matching score $s$. Genuine users are expected to produce higher matching scores than attacker, thus we analyze three different cases:
+
+(1)~$\beta_{2} < \alpha_{1}$: The two distributions are separated. Any threshold $t$ chosen within the range~$\beta_{2} \le t \le \alpha_{1}$ yield zero~\FAR and~\FRR, and therefore achieves maximal mehcanism success as shown in Figure~\ref{fig:quadratic_case1_pdf}. 
+
+(2)~$\alpha_{1} < \beta_{1} < \beta_{2} < \alpha_{2}$: The attacker distribution bounds lies between the range of the user distribution bounds as shown in Figure~\ref{fig:quadratic_case2_pdf}. The mechanisms probability of success reduces to the safe probability of the biometric credential, which is: 
+\[P_{{\text{safe}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t))\]
+By setting the~$\FAR(t)$ and~$\FRR(t)$, we can cacluclate the probability of success. Denote:
 \[
 G(t)=
 -\frac{
@@ -778,6 +973,23 @@ G(t)=
 (\alpha_1-\alpha_2)^3(\beta_1-\beta_2)^3
 }.
 \]
+
+\[
+P_{\mathrm{success}}(t)=
+\begin{cases}
+0,
+& t<\beta_1 \lor t>\alpha_2,\\
+
+G(t),
+& \beta_1 \le t \le \beta_2,\\
+
+-\dfrac{(t-\alpha_2)^2(2t-3\alpha_1+\alpha_2)}
+{(\alpha_1-\alpha_2)^3},
+& \beta_2 \le t \le \alpha_2.
+\end{cases}
+\]
+
+(3)~$\beta_{1} \le \alpha_{1} \le \beta_{2} \le \alpha_{2}$: The user and attacker distributions partially overlap like shown in figure~\ref{fig:quadratic_case3_pdf}. We mainatain same approach as the second case and calculate the probability of success. By setting the~$\FAR(t)$ and~$\FRR(t)$ into safe probability, the probability of success is:
 
 \[
 P_{\mathrm{success}}(t)=
@@ -798,7 +1010,52 @@ G(t),
 \end{cases}
 \]
 
-We differentiate $P_{\text{success}}(t)$ and compute its critical points in every interval. By comparing the stationary values obtained in all valid regions, we identify the global maximum, which corresponds to the optimal threshold $t_{\text{opt}}$.
+% \begin{figure}[t]
+% \centering
+
+% \begin{tikzpicture}
+% \pgfplotsset{compat=1.18}
+
+% \begin{axis}[
+%     scale only axis,
+%     width=0.80\columnwidth,
+%     height=0.45\columnwidth,
+%     xlabel={Matching Score},
+%     ylabel={Probability Density},
+%     xmin=1.5, xmax=4.5,
+%     ymin=-0.1, ymax=1.65,
+%     grid=none,
+%     xtick={2,3,3.5,4},
+%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+%     ytick=\empty,
+%     legend style={
+%         at={(0.3,0.92)},
+%         anchor=north east,
+%         font=\scriptsize,
+%         fill=white,
+%         fill opacity=0.85,
+%         text opacity=1,
+%         draw=black
+%     },
+% ]
+
+% \addplot+[blue, thick, mark=none]
+% table [x=s, y=PU] {figs/fig_parabola/parabola_graphs.txt};
+% \addlegendentry{User}
+
+% \addplot+[red, thick, mark=none]
+% table [x=s, y=PA] {figs/fig_parabola/parabola_graphs.txt};
+% \addlegendentry{Attacker}
+
+% \end{axis}
+% \end{tikzpicture}
+
+% \caption{Quadratic user and attacker distributions.}
+% \label{fig:quadratic_pdf_1_cred}
+% \end{figure}
+
+The second and third intervals in the second case are identical to the third and fourth intervals in the third case and therefore, we analyze them together. 
+We differentiate~$P_{\text{success}}(t)$ and compute its critical points in every interval. By comparing the stationary values obtained in all valid regions, we identify the global maximum, which corresponds to the optimal threshold~$t_{\text{opt}}$.
 
 Before writing the piecewise derivative, we define the polynomial coefficients and the following function:
 \[
@@ -833,16 +1090,6 @@ R(t),
 
 In the second interval, the derivative has a single critical point at $t=\beta_{1}$. Since the derivative is strictly positive for all $t>\beta_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $t=\alpha_{2}$, and the derivative is strictly negative for all $t<\alpha_{2}$. Therefore, this interval also contains no maximum either.
 
-We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at $t=\beta_{1}$ and $t=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic, reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution can not be simplified further more than a complex expression. Thus, we denote the solution as $t_{\text{cubic}}$.
-
-By examining the sign of the derivative on both sides of the critical point $t_{\text{cubic}}$, we verify that it constitutes a global maximum of $P_{\text{safe}}(t)$. We denote this maximizing point by $t_{\text{opt}}$.
-
-To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we computed the \EER point separately as follows:
-
-\[t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2} \neq t_{\text{opt}}
-\]
-
-We illustrate several user and attacker distributions and present their corresponding probability of success curves, expressed as functions of the threshold $t$ in Figure~\ref{fig:different_attackers_pdf_1_quadratic_cred} and Figure~\ref{fig:success_per_attacker_1_quadratic_cred} respectively.
 \begin{figure*}[t]
 \centering
 
@@ -1037,7 +1284,6 @@ table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_c_points.txt};
 \label{fig:success_per_attacker_1_quadratic_cred}
 \end{figure*}
 
-Moreover, we illustrate the \FAR-\FRR curves for each pair of user and attacker distributions, and mark both the optimal point and the \EER point, as shown in Figure~\ref{fig:FAR_FRR_1_quadratic_cred}.
 \begin{figure*}[t]
 \centering
 
@@ -1149,15 +1395,31 @@ table [x=FRR_eer, y=FAR_eer]
 \label{fig:FAR_FRR_1_quadratic_cred}
 \end{figure*}
 
-To quantify the effect of the variance on the deviation between the optimal operating point $t_{\text{opt}}$ and the equal error rate (\EER) point $t_{\EER}$, we numerically computed this gap as a function of the attacker's variance. Decreasing the variance of the attacker achieved by reducing the distance between its roots, corresponds to reduced separability between the two distributions. The simulations reveal that as the variance increases, the gap $\lvert t_{\text{opt}} - t_{\EER} \rvert$ grows accordingly, until the operating threshold moves into a regime where it effectively minimizes only one of the error rates, either \FAR or \FRR, driving the other to zero. This phenomenon is shown in Figure~\ref{fig:gap_vs_variance_parabola}. These findings indicate that higher attacker variance enlarges the potential success advantage gained by operating at $t_{\text{opt}}$ rather than at the \EER point.
+We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at $t=\beta_{1}$ and $t=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic, reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution can not be simplified further more than a complex expression. Thus, we denote the solution as $t_{\text{cubic}}$.
+
+By examining the sign of the derivative on both sides of the critical point $t_{\text{cubic}}$, we verify that it constitutes a global maximum of $P_{\text{safe}}(t)$. We denote this maximizing point by $t_{\text{opt}}$.
+
+To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we computed the \EER point separately as follows:
+
+\[t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2} \neq t_{\text{opt}}
+\]
+
+We illustrate several user and attacker distributions and present their corresponding probability of success curves, expressed as functions of the threshold $t$ in Figure~\ref{fig:different_attackers_pdf_1_quadratic_cred} and Figure~\ref{fig:success_per_attacker_1_quadratic_cred} respectively. Comparing each case with its corrsponding success probability curve, we observe that the optimal threshold $t_{\text{opt}}$ becomes more distinct from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases. We can also see that the gap between the success probability at the optimal point and the success probability at the~\EER point widens as the attacker's variance increases. This indicates that operating at the optimal threshold can yield a significantly higher success probability compared to operating at the~\EER threshold, especially when the attacker distribution has a higher variance.
+
+Moreover, we illustrate the~\FAR-\FRR curves for each pair of user and attacker distributions, and mark both the optimal point and the \EER point, as shown in Figure~\ref{fig:FAR_FRR_1_quadratic_cred}. We can deduce that as the attacker's variance increases, the optimal point shifts towards~$\alpha_1$ reducing the~\FRR to zero, while the~\EER point remains fixed trying to balance between the~\FAR and~\FRR. This shift indicates that the optimal operating point prioritizes minimizing the false rejection rate, rather than balancing both error rates.
+
+To quantify the effect of the variance on the deviation between the optimal operating point $t_{\text{opt}}$ and~\EER point~$t_{\EER}$, we numerically computed this gap as a function of the attacker's variance. Decreasing the variance of the attacker achieved by reducing the distance between its roots, corresponds to reduced separability between the two distributions. The simulations reveal that as the variance increases, the gap $\lvert t_{\text{opt}} - t_{\EER} \rvert$ grows accordingly, until the operating threshold moves into a regime where it effectively minimizes only one of the error rates, either \FAR or \FRR, driving the other to zero. This phenomenon is shown in Figure~\ref{fig:gap_vs_variance_parabola_gap}. The simulation also indicate that higher attacker variance enlarges the gap between the success probability at the optimal point and the success probability at the~\EER point as show in Figure~\ref{fig:gap_vs_variance_parabola_success}. This finding highlights the potential success advantage gained by operating at~$t_{\text{opt}}$ rather than at  the~\EER point when an attacker has the ability to produce samples with higher scores values.
 
 \begin{figure}[t]
+\centering
+
+\begin{subfigure}[t]{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
     width=0.82\columnwidth,
-    height=0.50\columnwidth,
+    height=0.48\columnwidth,
     xlabel={Attacker Variance $\mathrm{Var}(s)$},
     ylabel={$|t_{\mathrm{opt}}-t_{\EER}|$},
     xtick=\empty,
@@ -1170,18 +1432,54 @@ To quantify the effect of the variance on the deviation between the optimal oper
         fill=white
     }
 ]
-\addplot[thick, myPurple,mark=none]
+\addplot[thick, myPurple, mark=none]
 table [x=variance, y=gap] {figs/fig_parabola/gap_vs_variance_parabola.txt};
-
 \end{axis}
 \end{tikzpicture}
-% \Description{A curve showing the gap between the optimal threshold and \EER threshold as a function of attacker variance.}
-\caption{Gap between optimal and \EER thresholds as a function of attacker's variance.}
+\caption{Threshold gap.}
+\label{fig:gap_vs_variance_parabola_gap}
+\end{subfigure}
+
+\vspace{0.7em}
+
+\begin{subfigure}[t]{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.48\columnwidth,
+    xlabel={Attacker Variance $\mathrm{Var}(s)$},
+    ylabel={$P_{\mathrm{success}}$},
+    xtick=\empty,
+    ytick=\empty,
+    grid=none,
+    legend style={
+        at={(0.98,0.02)},
+        anchor=south east,
+        draw=black,
+        fill=white
+    }
+]
+\addplot[thick, blue, mark=none]
+table [x=variance, y=Pmax] {figs/fig_parabola/gap_vs_variance_parabola.txt};
+\addlegendentry{$P_{\max}$}
+
+\addplot[thick, red, dashed, mark=none]
+table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
+\addlegendentry{$P_{\EER}$}
+\end{axis}
+\end{tikzpicture}
+\caption{Success at the optimal and \EER thresholds.}
+\label{fig:gap_vs_variance_parabola_success}
+\end{subfigure}
+
+\caption{Comparison between the optimal threshold and the \EER threshold as a function of the attacker's variance.}
 \label{fig:gap_vs_variance_parabola}
 \end{figure}
 
 \section{Two Credentials}\label{sec:5}
-For a mechanism $M$ comprised of two independently and identically distributed credentials, derived from either the same or different PDF’s, we defined the integrated system success as the probability of users successfully defend their assets under two scenarios:
+For a mechanism $M$ comprises two independently and identically distributed credentials, derived from either the same or different PDF’s, we defined the integrated system success as the probability of users successfully defend their assets under two scenarios:
 
 a. \emph{AND}: The user has full availability to all credentials, while the attacker has limited or no availability. For successful authentication, we need both credentials to be either in safe state, or one in safe state and the other in leak state. If one of the credentials is either loss ot theft, the owner cannot satisfy the mechanism and thus the mechanism fails.
 \begin{equation}

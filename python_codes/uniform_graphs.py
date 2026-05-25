@@ -480,6 +480,172 @@ with open(DELTA_A2_TXT, "w") as f:
     for ai, di in zip(a2_values, deltas_a2):
         f.write(f"{ai:.4f} {di:.4f}\n")
 
+
+CASES_DATA_TXT = OUTPUT_DIR / "figs" / "fig_uniform" / "uniform_three_cases.txt"
+CASES_DATA_TXT.parent.mkdir(parents=True, exist_ok=True)
+
+# Each case is: (title, u1, u2, a1, a2, threshold t)
+cases = [
+    (
+        r"(1) $a_2 < u_1$",
+        0.60, 0.85,   # u1, u2
+        0.15, 0.40,   # a1, a2
+        0.50          # t, chosen such that a2 <= t <= u1
+    ),
+    (
+        r"(2) $u_1 < a_1 < a_2 < u_2$",
+        0.20, 0.85,   # u1, u2
+        0.40, 0.65,   # a1, a2
+        0.525         # t, chosen inside attacker interval
+    ),
+    (
+        r"(3) $a_1 < u_1 < a_2 < u_2$",
+        0.40, 0.85,   # u1, u2
+        0.15, 0.65,   # a1, a2
+        0.525         # t, chosen inside overlap
+    ),
+]
+
+# ------------------------------------------------------------
+# Save data for TikZ/PGFPlots if needed later
+# ------------------------------------------------------------
+with open(CASES_DATA_TXT, "w") as f:
+    f.write(
+        "s "
+        "PU_case1 PA_case1 "
+        "PU_case2 PA_case2 "
+        "PU_case3 PA_case3\n"
+    )
+
+    pdf_values = []
+    for _, u1_c, u2_c, a1_c, a2_c, _ in cases:
+        PU_c = uniform_pdf(x, u1_c, u2_c)
+        PA_c = uniform_pdf(x, a1_c, a2_c)
+        pdf_values.append((PU_c, PA_c))
+
+    for i, xi in enumerate(x):
+        f.write(
+            f"{xi:.4f} "
+            f"{pdf_values[0][0][i]:.4f} {pdf_values[0][1][i]:.4f} "
+            f"{pdf_values[1][0][i]:.4f} {pdf_values[1][1][i]:.4f} "
+            f"{pdf_values[2][0][i]:.4f} {pdf_values[2][1][i]:.4f}\n"
+        )
+
+# ============================================================
+#   P_MAX AND P_EER AS FUNCTIONS OF OVERLAP AREA
+#   Output only: document/data txt file for TikZ
+# ============================================================
+
+def uniform_FRR(T, u1, u2):
+    """
+    FRR(T) = Pr[user score < T]
+    Accept iff score >= T.
+    """
+    if T <= u1:
+        return 0.0
+    if T >= u2:
+        return 1.0
+    return (T - u1) / (u2 - u1)
+
+
+def uniform_FAR(T, a1, a2):
+    """
+    FAR(T) = Pr[attacker score >= T]
+    Accept iff score >= T.
+    """
+    if T <= a1:
+        return 1.0
+    if T >= a2:
+        return 0.0
+    return (a2 - T) / (a2 - a1)
+
+
+def compute_uniform_success_points(u1, u2, a1, a2, N=5000):
+    """
+    Computes P_max and P_EER for two uniform distributions.
+    """
+    T_grid = np.linspace(min(a1, u1), max(a2, u2), N)
+
+    FRR = np.array([uniform_FRR(T, u1, u2) for T in T_grid])
+    FAR = np.array([uniform_FAR(T, a1, a2) for T in T_grid])
+
+    # Single biometric credential success:
+    # accept user and reject attacker
+    P_success = (1 - FRR) * (1 - FAR)
+
+    opt_idx = np.argmax(P_success)
+    eer_idx = np.argmin(np.abs(FAR - FRR))
+
+    P_max = P_success[opt_idx]
+    P_eer = P_success[eer_idx]
+
+    T_opt = T_grid[opt_idx]
+    T_eer = T_grid[eer_idx]
+
+    return P_max, P_eer, T_opt, T_eer
+
+
+def support_overlap_length(u1, u2, a1, a2):
+    """
+    Length of the overlap between [u1,u2] and [a1,a2].
+    """
+    return max(0.0, min(u2, a2) - max(u1, a1))
+
+
+# ============================================================
+#   Sweep overlap area and save only TXT data
+# ============================================================
+
+OVERLAP_SUCCESS_TXT = OUTPUT_DIR / "figs" / "fig_uniform" / "overlap_success_data.txt"
+OVERLAP_SUCCESS_TXT.parent.mkdir(parents=True, exist_ok=True)
+
+# Fixed user distribution
+user_width = 0.5
+# Fixed attacker width
+a1_overlap = 0.05
+a2_overlap = 0.35
+
+# Sweep overlap length from no overlap to full attacker-support overlap
+overlap_lengths = np.linspace(0.0, 0.3, 100)
+
+with open(OVERLAP_SUCCESS_TXT, "w") as f:
+    f.write("overlap_area overlap_length P_max P_eer P_gap T_opt T_eer a1 a2 u1 u2\n")
+
+    for overlap_len in overlap_lengths:
+        u1_overlap = a2_overlap - overlap_len
+        u2_overlap = u1_overlap + user_width
+        
+
+        overlap_length = support_overlap_length(
+            u1_overlap, u2_overlap,
+            a1_overlap, a2_overlap
+        )
+
+        overlap_area = overlap_length / 0.3
+
+        P_max, P_eer, T_opt, T_eer = compute_uniform_success_points(
+            u1_overlap, u2_overlap,
+            a1_overlap, a2_overlap
+        )
+
+        P_gap = P_max - P_eer
+
+        f.write(
+            f"{overlap_area:.4f} "
+            f"{overlap_length:.4f} "
+            f"{P_max:.4f} "
+            f"{P_eer:.4f} "
+            f"{P_gap:.4f} "
+            f"{T_opt:.4f} "
+            f"{T_eer:.4f} "
+            f"{a1_overlap:.4f} "
+            f"{a2_overlap:.4f} "
+            f"{u1_overlap:.4f} "
+            f"{u2_overlap:.4f}\n"
+        )
+
+print(f"[i] Data saved to: {OVERLAP_SUCCESS_TXT}")
+print(f"[i] Data saved to: {CASES_DATA_TXT}")
 print(f"[i] Data saved to: {DELTA_U1_TXT}")
 print(f"[i] Data saved to: {DELTA_A2_TXT}")
 print("Saved all uniform figures:")
