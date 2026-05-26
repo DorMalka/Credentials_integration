@@ -565,7 +565,7 @@ P_{\text{success}}(t) =
 % \label{fig:uniforms_distributions}
 % \end{figure}
 
-We maintain same approach as the attackers' roots lies inside the user roots case to calculate the probability of success. The~\FAR is one for any~$t \le a_1$ and zero for any~$t \ge a_2$ while the~\FRR is zero for any~$t \le u_1$ and one for any~$t \ge u_2$. Thus in this case we receive 4 intervals for the success function:
+We maintain same approach as the case where the attacker's support lies inside the user's support to calculate the probability of success. The~\FAR is one for any~$t \le a_1$ and zero for any~$t \ge a_2$ while the~\FRR is zero for any~$t \le u_1$ and one for any~$t \ge u_2$. Thus in this case we receive 4 intervals of the success probability function:
 
 \[
 P_{\text{success}}(t) = 
@@ -578,7 +578,7 @@ P_{\text{success}}(t) =
 \end{cases}
 \]
 
-We analyze the probability of success in both the case where the attacker's support lies inside the user's support and the overlapping case and find the optimal threshold that maximizes the mechanism's success probability in each interval. The third and fourth regions of the overlapping case are equivalent to the second and third intervals in the case where the attacker's support lies inside the user's support, thus we analyze them together. First, we show that~$P_{\text{success}}(t)$ is continuous. Since~$P_{\text{success}}(t)$ is continuous on each interval of its piecewise definition, it remains only to check the boundary points. At each boundary point, the left-hand and right-hand limits of~$P_{\text{success}}$ coincide with~$P_{\text{success}}$ itself; therefore,~$P_{\text{success}}$ is continuous everywhere. In the overlapping case, the success probability function is linearly increasing in $a_1 \le t \le u_1$, and therefore its maximum is achieved at the right boundary,~$t = u_1$. In both cases, the success probability is linearly decreasing on $a_2 \le t \le u_2$, and therefore its maximum is achieved at the left boundary,~$t = a_2$.  Since the adjacent regions attain their maxima at the boundary points of the interval where~\FAR and~\FRR are strictly between zero and one, it is sufficient to analyze this interval.
+We analyze the probability of success in both the case where the attacker's support lies inside the user's support and the overlapping case, and find the optimal threshold that maximizes the mechanism's success probability in each interval. The third and fourth regions of the overlapping case are equivalent to the second and third intervals in the case where the attacker's support lies inside the user's support, thus we analyze them together. First, we show that~$P_{\text{success}}(t)$ is continuous. Since~$P_{\text{success}}(t)$ is continuous on each interval of its piecewise definition, it remains only to check the boundary points. At each boundary point, the left-hand and right-hand limits of~$P_{\text{success}}$ coincide with~$P_{\text{success}}$ itself; therefore,~$P_{\text{success}}$ is continuous on its entire domain. In the overlapping case, the success probability function is linearly increasing in $a_1 \le t \le u_1$, and therefore its maximum is achieved at the right boundary,~$t = u_1$. In both cases, the success probability is linearly decreasing on $a_2 \le t \le u_2$, and therefore its maximum is achieved at the left boundary,~$t = a_2$. Since~$t = u_1$ and~$t = a_2$ are the boundary points of the interval where~\FAR and~\FRR are strictly between zero and one, the maxima of the adjacent regions are already included in this interval. Therefore, it is sufficient to analyze the interval where~$u_1 \le t \le a_2$ in the overlapping case or~$a_1 \le t \le a_2$ in the case where the attacker's support lies inside the user's support.
 Thus, we find the global maximum by differentiating the success probability function in this region and comparing the resulting critical point with the boundary values.
 
 We differentiate the success function and set it to zero.
@@ -586,17 +586,21 @@ We find that at: $t = \frac{a_1+u_2}{2}$ we get $\frac{d}{dt} P_{\text{success}}
 $\frac{d}{dt} P_{\text{success}}(t) > 0 \text{, For every } t \in (u_1, \frac{a_1+u_2}{2})$
 $\textit{and }$
 $\frac{d}{dt} P_{\text{success}}(t) < 0 \text{, For every } t \in (\frac{a_1+u_2}{2}, a_2).$
+Thus, the maximum point is at~$t_{\text{Max}} = \frac{a_1 + u_2}{2}$ if:~$\frac{a_1+u_2}{2} \in [u_1, a_2]$ in the overlapping case, or~$\frac{a_1+u_2}{2} \in [a_1, a_2]$ in the case where the attacker's support lies inside the user's support.
 
-Thus, the maximum point is at~$t_{\text{Max}} = \frac{a_1 + u_2}{2}$ and the probability of success at this point is:
+For both cases, the probability of success at the optimal point if the condition is satisfied is:
 \[
-P_{\text{success}}(t_{\text{Max}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}.
+P_{\text{success}}(t_{\text{opt}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}.
 \]
-
-Figure~\ref{fig:uniform_success_1_cred} illustrates our analysis of the probability of success for a single biometric credential mechanism as a function of threshold $t$ in the overlapping case. The figure shows that in the second interval the success function is monotonically increasing, while in the fourth interval it is monotonically decreasing. Therefore, the optimal operating point is achieved in the interval where~\FAR and~\FRR are strictly between zero and one, which in this scenario is where $u_1 \le t \le a_2$.
+For the overlapping case, if the condition is not satisfied the maximum point is at the boundary of the interval, which is either~$t = u_1$ or~$t = a_2$. Thus:
+\[P_{\text{success}}(t_{\text{opt}}) = \max\left\{\frac{u_1 - a_1}{a_2 - a_1}, \frac{u_2 - a_2}{u_2 - u_1}\right\}.\]
+For the case where the attacker's support lies inside the user's support, if the condition is not satisfied the maximum point is at the boundary of the interval, which is either~$t = a_1$ or~$t = a_2$. Thus:
+\[P_{\text{success}}(t_{\text{opt}}) = \max\left\{0, \frac{u_2 - a_2}{u_2 - u_1}\right\}.\]
+Figure~\ref{fig:uniform_success_1_cred} illustrates our analysis of the probability of success for a single biometric credential mechanism as a function of threshold~$t$ in the overlapping case. The figure shows that in the second interval the success function is monotonically increasing, while in the fourth interval it is monotonically decreasing. Therefore, the optimal operating point is achieved in the interval where~\FAR and~\FRR are strictly between zero and one, which in this scenario is where~$u_1 \le t \le a_2$.
 
 We calculate the~\EER point and show that it is not equal to the optimal point:
 \[
-t_{\EER} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{a_1 - a_2 + u_1 - u_2} \neq \frac{a_1 + u_2}{2} = t_{\text{Max}}
+t_{\EER} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{a_1 - a_2 + u_1 - u_2} \neq \left\{a_1, \frac{a_1 + u_2}{2}, u_1, a_2 \right\} = t_{\text{opt}}.
 \] 
 The maximum point represents the optimal threshold of the mechanism. From the optimal success probability expression, we can see that when the attacker can produce scores over a wider interval, i.e., when~$(a_2 - a_1)$ increases, the mechanism’s success probability may significantly decrease. In contrast, a biometric sensor that successfully separates a user and an attacker, by assigning higher scores to a genuine user and lower scores to an attacker, is therfore expected to achieve a higher mechanism's success probability. 
 We calculate the~$\FAR$ and~$\FRR$ at the optimal point to find a relation between thier values at the optimal point and the~\EER point:
@@ -644,10 +648,9 @@ table [x=s, y=safe] {figs/fig_uniform/success_uniform_data.txt};
 \[\FAR(t_{\text{opt}}) = \frac{2a_2 - a_1 - u_2}{2(a_2 - a_1)} \textit{ and }\]
 
 \[\FRR(t_{\text{opt}}) = \frac{a_1 + u_2 - 2u_1}{2(u_2 - u_1)}.\]
-Comparing these expressions indicate that when the user and attacker distributions are symmetric, i.e., when:
-\[a_2 - a_1 = u_2 - u_1\], 
-the~\FAR equals the~\FRR. 
-Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrates our analysis of the~\FAR vs~\FRR operating curve for a single biometric credential mechanism in the overlapping case. We can see how the optimal point differs from the~\EER for a user and an attacker asymmerically distributed. 
+
+Comparing these expressions indicate that when the user and attacker distributions are symmetric, i.e., when the distance between the roots:~${a_2 - a_1 = u_2 - u_1}$, the~\FAR equals the~\FRR. 
+Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrates our analysis of the~\FAR vs~\FRR operating curve for a single biometric credential mechanism in the overlapping case. We can see that the optimal point differs from the~\EER when the user and attacker distributions are asymmetric. This indicates that as the distributions become closer to symmetric, the distance between the~\EER threshold and the optimal threshold becomes smaller.
 
 \begin{figure}[t]
 \centering
