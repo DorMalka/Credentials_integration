@@ -429,8 +429,8 @@ table [x=s, y=PA_case3] {figs/fig_uniform/uniform_three_cases.txt};
 
 \subsection{First-Order Approximation}\label{sec:4.1}
 
-We consider uniform distibution as a first-order approximation of a biometric credential.
-Denote by~$u_1 \textit{ and } u_2$ the user PDF bounds and by~$a_1 \textit{ and } a_2$  the attacker PDF bounds. The probability distribution functions for the user and the attacker, $f_U$ and $f_A$ are thus:
+We consider uniform distibution as a first-order approximation of a biometric credential's distribution.
+Denote by~$u_1 \textit{ and } u_2$ the user's PDF bounds and by~$a_1 \textit{ and } a_2$  the attacker's PDF bounds~as shown in Figure~\ref{fig:uniform_three_cases}. The probability distribution functions for the user and the attacker, $f_U$ and $f_A$ are thus:
 
 \[
 \begin{gathered}
@@ -467,148 +467,139 @@ The error metrics~\FAR and~\FRR are both functions of the match threshold~$t$ an
 Intuitively, genuine users are expected to produce higher matching scores than
 attackers. Therefore, the user score distribution is expected to be shifted toward higher matching scores $s$ compared to the attacker distribution. Otherwise, the attacker would be more likely to produce scores that lead to successful authentication, rendering the biometric credential ineffective. Thus, we assume that $a_2 < u_2$. There are three distinct cases: 
 
-(1)~$a_2 < u_1$, Figure~\ref{fig:uniform_case1_pdf}: In this case, the attacker and user distributions are separated. Any threshold $t$ chosen within the range~$a_2 \le t \le u_1$ yield zero~\FAR and~\FRR, and therefore achieves maximal mehcanism success probability.
+(1)~$a_2 < u_1$, Figure~\ref{fig:uniform_case1_pdf}: In this case, the attacker and user distributions are separated. Any threshold ~$a_2 \le t \le u_1$ yields zero~\FAR and~\FRR, and therefore achieves maximal mehcanism success probability.
 
 (2)~$u_1 < a_1 < a_2 < u_2$, Figure~\ref{fig:uniform_case2_pdf}: The attacker distribution bounds lies between the range of the user distribution bounds. For a mechanism $M$ with a single credential $c_1$, the mechanism's success probability is simply the probability that the credential is safe:
 \begin{equation}
     \label{eqn:safesuccess}
     P_{\text{success}}(M^{\text{single}}) = P_{{\text{safe}}}
 \end{equation}
-The probability of success of a mechanism comprises single credential is given by Equation~\ref{eqn:safesuccess}. Since the credential is biometric, the safe probability is given by: 
+Since the credential is biometric, the success probability is: 
 \[
-P_{{\text{safe}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t))
+P_{\text{success}}(t) = (1 - \FAR(t)) \cdot (1 - \FRR(t))
 \]
-By setting the~$\FAR(t)$ and~$\FRR(t)$, we can cacluclate the probability of success. Denote:
+The~\FAR is one for any~$t \le a_1$ and zero for any~$t \ge a_2$.
+Thus:
 \[
-\alpha(t)=\frac{t-u_1}{u_2-u_1},
-\qquad
-\beta(t)=\frac{a_2-t}{a_2-a_1}.
+P_{\text{success}}(t) = 
+\begin{cases}
+    0, & t \le a_1 \\
+    (1 - \frac{a_2-t}{a_2-a_1})\cdot(1-\frac{t-u_1}{u_2-u_1}), & a_1 < t \le a_2\\
+    1 - \frac{t-u_1}{u_2-u_1}, & a_2 < t \le u_2 \\
+    0, & t > u_2
+\end{cases}
 \]
+
+(3)~$a_1 < u_1 < a_2 < u_2$, Figure~\ref{fig:uniform_case3_pdf}: The user and attacker distributions partially overlap.
+
+% \begin{figure}[t]
+% \centering
+
+% \begin{subfigure}{\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.65\columnwidth,
+%     height=0.35\columnwidth,
+%     title={Symmetric},
+%     xlabel={Matching Score},
+%     ylabel={Probability Density},
+%     xmin=0, xmax=0.75,
+%     ymin=0, ymax=3,
+%     grid=major,
+%     xtick={0,0.10,0.30,0.50,0.70},
+%     xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$},
+%     ytick={0,2.5},
+%     yticklabels={$0$,$\frac{1}{u_2-u_1}$}
+% ]
+% \addplot+[blue, thick, mark=none, const plot]
+% table [x=s, y=PU] {figs/fig_uniform/uniform_graphs_2.txt};
+
+% \addplot+[red, thick, mark=none, const plot]
+% table [x=s, y=PA_sym] {figs/fig_uniform/uniform_graphs_2.txt};
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Symmetric uniform PDFs.}
+% \label{fig:uniform_symmetric_pdf}
+% \end{subfigure}
+
+% \begin{subfigure}{\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.65\columnwidth,
+%     height=0.35\columnwidth,
+%     title={Asymmetric},
+%     xlabel={Matching Score},
+%     ylabel={Probability Density},
+%     xmin=0, xmax=0.75,
+%     ymin=0, ymax=3.7,
+%     grid=major,
+%     xtick={0,0.05,0.30,0.42,0.70},
+%     xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$},
+%     ytick={0,2.5,3.3333},
+%     yticklabels={$0$,$\frac{1}{u_2-u_1}$,$\frac{1}{a_2-a_1}$},
+%     legend style={
+%         at={(0.4,-0.32)},
+%         anchor=north,
+%         legend columns=2,
+%         draw=black
+%     }
+% ]
+% \addplot+[blue, thick, mark=none, const plot]
+% table [x=s, y=PU] {figs/fig_uniform/uniform_graphs_2.txt};
+% \addlegendentry{User}
+
+% \addplot+[red, thick, mark=none, const plot]
+% table [x=s, y=PA_asym] {figs/fig_uniform/uniform_graphs_2.txt};
+% \addlegendentry{Attacker}
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Asymmetric uniform PDFs.}
+% \label{fig:uniform_asymmetric_pdf}
+% \end{subfigure}
+
+% \caption{Symmetric and asymmetric uniform PDFs.}
+% \label{fig:uniforms_distributions}
+% \end{figure}
+
+We maintain same approach as the attackers' roots lies inside the user roots case to calculate the probability of success. The~\FAR is one for any~$t \le a_1$ and zero for any~$t \ge a_2$ while the~\FRR is zero for any~$t \le u_1$ and one for any~$t \ge u_2$. Thus in this case we receive 4 intervals for the success function:
 
 \[
 P_{\text{success}}(t) = 
 \begin{cases}
     0, & t \le a_1 \\
-    1 - \alpha(t) - \beta(t) + \alpha(t)\cdot\beta(t), & a_1 < t \le a_2\\
-    1 - \alpha(t), & a_2 < t \le u_2 \\
+    1 - \frac{a_2-t}{a_2-a_1}, & a_1 < t \le u_1 \\
+    (1 - \frac{a_2-t}{a_2-a_1})\cdot(1-\frac{t-u_1}{u_2-u_1}), & u_1 < t \le a_2\\
+    1 - \frac{t-u_1}{u_2-u_1}, & a_2 < t \le u_2 \\
     0, & t > u_2
 \end{cases}
 \]
 
-(3)~$a_1 < u_1 < a_2 < u_2$, Figure~\ref{fig:uniform_case3_pdf}: The user and attacker distributions partially overlap. There are 2 distinct scenarios in this case, where the user and attacker PDF's are symmetrically and asymmetrically distributed as shown in Figure~\ref{fig:uniforms_distributions}.
+We analyze the probability of success in both the case where the attacker's support lies inside the user's support and the overlapping case and find the optimal threshold that maximizes the mechanism's success probability in each interval. The third and fourth regions of the overlapping case are equivalent to the second and third intervals in the case where the attacker's support lies inside the user's support, thus we analyze them together. First, we show that~$P_{\text{success}}(t)$ is continuous. Since~$P_{\text{success}}(t)$ is continuous on each interval of its piecewise definition, it remains only to check the boundary points. At each boundary point, the left-hand and right-hand limits of~$P_{\text{success}}$ coincide with~$P_{\text{success}}$ itself; therefore,~$P_{\text{success}}$ is continuous everywhere. In the overlapping case, the success probability function is linearly increasing in $a_1 \le t \le u_1$, and therefore its maximum is achieved at the right boundary,~$t = u_1$. In both cases, the success probability is linearly decreasing on $a_2 \le t \le u_2$, and therefore its maximum is achieved at the left boundary,~$t = a_2$.  Since the adjacent regions attain their maxima at the boundary points of the interval where~\FAR and~\FRR are strictly between zero and one, it is sufficient to analyze this interval.
+Thus, we find the global maximum by differentiating the success probability function in this region and comparing the resulting critical point with the boundary values.
 
-\begin{figure}[t]
-\centering
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.65\columnwidth,
-    height=0.35\columnwidth,
-    title={Symmetric},
-    xlabel={Matching Score},
-    ylabel={Probability Density},
-    xmin=0, xmax=0.75,
-    ymin=0, ymax=3,
-    grid=major,
-    xtick={0,0.10,0.30,0.50,0.70},
-    xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$},
-    ytick={0,2.5},
-    yticklabels={$0$,$\frac{1}{u_2-u_1}$}
-]
-\addplot+[blue, thick, mark=none, const plot]
-table [x=s, y=PU] {figs/fig_uniform/uniform_graphs_2.txt};
-
-\addplot+[red, thick, mark=none, const plot]
-table [x=s, y=PA_sym] {figs/fig_uniform/uniform_graphs_2.txt};
-\end{axis}
-\end{tikzpicture}
-\caption{Symmetric uniform PDFs.}
-\label{fig:uniform_symmetric_pdf}
-\end{subfigure}
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.65\columnwidth,
-    height=0.35\columnwidth,
-    title={Asymmetric},
-    xlabel={Matching Score},
-    ylabel={Probability Density},
-    xmin=0, xmax=0.75,
-    ymin=0, ymax=3.7,
-    grid=major,
-    xtick={0,0.05,0.30,0.42,0.70},
-    xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$},
-    ytick={0,2.5,3.3333},
-    yticklabels={$0$,$\frac{1}{u_2-u_1}$,$\frac{1}{a_2-a_1}$},
-    legend style={
-        at={(0.4,-0.32)},
-        anchor=north,
-        legend columns=2,
-        draw=black
-    }
-]
-\addplot+[blue, thick, mark=none, const plot]
-table [x=s, y=PU] {figs/fig_uniform/uniform_graphs_2.txt};
-\addlegendentry{User}
-
-\addplot+[red, thick, mark=none, const plot]
-table [x=s, y=PA_asym] {figs/fig_uniform/uniform_graphs_2.txt};
-\addlegendentry{Attacker}
-\end{axis}
-\end{tikzpicture}
-\caption{Asymmetric uniform PDFs.}
-\label{fig:uniform_asymmetric_pdf}
-\end{subfigure}
-
-\caption{Symmetric and asymmetric uniform PDFs.}
-\label{fig:uniforms_distributions}
-\end{figure}
-
-We maintain same approach as the second case to calculate the probability of success. By setting the $\FAR(t)$ and $\FRR(t)$ into safe probability, the probability of success is given by:
-
-\[
-P_{\text{success}}(t) = 
-\begin{cases}
-    0, & t \le a_1 \\
-    1 - \beta(t), & a_1 < t \le u_1 \\
-    1 - \alpha(t) - \beta(t) + \alpha(t)\cdot\beta(t), & u_1 < t \le a_2\\
-    1 - \alpha(t), & a_2 < t \le u_2 \\
-    0, & t > u_2
-\end{cases}
-\]
-
-We analyze the probability of success in both the second and third cases and find the optimal threshold that maximizes the mechanism's success in each interval. The third and fourth regions of the third case are similar to the second and third intervals in the second case, thus we analyze them together. The success function is linearly increasing in the second region of the third case, thus the maximum is achieved at the right boundary, $t = u_1$. In the fourth region of third case the success function is linearly decreasing, thus the maximum is achieved at the left boundary,~$t = a_2$. Since $P_{\text{success}}(t)$ is a continuous function, the global maximum is expected to be achieved in the third region. Therefore, we analyze the third region to find the optimal threshold:
-
-We differentiate the success function in the third region and set it to zero to find the horizontal tangent points:
-\[\frac{d}{dt} P_{\text{success}}(t) = 0.\] 
-
-The horizontal tangent point is:
-
-\[
-t = \frac{a_1+u_2}{2}
-\]
-
-\[\frac{d}{dt} P_{\text{success}}(t) > 0 \text{, For every } t \in (u_1, \frac{a_1+u_2}{2}) \]
-\[\textit{and}\]
-\[\frac{d}{dt} P_{\text{success}}(t) < 0 \text{, For every } t \in (\frac{a_1+u_2}{2}, a_2) \]
+We differentiate the success function and set it to zero.
+We find that at: $t = \frac{a_1+u_2}{2}$ we get $\frac{d}{dt} P_{\text{success}}(t) = 0$ with
+$\frac{d}{dt} P_{\text{success}}(t) > 0 \text{, For every } t \in (u_1, \frac{a_1+u_2}{2})$
+$\textit{and }$
+$\frac{d}{dt} P_{\text{success}}(t) < 0 \text{, For every } t \in (\frac{a_1+u_2}{2}, a_2).$
 
 Thus, the maximum point is at~$t_{\text{Max}} = \frac{a_1 + u_2}{2}$ and the probability of success at this point is:
 \[
-P_{\text{success}}(t_{\text{Max}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}
+P_{\text{success}}(t_{\text{Max}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}.
 \]
 
-We note that in general the~\EER point is not equal to the optimal point:
+Figure~\ref{fig:uniform_success_1_cred} illustrates our analysis of the probability of success for a single biometric credential mechanism as a function of threshold $t$ in the overlapping case. The figure shows that in the second interval the success function is monotonically increasing, while in the fourth interval it is monotonically decreasing. Therefore, the optimal operating point is achieved in the interval where~\FAR and~\FRR are strictly between zero and one, which in this scenario is where $u_1 \le t \le a_2$.
+
+We calculate the~\EER point and show that it is not equal to the optimal point:
 \[
 t_{\EER} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{a_1 - a_2 + u_1 - u_2} \neq \frac{a_1 + u_2}{2} = t_{\text{Max}}
 \] 
-The maximum point represents the optimal threshold of the mechanism. The optimal point indicates that increasing the offset between the two uniform distributions is likely to improve the mechanism's success. In particular, a biometric sensor that produces higher scores for genuine users and lower scores for attackers is expected to achieve better mechanism's success. 
-Figure~\ref{fig:uniform_success_1_cred} illustrates our analysis of the probability of success for a single biometric credential mechanism as a function of threshold $t$. The figure shows that in the second interval the success function is monotonically increasing, while in the fourth interval it is monotonically decreasing. Therefore, the optimal operating point is achieved in the third interval, where $u_1 \le t \le a_2$. Moreover, we calculate the~$\FAR$ and~$\FRR$ at the optimal point: 
+The maximum point represents the optimal threshold of the mechanism. From the optimal success probability expression, we can see that when the attacker can produce scores over a wider interval, i.e., when~$(a_2 - a_1)$ increases, the mechanism’s success probability may significantly decrease. In contrast, a biometric sensor that successfully separates a user and an attacker, by assigning higher scores to a genuine user and lower scores to an attacker, is therfore expected to achieve a higher mechanism's success probability. 
+We calculate the~$\FAR$ and~$\FRR$ at the optimal point to find a relation between thier values at the optimal point and the~\EER point:
 
 \begin{figure}[t]
 \centering
@@ -650,13 +641,13 @@ table [x=s, y=safe] {figs/fig_uniform/success_uniform_data.txt};
 \label{fig:uniform_success_1_cred}
 \end{figure}
 
-\[\FAR(t_{\text{opt}}) = \frac{2a_2 - a_1 - u_2}{2(a_2 - a_1)}\]
-\[\textit{and}\]
-\[\FRR(t_{\text{opt}}) = \frac{a_1 + u_2 - 2u_1}{2(u_2 - u_1)}.\]
+\[\FAR(t_{\text{opt}}) = \frac{2a_2 - a_1 - u_2}{2(a_2 - a_1)} \textit{ and }\]
 
-These results indicate that when the user and attacker distributions are symmetric, the optimal operating point coincides with the \EER. 
-We show how the optimal point differs from the~\EER in the error metrics 
-curve~\FAR vs~\FRR in Figure~\ref{fig:FAR_FRR_uniform_1_cred} for a user and attacker asymmerically distributed. 
+\[\FRR(t_{\text{opt}}) = \frac{a_1 + u_2 - 2u_1}{2(u_2 - u_1)}.\]
+Comparing these expressions indicate that when the user and attacker distributions are symmetric, i.e., when:
+\[a_2 - a_1 = u_2 - u_1\], 
+the~\FAR equals the~\FRR. 
+Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrates our analysis of the~\FAR vs~\FRR operating curve for a single biometric credential mechanism in the overlapping case. We can see how the optimal point differs from the~\EER for a user and an attacker asymmerically distributed. 
 
 \begin{figure}[t]
 \centering
