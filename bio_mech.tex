@@ -308,7 +308,6 @@ An authentication mechanism $M$ interacts with two players: a user $U$ and an at
 \begin{itemize}
      \item~$C_P(\sigma)$ the set of credentials available to player~$P$ in scenario~$\sigma$ (perhaps no set, represented by~$\bot$).
      \item~$\sigma_i$ the state of each credential~$c_i$ in scenario~$\sigma$.
-     \item~$y_i^P$ the evaluation of each credential~$c_i$ for player~$P$ (perhaps no evaluation, represented by~$\bot$).
 \end{itemize}
 and outputs a variable~$\text{decide}_M$, where~$\text{decide}_M=1$ means that the mechanism accepts the player and~$\text{decide}_M=0$ means that the mechanism rejects the player.
 \end{definition}
@@ -317,7 +316,7 @@ For example, in an \emph{AND mechanism}, the mechanism grants access to a user i
 
 \subsection{Mechanism Success}\label{sec:3.4}
 A mechanism is successful in a scenario~$\sigma$ if the user is accepted and the attacker is rejected when the credentials available to them in~$\sigma$ are given as input. Formally, 
-\begin{definition} (Mechanism Success) Mechanism success is the probability that the authentication mechanism~$M$ accepts a user~$U$ and rejects an attacker~$A$ given~$C_P(\sigma)$,~$\sigma_i$ and~$y_i^P$. For a player~$P$ the mechanism success is
+\begin{definition} (Mechanism Success) Mechanism success is the probability that the authentication mechanism~$M$ accepts a user~$U$ and rejects an attacker~$A$ given~$C_P(\sigma)$ and~$\sigma_i$. For a player~$P$ the mechanism success is
 \[
 P_{\text{Success}}(M)=\Pr[\mathrm{decide}_M(U)=1 \wedge \mathrm{decide}_M(A)=0].
 \]
