@@ -45,26 +45,24 @@
 
 % \renewcommand{\shortauthors}{Malka et al.}
 \maketitle
+\tableofcontents
 
 \begin{abstract}
 %%% 
 %%% 
 %%% 
 %%% 
-Biometric credentials are widely used in modern authentication: 
-Sensors obtain a measurement and output \emph{accept} if it is above a set match threshold or \emph{reject} otherwise. 
+Biometric credentials are prevalent in modern authentication: 
+Sensors obtain a measurement and output \emph{accept} if it is above a \emph{match threshold} or \emph{reject} otherwise. 
 A large body of work improves the accuracy of biometric sensors, but the state of the art uses a heuristic threshold. 
-Other works study \emph{authentication mechanisms}, but those treat biometric credentials as \emph{atomic} (accept/reject, using the heuristic threshold). 
+Other works study \emph{authentication mechanisms}, but treat biometric credentials as \emph{atomic} (accept/reject). 
 
-We explore optimal authentication mechanisms with biometric credentials. 
-Following prior work, we define a mechanism's success as the probability it accepts legitimate users and rejects attackers. 
-We formally prove that in general the optimal threshold differs from the common heuristic. 
+Following prior work, we define a mechanism's success as the probability it accepts a user but rejects an attacker. We formally prove that, in general, the optimal threshold differs from the common heuristic. 
 Moreover, a different optimum should be used according to the integration with other credentials. 
 We also prove that integrating a biometric credential improves mechanism success even when an atomic credential has arbitrary low fault probabilities and a biometric credential provides only weak separation between users and attackers. 
-We quantitatively demonstrate the improvement with experiments on real public biometric data. 
-Our optimized threshold reduces mechanism failure probability by~30-70\% compared to the heuristic threshold when a biometric credential is integrated with other credentials. 
+We quantitatively demonstrate the improvement with experiments on biometric datasets. 
 
-These results imply that biometric sensors should allow integrators to set thresholds according to the authentication mechanism.
+The direct implication is that biometric sensor vendors should allow integrators to set thresholds according to the deployed authentication mechanism.
 \end{abstract}
 
 \section{Introduction}
@@ -220,75 +218,69 @@ An authentication mechanism is a decision making protocol that evaluates a set o
 We formalize the authentication problem by specifying the system participants~$(\S\ref{sec:3.1})$, Credential types and their characteritics~$(\S\ref{sec:3.2})$, the authentication mechanism~$(\S\ref{sec:3.3})$, and mechanism success~$(\S\ref{sec:3.4})$. 
 
 \subsection{System Participants}\label{sec:3.1}
-The system comprises: an authentication mechanism~$M$ and two players: a user $U$ and an attacker $A$. All three are finite and deterministic automata. Each player interacts with the mechanism~$M$ by sending and receiving messages. We abstract away
-the concrete implementation of the credential and model only the evidence that a player can present to the mechanism. Let:
+The system comprises an authentication mechanism~$M$ and two players: a user $U$ and an attacker $A$. All three are finite and deterministic automata. Each player interacts with the mechanism~$M$ by presenting credentials, which serve as a proof of being the legitimate user. We abstract away the concrete implementation of the credential and model only the evidence that a player can present to the mechanism. Let
 \[
     \mathcal{C}=\{c_1,c_2,\ldots,c_n\}
 \]
 be the set of credentials used by the mechanism.
 \begin{definition} (Availability Vector)
-    An availability vector represents the availability of all credentials to a user $U$ or an attacker $A$. Denote by $\sigma^U$,$\sigma^A$ the availability vectors of the user and the attacker, respectively.
+    An availability vector specifies, for each credential, whether a user $U$ or an attacker $A$ has an access to that credential or not. Denote by $\sigma^U$,$\sigma^A$ the availability vectors of the user and the attacker, respectively.
 \end{definition}
-A scenario~$\sigma$ is the vector of states of each credential in the mechanism. We denote by~$\sigma_i$ the state of credential~$c_i$ in scenario~$\sigma$.
-
-Before an authentication execution begins, the world fixes a scenario~$\sigma = (\sigma^U,\sigma^A)$, where~$\sigma^U,\sigma^A \in \{0,1\}^{n}$.
-
-For a player~$P\in\{U,A\}$, the entry~$\sigma_i^P=1$ means that credential $c_i$ is available to~$P$, and~$\sigma_i^P=0$ means that it is not. We denote by
+For a player~$P\in\{U,A\}$, the entry~$\sigma_i^P=1$ means that credential~$c_i$ is available to~$P$, and~$\sigma_i^P=0$ means that it is not. The player presents each credential~$c_i \in \mathcal{C}$ to produce evidence of access to that credential. We denote by~$\mathsf{present}_P(i)$ the presentation function, of a player~$P$ and credential~$c_i$, that produces the evidence, where the form of the function depends on the type of the credential. The outcome of the presentation function determines whether~$\sigma_i^P=1$ or $\sigma_i^P=0$. We denote by
 \[
-    C_P(\sigma)=\{c_i\in\mathcal{C}:\sigma_i^P=1\}
+    C_P(\sigma)=\{c_i\in\mathcal{C}|\sigma_i^P=1\}
 \]
-the set of credentials available to player~$P$ in scenario~$\sigma$. A player can attempt to present evidence for any credential. For each credential~$c_i$, we denote by~$\mathsf{present}_i(P,\sigma)$ the evidence produced by player~$P$ for credential~$c_i$ under scenario~$\sigma$. If~$c_i\notin C_P(\sigma)$, then the player cannot produce valid evidence for this credential, and we write
-\[
-    \mathsf{present}_i(P,\sigma)=\bot.
-\]
-Otherwise, the player produces an evidence value
-\[
-    e_i^P=\mathsf{present}_i(P,\sigma).
-\]
-
-Each player's evidence is evaluated using a credential evaluation function:
-\[
-    y_i^P = \mathsf{eval}_i(e_i^P).
-\]
-Where the type of the evaluation function~$\mathsf{eval}_i(e_i^P)$ depends on the credential type.
+the set of credentials available to player~$P$.
 
 \subsection{Credentials}\label{sec:3.2}
 
 To authenticate, a player uses credentials to convince the mechanism that it is the legitimate user. A credential may correspond to secret data, such as a password or one time password~(OTP); a physical object, such as a phone or security
 key; or a biometric property, such as a fingerprint or face.
 \begin{definition} (Atomic Credential)
-An atomic credential $c^{\mathrm{atm}}$ is evaluated as a binary outcome: either the presented evidence~$e_i^P$ perfectly matches the reference value, or the attempt is rejected as incorrect. For a player~$P \in \{U,A\}$ and credential~$c^{\mathrm{atm}}$, we define
+An atomic credential $c^{\mathrm{atm}}$ is a credential for which the presentation function~$\mathsf{present}_P(i)$ applies a perfect match criterion. For a player~$P \in \{U,A\}$ and credential~$c^{\mathrm{atm}}$, we define
 \[
 x_{c^{\mathrm{atm}}}^P \in \{0,1\},
 \]
-where~$x_{c^{\mathrm{atm}}}^P=1$ means that player $P$ perfectly satisfies credential~$c^{\mathrm{atm}}$, and~$x_{c^{\mathrm{atm}}}^P=0$ means that player~$P$ does not satisfy it. The probability of satisfying the credential is defined by~$\Pr[x_{c^{\mathrm{atm}}}^P]$ and the evaluation function is given by:
+where~$x_{c^{\mathrm{atm}}}^P=1$ means that player $P$ perfectly satisfies credential~$c^{\mathrm{atm}}$, and~$x_{c^{\mathrm{atm}}}^P=0$ means that player~$P$ does not satisfy it. Thus:
 \[
-f_{c^{\mathrm{atm}}}^P(x)
-=
-\Pr[x_{c^{\mathrm{atm}}}^P=1]\delta(x-1)
-+
-\Pr[x_{c^{\mathrm{atm}}}^P=0]\delta(x),
+\mathsf{present}_P(i) = 
+\begin{cases}
+    1, & x_{c^{\mathrm{atm}}}^P = 1,\\
+    0, & x_{c^{\mathrm{atm}}}^P = 0.
+\end{cases}
 \]
-where $\delta(\cdot)$ denotes the Dirac delta function.
 \end{definition}
 
 \begin{definition} (Biometric Credential)
-A biometric credential $c^{\mathrm{bio}}$ is evaluated by a biometric sensor. For a player $P \in \{U,A\}$ let $s^P$ denote the \emph{matching score} which quantifies the similarity between the input of $P$ obtained by the sensor and the reference associated with $c^{\mathrm{bio}}$. Let $t$ denote the \emph{match threshold}. If the score is above the threshold, the output of the biometric sensor is \emph{accept}, otherwise \emph{reject}.
-A biometric credential evaluation function is given by
+A biometric credential~$c^{\mathrm{bio}}$ is a credential for which the presentation function~$\mathsf{present}_P(i)$ applies a similarity criterion.
+For a player $P \in \{U,A\}$ let $s^P$ denote a \emph{matching score} which quantifies the similarity between the biometric input of $P$ and the reference stored in database. Let $t$ denote the \emph{match threshold}, thus
 \[
-f_{c^{\mathrm{bio}}}^P(s) = 
+\mathsf{present}_P(i) = 
 \begin{cases}
-    1, & s_{c^{\mathrm{bio}}}^P \geq t,\\
-    0, & s_{c^{\mathrm{bio}}}^P < t.
+    1, & s^P \geq t,\\
+    0, & s^P < t.
 \end{cases},
 \]
 \end{definition}
 
-Each player uses a set of credentials $\{c_1, c_2, \ldots, c_n\}$. Each credential $c_i$ can be either \emph{atomic} or \emph{biometric} and can belong to one of the states:~\emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. We define the probability associated with each state as follows: $P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and $P_{\text{stolen}}$. An attacker $A$ and a user $U$ have different availability to each credential. For example, a password may be available to the user but not to the attacker, while a leaked password may be available to both. 
+Each credential either \emph{atomic} or \emph{biometric} can belong to one of the states:~\emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. A scenario~$\sigma$ is the vector of states of each credential in the mechanism. We denote by~$\sigma_i$ the state of credential~$c_i$ in scenario~$\sigma$. 
+Each state corresponds to the outcome of the presentation functions for a user and an attacker. Specifically, the pair $(\mathsf{present}_U(i), \mathsf{present}_A(i))$ determines whether the credential is in the \emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. Therefore, the state probabilities are
+\[
+P_{\text{safe}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 0].
+\]
+\[
+P_{\text{loss}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 0].
+\]
+\[
+P_{\text{leak}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 1].
+\]
+\[
+P_{\text{stolen}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 1].
+\]
 
-For example, if~$\sigma_i = \text{leak}$ then the credential is available to both players, namely~$\sigma_i^U = \text{True}$ and~$\sigma_i^A = \text{True}$. If~$c_i$ is an atomic credential, we can deduce that~$x_{c_i^{\mathrm{atm}}}^{U}=1$ $\ \text{and}\ x_{c_i^{\mathrm{atm}}}^{A}=1$. In the case where~$c_i$ is a biometric credential, this implies~$f_{c_i^{\mathrm{bio}}}^{U}(s)=1 \ \text{and}\ f_{c_i^{\mathrm{bio}}}^{A}(s)=1$.
+For example, if~$\sigma_i = \text{leak}$ then the credential is available to both players, namely~$\sigma_i^U = \text{True}$ and~$\sigma_i^A = \text{True}$. If~$c_i$ is an atomic credential, we can deduce that~$x_{c_i^{\mathrm{atm}}}^{U}=1$ $\ \text{and}\ x_{c_i^{\mathrm{atm}}}^{A}=1$. In the case where~$c_i$ is a biometric credential, this implies~$s_{i}^U \ge t \ \text{and}\ s_{i}^A \ge t$. The probabilities that a user or an attacker satisfies an atomic credential can be characterized using password statistics from company databases~\cite{password_leak}. In contrast, the probabilities that a user or an attacker satisfies a biometric credential are characterized by the score distributions of the biometric credential.
 
-The biometric sensor compares the obtained sample with the enrolled reference template and calculates a matching score $s$. The genuine distribution~$f_U(s)$ denotes the score distribution induced by samples produced by the legitimate user, whereas the impostor distribution~$f_A(s)$ denotes the score distribution induced by samples produced by the attacker. These distributions establish two error metrics:~\FAR and~\FRR both are functions of the match threshold~$t$. 
+For biometric credentials, the genuine distribution~$f_U(s)$ denotes the score distribution induced by samples produced by the legitimate user, whereas the impostor distribution~$f_A(s)$ denotes the score distribution induced by samples produced by the attacker. These distributions establish two error metrics:~\FAR and~\FRR both are functions of the match threshold~$t$. 
 \[
 \FAR(t) = \int_{t}^{a_2} f_A[s] ds
 \]
@@ -1473,6 +1465,8 @@ table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 \end{figure}
 
 \section{Two Credentials}\label{sec:5}
+We explore mechanisms that integrate two independently and identically distributed credentials, derived from either the same or different types of credentials to model real life implications exist in cloud authentication for example. We numerically analyze two biometric credentials~$(\S\ref{sec:5.1})$ and symbolically analyze one biometric credential and one atomic credential~$(\S\ref{sec:5.2})$.
+
 For a mechanism $M$ comprises two independently and identically distributed credentials, derived from either the same or different PDF’s, we defined the integrated system success as the probability of users successfully defend their assets under two scenarios:
 
 a. \emph{AND}: The user has full availability to all credentials, while the attacker has limited or no availability. For successful authentication, we need both credentials to be either in safe state, or one in safe state and the other in leak state. If one of the credentials is either loss ot theft, the owner cannot satisfy the mechanism and thus the mechanism fails.
