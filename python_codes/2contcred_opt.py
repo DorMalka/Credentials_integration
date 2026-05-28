@@ -582,44 +582,79 @@ def gaussian_to_parabolic(p: GaussianPair) -> ParabolicPair:
     )
 
 
+def _pct_improvement(opt: float, eer: float) -> float:
+    """
+    Percentage improvement from EER to the optimal point:
+        100 * (P_opt - P_eer) / P_eer
+    """
+    if eer == 0:
+        return np.inf
+    return 100.0 * (opt - eer) / eer
+
+
+def _fmt_pct(x: float, nd: int = 2) -> str:
+    if np.isfinite(x):
+        return f"{x:.{nd}f}\\%"
+    return r"\infty"
+
+
 def _wallet_metrics_at_reference_points(
     p1: DistPair,
     p2: DistPair,
     n_grid: int,
-) -> Tuple[float, float, float, float, float, float]:
+) -> Dict[str, float]:
     # Grids
     T1_grid = auto_T_grid_1d(p1, n=n_grid)
     T2_grid = auto_T_grid_1d(p2, n=n_grid)
 
-    # EER thresholds (per credential)
+    # EER thresholds per credential
     eer1 = eer_from_grid(p1, T1_grid)
     eer2 = eer_from_grid(p2, T2_grid)
     T1_eer, T2_eer = eer1["T_eer"], eer2["T_eer"]
 
-    # Standalone safe-opt thresholds (per credential)
+    # Standalone safe-opt thresholds per credential
     sopt1 = safe_opt_from_grid(p1, T1_grid)
     sopt2 = safe_opt_from_grid(p2, T2_grid)
     T1_sopt, T2_sopt = sopt1["T_safe_opt"], sopt2["T_safe_opt"]
 
-    # Joint optima (each wallet at its own optimum)
+    # Standalone success probability of each biometric credential
+    P_cred1_standalone = sopt1["safe_opt"]
+    P_cred2_standalone = sopt2["safe_opt"]
+
+    # Joint optima
     out_and = optimize_thresholds_lbfgs(p1, p2, mode="AND")
-    out_or  = optimize_thresholds_lbfgs(p1, p2, mode="OR")
+    out_or = optimize_thresholds_lbfgs(p1, p2, mode="OR")
     T1_and, T2_and = out_and["T_opt"]
-    T1_or,  T2_or  = out_or["T_opt"]
+    T1_or, T2_or = out_or["T_opt"]
 
-    # Wallet success at EER pair
+    # Mechanism success at EER pair
     P_and_eer = success_probability(T1_eer, T2_eer, p1, p2, "AND")
-    P_or_eer  = success_probability(T1_eer, T2_eer, p1, p2, "OR")
+    P_or_eer = success_probability(T1_eer, T2_eer, p1, p2, "OR")
 
-    # Wallet success at optimal pairs
+    # Mechanism success at joint optimal pairs
     P_and_opt = success_probability(T1_and, T2_and, p1, p2, "AND")
-    P_or_opt  = success_probability(T1_or,  T2_or,  p1, p2, "OR")
+    P_or_opt = success_probability(T1_or, T2_or, p1, p2, "OR")
 
-    # Wallet success at standalone pair
+    # Mechanism success at standalone safe-opt pair
     P_and_sopt = success_probability(T1_sopt, T2_sopt, p1, p2, "AND")
-    P_or_sopt  = success_probability(T1_sopt, T2_sopt, p1, p2, "OR")
+    P_or_sopt = success_probability(T1_sopt, T2_sopt, p1, p2, "OR")
 
-    return P_and_eer, P_or_eer, P_and_opt, P_or_opt, P_and_sopt, P_or_sopt
+    # Percentage improvement from EER to optimum
+    improvement_and = _pct_improvement(P_and_opt, P_and_eer)
+    improvement_or = _pct_improvement(P_or_opt, P_or_eer)
+
+    return {
+        "P_cred1_standalone": P_cred1_standalone,
+        "P_cred2_standalone": P_cred2_standalone,
+        "P_and_eer": P_and_eer,
+        "P_or_eer": P_or_eer,
+        "P_and_sopt": P_and_sopt,
+        "P_or_sopt": P_or_sopt,
+        "P_and_opt": P_and_opt,
+        "P_or_opt": P_or_opt,
+        "improvement_and": improvement_and,
+        "improvement_or": improvement_or,
+    }
 
 
 def build_paper_table_gaussian_uniform_parabolic_2cred(
@@ -627,18 +662,20 @@ def build_paper_table_gaussian_uniform_parabolic_2cred(
     p2: GaussianPair,
     n_grid: int = 2000,
     out_tex: str = "05_wallet_success_table.tex",
-    nd: int = 6,
+    nd: int = 3,
 ) -> str:
     """
-    Produces LaTeX table with 3 rows:
-      Gaussian (given), Uniform (moment-matched), Parabolic (moment-matched).
+    Produces a LaTeX table with 3 rows:
+      Gaussian, Uniform, Parabolic.
 
-    Columns:
-      P_AND @ EER, P_OR @ EER,
-      P_AND @ optimal, P_OR @ optimal,
-      P_AND @ standalone, P_OR @ standalone
+    Additional columns:
+      1. Standalone success of credential 1.
+      2. Standalone success of credential 2.
+      3. Percentage improvement from EER to optimal, shown as AND / OR.
+
+    The generated LaTeX does not use font resizing.
     """
-    # Moment-matched alternative distributions (per-credential)
+    # Moment-matched alternative distributions
     p1_u = gaussian_to_uniform(p1)
     p2_u = gaussian_to_uniform(p2)
     p1_p = gaussian_to_parabolic(p1)
@@ -648,53 +685,74 @@ def build_paper_table_gaussian_uniform_parabolic_2cred(
 
     for name, a1, a2 in [
         ("Gaussian", p1, p2),
-        ("Uniform",  p1_u, p2_u),
+        ("Uniform", p1_u, p2_u),
         ("Parabolic", p1_p, p2_p),
     ]:
         vals = _wallet_metrics_at_reference_points(a1, a2, n_grid=n_grid)
-        rows.append([name] + [_fmt(v, nd) for v in vals])
+
+        improvement_cell = (
+            _fmt_pct(vals["improvement_and"], nd=2)
+            + r" / "
+            + _fmt_pct(vals["improvement_or"], nd=2)
+        )
+
+        rows.append([
+            name,
+            _fmt(vals["P_cred1_standalone"], nd),
+            _fmt(vals["P_cred2_standalone"], nd),
+            _fmt(vals["P_and_eer"], nd),
+            _fmt(vals["P_or_eer"], nd),
+            _fmt(vals["P_and_sopt"], nd),
+            _fmt(vals["P_or_sopt"], nd),
+            r"\textbf{" + _fmt(vals["P_and_opt"], nd) + r"}",
+            r"\textbf{" + _fmt(vals["P_or_opt"], nd) + r"}",
+            improvement_cell,
+        ])
 
     header_cols = [
         "Distribution",
-        r"$P_{\mathrm{AND}}$ @ EER",
-        r"$P_{\mathrm{OR}}$ @ EER",
-        r"$P_{\mathrm{AND}}$ @ optimal",
-        r"$P_{\mathrm{OR}}$ @ optimal",
-        r"$P_{\mathrm{AND}}$ @ standalone",
-        r"$P_{\mathrm{OR}}$ @ standalone",
+        r"$P_{c_1}(\mathrm{safe})$",
+        r"$P_{c_2}(\mathrm{safe})$",
+        r"$P_{\mathrm{AND}}(t_{\EER})$",
+        r"$P_{\mathrm{OR}}(t_{\EER})$",
+        r"$P_{\mathrm{AND}}(t_1^{\mathrm{safe}})$",
+        r"$P_{\mathrm{OR}}(t_2^{\mathrm{safe}})$",
+        r"$\mathbf{P_{\mathrm{AND}}(t_{\mathrm{opt}})}$",
+        r"$\mathbf{P_{\mathrm{OR}}(t_{\mathrm{opt}})}$",
+        r"Improvement",
     ]
 
     col_format = "l" + "c" * (len(header_cols) - 1)
 
     lines = []
-    lines.append(r"\begin{table}[t]")
+    lines.append(r"\begin{table*}[t]")
     lines.append(r"\centering")
-    lines.append(r"\small")
     lines.append(r"\setlength{\tabcolsep}{4pt}")
-    lines.append(r"\resizebox{\textwidth}{!}{%")
     lines.append(r"\begin{tabular}{" + col_format + r"}")
-    lines.append(r"\hline")
+    lines.append(r"\toprule")
     lines.append(" & ".join(header_cols) + r" \\")
-    lines.append(r"\hline")
+    lines.append(r"\midrule")
+
     for row in rows:
         lines.append(" & ".join(row) + r" \\")
-    lines.append(r"\hline")
+
+    lines.append(r"\bottomrule")
     lines.append(r"\end{tabular}")
-    lines.append(r"}")
     lines.append(
-        r"\caption{Wallet success under score distributions at three reference operating points: "
-        r"EER-pair $(T_1^{\mathrm{eer}},T_2^{\mathrm{eer}})$, joint optima (AND at $(T_1^{*},T_2^{*})_{\mathrm{AND}}$ "
-        r"and OR at $(T_1^{*},T_2^{*})_{\mathrm{OR}}$), and standalone safe-opt pair $(T_1^{\mathrm{safe}},T_2^{\mathrm{safe}})$. "
-        r"Uniform and Parabolic are moment-matched to the Gaussian credentials (same mean and variance per credential).}"
+        r"\caption{Mechanism success probabilities under different score distributions and operating points. "
+        r"The standalone columns report the maximum success probability of each biometric credential when used individually. "
+        r"The improvement column reports the percentage improvement from the \EER operating point to the mechanism-level optimum "
+        r"for the \emph{AND} and \emph{OR} mechanisms, respectively.}"
     )
     lines.append(r"\label{tab:wallet_success_dist}")
-    lines.append(r"\end{table}")
+    lines.append(r"\end{table*}")
 
     latex = "\n".join(lines)
+
     with open(out_tex, "w", encoding="utf-8") as f:
         f.write(latex)
-    return latex
 
+    return latex
 
 # =========================
 # Success function plots (1D sweeps) for AND/OR wallets (Gaussian as before)
@@ -933,7 +991,7 @@ if __name__ == "__main__":
 
     # Table now includes Gaussian + Uniform + Parabolic (no extra figures for the new distributions)
     latex = build_paper_table_gaussian_uniform_parabolic_2cred(
-        p1, p2, out_tex=OUTPUT_DIR / "figs" / "fig_2continuous" / "05_wallet_success_table.tex", nd=6
+        p1, p2, out_tex=OUTPUT_DIR / "figs" / "fig_2continuous" / "05_wallet_success_table.tex", nd=3
     )
     print(latex)
 
