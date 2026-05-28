@@ -1920,14 +1920,20 @@ we calculate the~\EER point and show that the optimal operating point $t_{\text{
     }
 }
 
-% Read the points file and extract the optimal y-values
+% Read the points file
 \pgfplotstableread{figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt}{\successpoints}
 
+% Extract OR values
 \pgfplotstablegetelem{0}{P_opt_or}\of{\successpoints}
 \edef\PoptOR{\pgfplotsretval}
+\pgfplotstablegetelem{0}{P_or_eer}\of{\successpoints}
+\edef\PeerOR{\pgfplotsretval}
 
+% Extract AND values
 \pgfplotstablegetelem{0}{P_opt_and}\of{\successpoints}
 \edef\PoptAND{\pgfplotsretval}
+\pgfplotstablegetelem{0}{P_and_eer}\of{\successpoints}
+\edef\PeerAND{\pgfplotsretval}
 
 \begin{subfigure}{\columnwidth}
 \centering
@@ -1937,8 +1943,8 @@ we calculate the~\EER point and show that the optimal operating point $t_{\text{
     legend to name=biometricatomlegend,
     legend columns=4,
     legend style={draw=black, fill=white, font=\scriptsize},
-    extra y ticks={\PoptOR},
-    extra y tick labels={$\PoptOR$},
+    extra y ticks={\PeerOR,\PoptOR},
+    extra y tick labels={$\PeerOR$,$\PoptOR$},
     extra y tick style={
         tick label style={font=\scriptsize},
         grid=major
@@ -1971,8 +1977,8 @@ table [x=T_opt_or, y=P_opt_or] {figs/fig_1continuous_1discrete/mechanism_1dis_1c
 \begin{tikzpicture}
 \begin{axis}[
     mechsuccessplot,
-    extra y ticks={\PoptAND},
-    extra y tick labels={$\PoptAND$},
+    extra y ticks={\PeerAND,\PoptAND},
+    extra y tick labels={$\PeerAND$,$\PoptAND$},
     extra y tick style={
         tick label style={font=\scriptsize},
         grid=major
