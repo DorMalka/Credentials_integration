@@ -9,13 +9,13 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # =========================
 # Roots (uniform supports)
 # =========================
-u1, u2 = 0.50, 0.95   # user
+u1, u2 = 0.65, 0.95   # user
 a1, a2 = 0.45, 0.80   # attacker
 
 # =========================
 # Wallet-2 parameters (original: safe/loss/leak)
 # =========================
-k1, k2, k3 = 0.50, 0.05, 0.45   # safe2, loss2, leak2
+k1, k2, k3 = 0.80, 0.05, 0.1   # safe2, loss2, leak2
 
 # =========================
 # Wallet-2 variant A: safe/loss only
@@ -144,6 +144,9 @@ T_opt_or, P_opt_or = T[idx_opt_or], p_or[idx_opt_or]
 idx_opt_and = np.argmax(p_and)
 T_opt_and, P_opt_and = T[idx_opt_and], p_and[idx_opt_and]
 
+print(f"Max OR  success:  T = {T_opt_or:.4f},  P_success = {P_opt_or:.4f}")
+print(f"Max AND success:  T = {T_opt_and:.4f},  P_success = {P_opt_and:.4f}")
+
 idx_opt_or_sl = np.argmax(p_or_sl)
 T_opt_or_sl, P_opt_or_sl = T[idx_opt_or_sl], p_or_sl[idx_opt_or_sl]
 
@@ -178,9 +181,9 @@ with open(out_dir / "mechanism_1dis_1con_success_points.txt", "w") as f:
         "T_opt_or P_opt_or T_opt_and P_opt_and\n"
     )
     f.write(
-        f"{T_eer:.4f} {p_or[idx_eer]:.4f} {p_and[idx_eer]:.4f} "
-        f"{T_opt_or:.4f} {P_opt_or:.4f} "
-        f"{T_opt_and:.4f} {P_opt_and:.4f}\n"
+        f"{T_eer:.3f} {p_or[idx_eer]:.3f} {p_and[idx_eer]:.3f} "
+        f"{T_opt_or:.3f} {P_opt_or:.3f} "
+        f"{T_opt_and:.3f} {P_opt_and:.3f}\n"
     )
 # =========================================================
 # (1) FIGURE — ORIGINAL OR WALLET (unchanged filename)

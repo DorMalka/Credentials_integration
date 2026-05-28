@@ -1869,7 +1869,7 @@ We do similar analysis for the \emph{OR} mechanism. We find the probability of s
 \[
 Q(t) = \dfrac{t - a_1}{a_2 - a_1}
 \left[
-{P_{\text{safe1}}} + {P_{\text{loss1}}}(1 - \dfrac{t - u_1}{u_2 - u_1})
+P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{loss}}(1 - \dfrac{t - u_1}{u_2 - u_1})
 \right].
 \]
 \[
@@ -1878,25 +1878,25 @@ P_{\text{success}}(t) =
 0,
 & t \le a_1 \\[8pt]
 
-\dfrac{t - a_1}{a_2 - a_1}\,({P_{\text{safe1}}} + {P_{\text{loss1}}}),
+\dfrac{t - a_1}{a_2 - a_1}\,(P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{loss}}),
 & a_1 < t \le u_1 \\[10pt]
 
 Q(t),
 & u_1 < t \le a_2 \\[12pt]
 
-{P_{\text{safe1}}} + {P_{\text{loss1}}}(1 - \dfrac{t - u_1}{u_2 - u_1}),
+P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{loss}}(1 - \dfrac{t - u_1}{u_2 - u_1}),
 & a_2 < t \le u_2 \\[10pt]
 
-{P_{\text{safe1}}},
+P^{1}_{\mathrm{safe}},
 & t > u_2 .
 \end{cases}
 \]
 We illustrate the mechanism's success probability for both \emph{OR} mechanism in figure~\ref{fig:OR_mechanism_success} and \emph{AND} mechanism in Figure~\ref{fig:AND_mechanism_success}. The figure marks the optimal operating point and the~\EER point on each curve demonstrating significant improvement from~\EER using optimal threshold. 
 By differentiating every interval and identifying the critical points, we found that the optimal threshold that leads to the maximum probability of success lies in the third interval where~$u_1 < t \le a_2$:
-\[t_{\text{opt}} = \frac{a_1\cdot{P_{\text{loss1}}} + u_2\cdot({P_{\text{safe1}}} + {P_{\text{loss1}}}) - {P_{\text{safe1}}}\cdot u_1}{2{P_{\text{loss1}}}}\]
+\[t_{\text{opt}} = \frac{a_1\cdot{P^{1}_{\mathrm{loss}}} + u_2\cdot({P^{1}_{\mathrm{safe}}} + {P^{1}_{\mathrm{loss}}}) - P^{1}_{\mathrm{safe}}\cdot u_1}{2{P^{1}_{\mathrm{loss}}}}\]
 And the maximum probability of success at this point is:
-\[P_{\text{success}}(t_{\text{opt}}) = \frac{\big(a_1 {P_{\text{loss1}}} - u_2 ({P_{\text{safe1}}} + {P_{\text{loss1}}}) + {P_{\text{safe1}}} u_1\big)^2}
-{4 {P_{\text{loss1}}} (a_2 - a_1)(u_2 - u_1)}\]
+\[P_{\text{success}}(t_{\text{opt}}) = \frac{\big(a_1 {P^{1}_{\mathrm{loss}}} - u_2 ({P^{1}_{\mathrm{safe}}} + {P^{1}_{\mathrm{loss}}}) + {P^{1}_{\mathrm{safe}}} u_1\big)^2}
+{4 {P^{1}_{\mathrm{loss}}} (a_2 - a_1)(u_2 - u_1)}\]
 
 we calculate the~\EER point and show that the optimal operating point $t_{\text{opt}}$ differs from the equal error rate (\EER) point $t_{\EER}$.
 \[t_{\EER} = \frac{a_1 u_1 - a_2 u_2}{a_1 - a_2 + u_1 - u_2} \neq t_{\text{opt}}.\]
@@ -1905,27 +1905,52 @@ we calculate the~\EER point and show that the optimal operating point $t_{\text{
 \begin{figure}[t]
 \centering
 
+\pgfplotsset{
+    mechsuccessplot/.style={
+        scale only axis,
+        width=0.75\columnwidth,
+        height=0.5\columnwidth,
+        xlabel={$t$},
+        ylabel={$P_{\mathrm{success}}(t)$},
+        ymin=-0.05,
+        ymax=1.05,
+        grid=major,
+        each nth point=2,
+        filter discard warning=false,
+    }
+}
+
+% Read the points file and extract the optimal y-values
+\pgfplotstableread{figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt}{\successpoints}
+
+\pgfplotstablegetelem{0}{P_opt_or}\of{\successpoints}
+\edef\PoptOR{\pgfplotsretval}
+
+\pgfplotstablegetelem{0}{P_opt_and}\of{\successpoints}
+\edef\PoptAND{\pgfplotsretval}
+
 \begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.48\columnwidth,
-    xlabel={$t$},
-    ylabel={$P_{\mathrm{success}}(t)$},
-    ymin=-0.05,
-    ymax=1.05,
-    grid=major,
-    legend pos=south east,
+    mechsuccessplot,
+    legend to name=biometricatomlegend,
+    legend columns=4,
     legend style={draw=black, fill=white, font=\scriptsize},
-    each nth point=2,
-    filter discard warning=false
+    extra y ticks={\PoptOR},
+    extra y tick labels={$\PoptOR$},
+    extra y tick style={
+        tick label style={font=\scriptsize},
+        grid=major
+    }
 ]
 
 \addplot[thick, myOrange, mark=none]
 table [x=T, y=P_or] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_data.txt};
 \addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
+
+\addlegendimage{thick, blue, mark=none}
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
 
 \addplot[only marks, mark=square*, mark size=1.3pt, myGreen]
 table [x=T_eer, y=P_or_eer] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt};
@@ -1945,31 +1970,23 @@ table [x=T_opt_or, y=P_opt_or] {figs/fig_1continuous_1discrete/mechanism_1dis_1c
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.48\columnwidth,
-    xlabel={$t$},
-    ylabel={$P_{\mathrm{success}}(t)$},
-    ymin=-0.05,
-    ymax=1.05,
-    grid=major,
-    legend pos=south east,
-    legend style={draw=black, fill=white, font=\scriptsize},
-    each nth point=2,
-    filter discard warning=false
+    mechsuccessplot,
+    extra y ticks={\PoptAND},
+    extra y tick labels={$\PoptAND$},
+    extra y tick style={
+        tick label style={font=\scriptsize},
+        grid=major
+    }
 ]
 
 \addplot[thick, blue, mark=none]
 table [x=T, y=P_and] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(T)$}
 
 \addplot[only marks, mark=square*, mark size=1.3pt, myGreen]
 table [x=T_eer, y=P_and_eer] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt};
-\addlegendentry{\EER}
 
 \addplot[only marks, mark=*, mark size=1.5pt, black]
 table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt};
-\addlegendentry{Optimal point}
 
 \end{axis}
 \end{tikzpicture}
@@ -1977,8 +1994,10 @@ table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_
 \label{fig:AND_mechanism_success}
 \end{subfigure}
 
-% \Description{Success probability curves for OR and AND mechanisms composed of an atomic and a biometric credential, highlighting the \EER and optimal operating points.}
-\caption{Success probability as a function of the threshold for OR and AND mechanisms composed of an atomic and a biometric credential.}
+\medskip
+\pgfplotslegendfromname{biometricatomlegend}
+
+\caption{Success probability as a function of the threshold for the OR and AND mechanisms composed of an atomic credential with state probabilities $P^{1}_{\mathrm{safe}} = 0.8$, $P^{1}_{\mathrm{loss}} = 0.05$, $P^{1}_{\mathrm{leak}} = 0.1$, $P^{1}_{\mathrm{theft}} = 0.05$, and a biometric credential.}
 \label{fig:biometric_atomic_success}
 \end{figure}
 
