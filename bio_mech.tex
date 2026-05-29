@@ -2168,11 +2168,11 @@ This condition supports practical scenarios, as we expect that for very low valu
 
 
 \section{Measuremens}\label{sec:7}
-We now present experiment measurements results based on fingerprints taken from $\textit{FVC2002}$ database~\cite{fvc2002} and \textit{FVC2004} database~\cite{fvc2004}. We used a standard fingerprint verification algorithm \textit{SourceAFIS} created by Vazan~\cite{sourceafis} for scoring fingerprints out of their images based on minutiae triplets. We chose to use fingerprints, as it is a widely common and used example of a biometric credential in authentication mechanisms. For a test set, we took a template out of~$\textit{FVC2002}$ database 1 of user 103 and compare them against the whole database of both~$\textit{FVC2002}$ and~$\textit{FVC2004}$. A geniune will be considered the template of user 103 against its other templates while imposter considered as all the other combinations. For scoring methodology, we define the final score as the maximum similarity across all 5 user templates. For example, if the matching scores between a sample and the 5 probes are $[0.1,0.3,0.6,0.9,0.4]$, then the resulting score is 0.9. 
+We now present experiments' results based on fingerprints taken from~$\textit{FVC2002}$ database~\cite{fvc2002} and \textit{FVC2004} database~\cite{fvc2004}. We use a standard fingerprint verification algorithm~\textit{SourceAFIS} created by Vazan~\cite{sourceafis} for scoring fingerprints out of their images based on minutiae triplets. We use fingerprints, as it is a widely common and used example of a biometric credential in authentication mechanisms. For a test set, we took five templates out of~$\textit{FVC2002}$ \textit{database1} of user 103 and compare them against the whole database of both~$\textit{FVC2002}$ and~$\textit{FVC2004}$. A geniune will be considered the templates of user 103 against its other templates while imposter considered as all the other combinations. For scoring methodology, we define the final score as the maximum similarity across all 5 user templates. For example, if the matching scores between a sample and the 5 probes are~$[0.1,0.3,0.6,0.9,0.4]$, then the resulting score is 0.9. 
 
-We maintain same approach as Jain et al.~\cite{Anil1997} and Cappelli et al.~\cite{Cappelli2006} and first built histogram of the geniune and imposter combinations as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we turn the histogram into a smoothed probability distribution function. We find the False rejection rate and False acceptance rate and calculate the Equal Error Rate (\EER) as shown in Figure~\ref{fig:sourceafis_far_frr}. 
+We maintain same approach as Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005} and build histograms of the geniune and imposter combinations as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we turn the histogram into a smoothed probability distribution function. We find the~\FAR and~\FRR and calculate~\EER as shown in Figure~\ref{fig:sourceafis_far_frr}. 
 
-The most important outcome from this approach was to achieve similar~\EER of around 2\% as achieved from Maio et al.~\cite{Maio2002}, to objectively make a comparison with state-of-the-art algorithms. We calculate the probability success function as given in Equation~\ref{eqn:safesuccess} of a mechanism composed of a biometric credential and show that the optimal operating point is different from the \EER point and achieves higher success probability as shown in Figure~\ref{fig:sourceafis_success}. Finally, we illustrate the probability success function of a mechanism composed of an atomic credential with $P_\text{safe} = 0.9$ and $P_\text{leak} = 0.04$, $P_\text{loss} = 0.04$ and integrate it with the biometric credential.
+The most important outcome from this approach was to achieve similar~\EER of around 2\% as achieved at industry and academical level sensors.~\cite{Maio2002}, to objectively make a comparison with state-of-the-art algorithms. We calculate the mechanisms successs probability as given in Equation~\ref{eqn:safesuccess} of a mechanism comprises a biometric credential and show that the optimal operating point is different from the~\EER point and achieves higher success probability as shown in Figure~\ref{fig:sourceafis_success}. Finally, we illustrate the probability success function of a mechanism composed of an atomic credential with~$P^{1}_\text{safe} = 0.9$ and~$P^{1}_\text{leak} = 0.04$, $P^{1}_\text{loss} = 0.04$ and $P^{1}_\text{stolen} = 0.02$ and integrate it with a biometric credential.
 
 \begin{figure}[t]
 \centering
@@ -2263,8 +2263,9 @@ table [x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_p
         ymax=1,
         grid=major,
         legend style={
-            anchor=north east,
-            legend columns=2,
+            at={(0.5,-0.25)},
+            anchor=north,
+            legend columns=3,
             draw=black,
             fill=white,
             font=\scriptsize
@@ -2344,10 +2345,7 @@ $0.96$ and $0.95$ at their respective optimal operating points.
 \label{fig:sourceafis_success}
 \end{figure}
 
-
 We show that the optimal operating point of the integrated mechanism is different from the \EER point and achieves higher success probability by around 3\% compared to the \EER point, as the \EER itself is only 1.8\%. In addition, we can observe that the optimal point in both mechanisms achieves higher success probability than both the atomic credetial mechanisms and biometric credential mechanism when tested individually as shown in Figure~\ref{fig:sourceafis_success}. Although there is an improvement in the success probability of the integrated mechanism, we can observe the improvement is not as significant as the one observed in the theoretical analysis. This can be explained by the fact that the \EER point of the biometric credential is already very low, indicating high seperability between a user and an attacker and thus, there is no much room for improvement. In that scenario, we compared several templates of user 103 against templates of different users. However, our main approach in this paper was to increase the mechanism's success in scenarios where an imposter will try to spoof the user templates and authenticate into the user account. Hence, we expect the imposter to use spoofing tools, producing samples resamble with score distribution function that much more similar to the genuine distribution function, which might lead to increased \EER point. 
-
-To support this claim, we used the LivDet2015 database~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale database of live and spoof fingerprint samples. We follow the same methodology as before and used the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As probe templates, we selected six Digital Persona scanner images of user 002\_0. Each probe was matched against 14 additional images of the same user to generate genuine scores. For each target image, we define the final score methodolodgy as the maximum similarity across 6 probe templates. For example, if the matching scores between a target image and the six probes are [0.3, 0.5, 0.4, 0.8, 0.9, 0.7], then the resulting score is 0.9. To simulate a spoofing attack, we used fake fingerprint images of the same user (002\_0) produced by Gelatine, Woodglue, Latex and Ecoflex and match them against the probe templates to obtain the imposter score distribution. The same maximum-score aggregation was applied in this case as well. We present the resulting histogram in Figure~\ref{fig:livdet_sourceafis_histogram}. We then compute the \EER point and plot the \FAR-\FRR curve, as shown in Figure~\ref{fig:livdet_sourceafis_far_frr}. As expected, the \EER increased significantly to 17.8\%. Finally, we evaluated the success probability for both a single biometric credential and for a mechanism composed of an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We can observe that the optimal operating point reducing the failure probability of an AND mechanism by 60\% and Or mechanism by 44\% compared to the \EER point. Moreover, we reduced the failure probability by 50\% when integrating into AND mechanism compared to an atomic credential mechanism with $P_{\text{safe}} = 0.8$, $P_{\text{loss}} = 0.04$, $P_{\text{leak}} = 0.15$, $P_{\text{theft}} = 0.01$ probabilities.
 
 \begin{figure}[t]
 \centering
@@ -2403,7 +2401,7 @@ table [x=score, y=impostor] {figs/fig_spoofed_users/livdet_sourceafis_histogram_
     ymax=1,
     grid=major,
     legend pos=south east,
-    legend style={draw=black, fill=white, font=\scriptsize},
+    legend style={legend columns=3,draw=black, fill=white, font=\scriptsize},
     each nth point=2,
     filter discard warning=false
 ]
@@ -2443,7 +2441,13 @@ table [x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of
         ymax=1,
         grid=major,
         legend pos=north east,
-        legend style={draw=black, fill=white, font=\scriptsize},
+        legend style={
+            legend columns=3,
+            at={(0.5,-0.25)},
+            anchor=north,
+            draw=black, 
+            fill=white, 
+            font=\scriptsize},
         each nth point=2,
         filter discard warning=false
     }
@@ -2515,7 +2519,10 @@ At the \EER operating point, the success probabilities are $0.759$ and $0.684$ f
 }
 \label{fig:livdet_sourceafis_success}
 \end{figure}
-
+To support this claim, we use the LivDet2015 database \cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale live and spoof fingerprint samples. 
+We follow the same methodology as before and used the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As probe templates, we select six Digital Persona scanner images of user 002\_0. Each probe was matched against 14 additional images of the same user to generate genuine scores. 
+For each target image, we define the final score methodolodgy as the maximum similarity across 6 probe templates, similarly to the previous experiment. For example, if the matching scores between a target image and the six probes are [0.3, 0.5, 0.4, 0.8, 0.9, 0.7], then the resulting score is 0.9. 
+To simulate a spoofing attack, we use fake fingerprint images of the same user (002\_0) produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the probe templates to obtain the imposter score distribution. We present the resulting histogram in Figure~\ref{fig:livdet_sourceafis_histogram}. We then compute the~\EER point and plot the~\FAR-\FRR curve, as shown in Figure~\ref{fig:livdet_sourceafis_far_frr}. As expected, the \EER increased significantly to 17.8\%. Finally, we calculate the success probability for both a single biometric credential and for a mechanism comprises an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We can observe that the optimal operating point reducing the failure probability of an \textit{AND} mechanism by 60\% and \textit{OR} mechanism by 44\% compared to the~\EER point. Moreover, we reduced the failure probability by 50\% when integrating into \textit{AND} mechanism compared to an atomic credential mechanism with $P_{\text{safe}} = 0.8$, $P_{\text{loss}} = 0.04$, $P_{\text{leak}} = 0.15$, $P_{\text{theft}} = 0.01$ probabilities. We observe that fixing the match threshold~$t$ to the~\EER when we integrate the biometric credential into the mechanism, significantly reduces its success probability, compared to the success probability of an atomic credential mechanism only.
 
 \section{Conclusion}\label{sec:8}
 We formalize the authentication mechanism model consisting, for the first time, of both biometric and atomic credential mechanisms. We analyze the success of each mechanism type and present a new operating point that achieves higher success probability by modelling each credential with four probability states.
