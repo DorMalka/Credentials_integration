@@ -243,6 +243,30 @@ FAR = np.array([
     for T in x
 ])
 
+# ------------------------------------------------------------
+# SYMMETRIC FAR/FRR CURVE
+# ------------------------------------------------------------
+attacker_pdf_sym = uniform_pdf(x, a1_sym, a2_sym)
+
+FRR_sym = np.array([
+    0.0 if T <= u1 else
+    1.0 if T >= u2 else
+    np.trapezoid(
+        user_pdf_sym[(x >= u1) & (x <= T)],
+        x[(x >= u1) & (x <= T)]
+    )
+    for T in x
+])
+
+FAR_sym = np.array([
+    1.0 if T <= a1_sym else
+    0.0 if T >= a2_sym else
+    np.trapezoid(
+        attacker_pdf_sym[(x >= T) & (x <= a2_sym)],
+        x[(x >= T) & (x <= a2_sym)]
+    )
+    for T in x
+])
 
 loss  = FRR * (1 - FAR)
 leak  = FAR * (1 - FRR)
@@ -261,24 +285,57 @@ eer_idx = np.argmin(np.abs(FAR - FRR))
 FRR_eer = FRR[eer_idx]
 FAR_eer = FAR[eer_idx]
 
+loss_sym  = FRR_sym * (1 - FAR_sym)
+leak_sym  = FAR_sym * (1 - FRR_sym)
+theft_sym = FRR_sym * FAR_sym
+safe_sym  = 1 - loss_sym - leak_sym - theft_sym
+max_idx_sym  = np.argmax(safe_sym)
+FAR_opt_sym = FAR_sym[max_idx_sym]
+FRR_opt_sym = FRR_sym[max_idx_sym]
+
+# ---- Compute EER point ----
+eer_idx_2 = np.argmin(np.abs(FAR_sym - FRR_sym))
+FRR_eer_sym = FRR_sym[eer_idx_2]
+FAR_eer_sym = FAR_sym[eer_idx_2]
+
 SUCCESS_DATA_TXT = OUTPUT_DIR / "figs" / "fig_uniform" / "success_uniform_data.txt"
 SUCCESS_DATA_TXT.parent.mkdir(parents=True, exist_ok=True)
 
 with open(SUCCESS_DATA_TXT, "w") as f:
-    f.write("s FRR FAR loss leak theft safe FAR_opt FRR_opt FAR_eer FRR_eer\n")
-    for xi, frr, far, lo, le, th, sa in zip(x, FRR, FAR, loss, leak, theft, safe):
+    f.write(
+        "s FRR FAR FRR_sym FAR_sym "
+        "loss leak theft safe "
+        "loss_sym leak_sym theft_sym safe_sym "
+        "FAR_opt FRR_opt FAR_eer FRR_eer "
+        "FAR_opt_sym FRR_opt_sym FAR_eer_sym FRR_eer_sym\n"
+    )
+    for xi, frr, far, frr_s, far_s, lo, le, th, sa, lo_s, le_s, th_s, sa_s in zip(
+        x, FRR, FAR, FRR_sym, FAR_sym,
+        loss, leak, theft, safe,
+        loss_sym, leak_sym, theft_sym, safe_sym
+    ):
         f.write(
             f"{xi:.4f} "
             f"{frr:.4f} "
             f"{far:.4f} "
+            f"{frr_s:.4f} "
+            f"{far_s:.4f} "
             f"{lo:.4f} "
             f"{le:.4f} "
             f"{th:.4f} "
             f"{sa:.4f} "
+            f"{lo_s:.4f} "
+            f"{le_s:.4f} "
+            f"{th_s:.4f} "
+            f"{sa_s:.4f} "
             f"{FAR_opt:.4f} "
             f"{FRR_opt:.4f} "
             f"{FAR_eer:.4f} "
-            f"{FRR_eer:.4f}\n"
+            f"{FRR_eer:.4f} "
+            f"{FAR_opt_sym:.4f} "
+            f"{FRR_opt_sym:.4f} "
+            f"{FAR_eer_sym:.4f} "
+            f"{FRR_eer_sym:.4f}\n"
         )
 
 plt.figure(figsize=(10, 5))

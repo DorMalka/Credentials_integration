@@ -27,7 +27,6 @@
 
 \newtheorem{proposition}{Proposition}
 
-\theoremstyle{definition}
 \newtheorem{definition}{Definition}
 
 \begin{document}
@@ -52,17 +51,18 @@
 %%% 
 %%% 
 %%% 
-Biometric credentials are prevalent in modern authentication: 
-Sensors obtain a measurement and output \emph{accept} if it is above a \emph{match threshold} or \emph{reject} otherwise. 
-A large body of work improves the accuracy of biometric sensors, but the state of the art uses a heuristic threshold. 
-Other works study \emph{authentication mechanisms}, but treat biometric credentials as \emph{atomic} (accept/reject). 
+\emph{Biometric credentials} are prevalent in modern authentication: 
+Sensors evaluate a measurement and output \emph{accept} if it is above a \emph{match threshold} or \emph{reject} otherwise. 
+A large body of work improves the accuracy of biometric sensors, but the state-of-the-art uses a heuristic threshold and does not consider their integration into \emph{authentication mechanisms}. 
+Recent works design authentication mechanisms to maximize the probability that the mechanism accepts a user and rejects an attacker, but treat biometric credentials as \emph{atomic} (perfect match or reject, like passwords). 
 
-Following prior work, we define a mechanism's success as the probability it accepts a user but rejects an attacker. We formally prove that, in general, the optimal threshold differs from the common heuristic. 
-Moreover, a different optimum should be used according to the integration with other credentials. 
-More suprisingly, integrating a biometric credential with an atomic one, improves a mechanism's success probability even when its atomic credential has arbitrary low fault probabilities and the biometric credential provides only weak separation between users and attackers. 
-We quantitatively demonstrate the improvement with real biometric datasets. 
+We model authentication mechanisms with both biometric and atomic credentials and prove that, in general, the optimal threshold differs from the common heuristic. 
+Moreover, the optimal threshold depends on the integration with other credentials. 
+More surprisingly, combining a biometric credential with an atomic one always improves the success probability over using the atomic credential alone. 
+This holds even if the biometric credential is inaccurate.
+Using real biometric datasets, we quantify the gain from optimizing the threshold across different mechanisms.
 
-The direct implication is that biometric sensor vendors should allow setting thresholds, allowing better security in deployed authentication mechanisms.
+The implication is that biometric sensor vendors should change their interface so integrators can configure thresholds, resulting in better security of deployed authentication mechanisms.
 \end{abstract}
 
 \section{Introduction}
@@ -125,17 +125,20 @@ P^{2}_{\text{leak}}(t) &= \FAR(t)\bigl(1 - \FRR(t)\bigr),\\
 P^{2}_{\text{theft}}(t) &= \FAR(t) \cdot \FRR(t).
 \end{align*}
 }
-Biometric credentials are one of the most prevalent keys in modern authentication. Historically, they were used in signatures and handprints on royal documents and contracts, as they rely on unique physical characteristics of the user made them unforgeable. In the early days of the Internet, biometric credentials were not applicable and therefore \emph{atomic credentials}, like physical devices or passwords, either a perfect match or wrong, were adopted. 
+Biometric credentials are prevalent in modern authentication. Historically, they were used in signatures and handprints on royal documents and contracts~\cite{biometrichistory}, as they rely on unique physical characteristics of the user made them unforgeable. However, in the early days of the Internet, biometric credntials were not applicable and therefore, credentials were typically \emph{atomic}, a credential was either presented correctly or not according to a perfect match criterion. Examples include passwords~\cite{password1979}, one-time password (OTP)~\cite{otp2017} and physical devices~\cite{FIDO2021}. While such credentials are simple to verify, they are vulnerable to various attacks, such as password leaks, account recovery attacks, and device theft.
 
-With the rapid growth of online services, more daily activities has transitioned to digital platforms. This expansion led companies to deploy advanced authentication mechanisms, such as multi-factor authentication (MFA)~\cite{Abhishek2013}, increasing significantly the number of atomic credentials a user must have or remember to authenticate. 
+A research conducted in the U.S reveals statistics behind password vulnerabilities: 59\% of users in the U.S. reported leaks and 22\% frequently forget their passwords~\cite{password_leak}. Consequently, biometric credentials are increasingly adopted, present in modern user devices, e.g, where access to most smartphones relies on face or fingerprint verification. The biometric sensors obtain a \emph{sample}, calculate a similarity score between that sample and a \emph{reference} stored in advance, and output \emph{accept} if the score is above a set \emph{match threshold} or \emph{reject} otherwise.
 
-However, password vulnerabilities persist: 59\% of users in the U.S. reported leaks and 22\% frequently forget their passwords, as of 2026~\cite{password_leak}. Consequently, biometric credentials are increasingly adopted, present in most modern user devices, where access to most smartphones relies on FaceID or Fingerprint. The biometric sensors obtain a sample, calculate a similarity score between a sample and a reference stored in the database, and output accept if the score is above a set match threshold or reject otherwise.
+Previous work~$(\S\ref{sec:2})$ has conducted extensive analysis of biometric credentials in isolation, primarily focusing on improving accuracy, aiming to reduce the false acceptance~(\FAR) and false rejection~(\FRR) rates~\cite{Anil1997,prabhakar2003}. Sarkar et al.~\cite{sarkar2020} introduce the Equal Error Rate (\EER, where~$\FAR = \FRR$), a heuristic threshold of biometric sensors. While these works widely cover biometric credentials, none of them analyze their integration into an authentication mechanism. Other works analyze authentication mechanisms as predicates of credential possession~\cite{maram2024,mouallem2024,Eyal2021,Abhishek2013}, where each credential is treated as atomic. But they neglect the potential due to the special properties of biometric credentials.
 
-Previous work~$(\S\ref{sec:2})$ has conducted extensive analysis of biometric credentials in isolation, primarily focusing on improving the accuracy and latency, aiming to reduce the false acceptance (\FAR) and false rejection (\FRR) rates~\cite{Anil1997,prabhakar2003}. Sarkar et al.~\cite{sarkar2020} introduce the Equal Error Rate (\EER, where \FAR = \FRR), a heuristic threshold of biometric sensors. Hong et al.~\cite{hong1998} propose a fused biometric system in which the final decision is based on the matching scores of both face and fingerprint. While these works widely cover biometric credentials, none of them analyze their integration into an authentication mechanism. Other works analyze authentication mechanisms as predicates of credential possession~\cite{maram2024,mouallem2024,Eyal2021,Abhishek2013}, where each credential is treated as atomic. However, such settings are partially applicable to our framework, as they treat biometric credentials as atomic. This leaves open the question of whether biometric credentials can be treated differently and if they can form the authentication mechanism when integrated with other credentials' types.
+In this work, we study how to design mechanisms with biometric credentials. We analyze how biometric credentials influence the authentication mechanism's success with and without atomic credentials. Our goal is to optimally use biometric credentials in authentication mechanisms and analyze how the presence of atomic credentials influences the choice of the biometric credential \emph{match threshold}. First, we define the authentication problem~$(\S\ref{sec:3})$, which comprises an authentication mechanism and two players a \emph{user} and an \emph{attacker}. Both players are trying to satisfy the mechanism by providing a set of credentials. Each credential can be either presented by~\cite{Eyal2021}, (1)~only the user~(then we call it~\emph{safe}), (2)~neither player~(\emph{lost}), (3)~both players~(\emph{leaked}), or (4)~only the attacker~(\emph{stolen}). Each atomic credential has a probability of being in each of the four states. 
 
-In this work, we study how biometric credentials influence the authentication mechanism's success with and without atomic credentials. More precisely, our goal is to optimally use biometric credentials in authentication mechanisms and analyze how the presence of atomic credentials may adapt the biometric credential threshold to enhace mehcanism's success. Authentication models~$(\S\ref{sec:3})$ are built on a set of biometric and atomic credentials. A mechanism interacts with two players: a user and an attacker, trying to identify the user based on the provided credentials by the player. Each credential can be either~\cite{Eyal2021}, (1)~\emph{safe}: Only available to the user, (2)~\emph{lost}: Not available to either player, (3)~\emph{leaked}: Available to both players, or (4)~\emph{stolen}: Only available to the attacker. Each credential has a probability of being in each of the four states. Biometric credentials are evaluated by a sensor that calculates a \emph{confidence score} from an obtained sample. If the score is above a \emph{match threshold}, the sensor outputs accept, otherwise reject. This is used to establish two fault probabilites: known as \emph{false acceptance rate~(\FAR)} and \emph{false rejection rate~(\FRR)}.
+Biometric credentials are evaluated by a sensor that calculates a \emph{confidence score} from an obtained sample. If the score is above a \emph{match threshold}, the sensor outputs accept, otherwise reject. The genuine distribution~$f_U(s)$ denotes the score distribution induced by samples produced by the legitimate user, whereas the impostor distribution~$f_A(s)$ denotes the score distribution induced by samples produced by the attacker as shown in Figure~\ref{fig:intro-fig}. These distributions establish two error metrics: known as \emph{false acceptance rate~(\FAR)} and \emph{false rejection rate~(\FRR)}. 
 
-We start by optimizing a single biometric credential mechanism~$(\S\ref{sec:4})$. We examine distribution functions that approximate score distribution as shown in Figure~\ref{fig:intro-fig}. We characterize each player by their score distribution and analyze several cases, reflecting whether the user and attacker are more likely to produce higher or lower matching scores $s$. We calculate the \FAR and \FRR metrics in each case and derive closed-form expressions of the mechanism's success. We then symbolically calculate the optimal and \EER thresholds and show that in general, the optimal threshold differs from the commonly used \EER. Moreover, we link the likelihood of an attacker to produce higher matching scores $s$ to the gap between the maximum success and the success at \EER. Our findings reveal that the more likely an attacker to produce higher matching scores $s$, the greater the benefit of using the optimal threshold instead of \EER.
+We examine distribution functions that approximate a biometric credential score distribution. We characterize each player by their score distribution.
+Intuitively, genuine users are expected to produce higher matching scores than attackers. Therefore, the user score distribution is expected to be shifted toward higher matching scores compared to the attacker distribution. Otherwise, the attacker would be more likely to produce scores that lead to successful authentication, rendering the biometric credential ineffective. To define the state probabilities of the biometric credential, we calculate the~\FAR and~\FRR metrics which are functions of the match threshold. An optimal mechanism has the maximum probability of success, which depend on the number of credentials and their state probabilities.
+
+We seek to identify optimal mechanisms. Thus, we start by optimizing a single biometric credential mechanism~$(\S\ref{sec:4})$. To define the biometric credential state probabilities, we calculate~\FAR and~\FRR metrics for each biometric credential approximation. Then, we derive closed-form expressions for the mechanism's success to identify the optimal threshold of the biometric credential. We then symbolically calculate the optimal and~\EER thresholds and show that in general, the optimal threshold differs from the commonly used~\EER. To understand the potential improvement for deviating from the~\EER, we link the likelihood of an attacker producing higher matching scores to the gap between the maximum success and the success at~\EER. Our findings reveal that the more likely an attacker is to produce higher matching scores~$s$, and the more asymmetric the user and attacker distributions become, the greater the benefit of using the optimal threshold instead of~\EER.
 
 \begin{figure}[t]
 \centering
@@ -196,13 +199,23 @@ coordinates {(0.52,0) (0.52,4.2)};
 \label{fig:intro-fig}
 \end{figure}
 
-Having characterized the optimal threshold of a single biometric credential mechanism, we now extend our analysis to a more complex case, where a mechanism comprises a biometric and an atomic credential~$(\S\ref{sec:5})$. Such case is common in cloud authentication. For example, Google~\cite{google_passkeys_2023} assume they (1) Possess a trusted device like phone or computer (Atomic credential) and (2) Authenticates via Passkeys~\cite{mahfouz2025}, e.g, FaceID or Fingerprint. Following the findings of Slobodan et al.~\cite{Slob2005} we examine first and second order approximations of a user and an attacker score distribution functions. We begin by analyzing a mechanism comprises two biometric credentials and evaluate its success using numerical optimization algorithm. Our results show that the optimal thresholds of the biometric credentials in such mechanism is not necessarily the same as the optimal threshold if used individually~$(\S\ref{sec:5.1})$. Moreover, to demonstrate the potential impact, we represent a synthethic experiment of two sampled score distributions and observe a reduction of over~66\% in the failure rate, when comparing the \EER and the optimal threshold. We then turn to analyze mechanisms that integrate both biometric and atomic credentials and derive closed-form expressions for the mechanism's success. We symbolically calculate the optimal and \EER thresholds and find the optimum depends on the values of the atomic credential. These expressions reveal that the mechanism success can primarily depend on either an atomic credential or a biometric credential, depending on the atomic credential probability values. For example, in an \emph{AND mechanism}, the user has full availability to all credentials, while the attacker has limited or no availability. The derived relation shows that when the atomic credential has high safe probability and low leak probability, the mechanism’s success becomes dominated by the atomic credential. Thus, changes in the biometric score, whether low or high, have only limited impact on the overall mechanism success; conversely, for other probability values of an atomic credential, success may depend more strongly on the biometric credential.
+Having characterized the optimal threshold of a single biometric credential mechanism, we extend our analysis to a more complex case that combines two credentials~$(\S\ref{sec:5})$. These may include two biometric credentials, as in airport or border-control systems, or one biometric and one atomic credential, as in cloud service authentication. For example, Google~\cite{google_passkeys_2023} assumes (1) Possession of a trusted device like a phone or computer (Atomic credential) and (2) Authentication via biometric credentials~\cite{mahfouz2025}, e.g, face or fingerprint. 
 
-Motivated by this observation, we analyze whether the integration of biometric credential with an atomic credential will always enhance mechanism's success. We link between the biometric credential to the improvement it has on the mechanism's success composes an atomic credential and characterize the conditions under which such integration improves success~$(\S\ref{sec:6})$. We prove that when these conditions are not satisfied, it is not worthtile to integrate, as the atomic credential mechanism dominates the integrated mechanism. Furthermore, we show that every biometric credential which is \emph{asymptotic separable}: for every score above or below a specific threshold, the error rates converge to zero; a necessary and sufficient condition, provided that the atomic credential has non-zero probabilities for the states of \emph{safe} and either \emph{loss} or \emph{leak}. We also introduce \emph{asymptotic dominance}: where the genuine distribution dominates the attacker distribution by a factor $c$ from every score above a specific threshold, or the attacker dominates the user by a factor $c$ for every score below a specific threshold. This condition is a sufficient condition and shown as it represent a behavior we expect to observe in biometric credentials.
+To evaluate a mechanism comprising two biometric credentials, we consider first and second order approximations and use a numerical optimization algorithm to find the optimal thresholds for each biometric credential. Our results show that the optimal thresholds of the biometric credentials in such a mechanism is not, in general, the same as the optimal thresholds if used individually. This difference arises as we optimzie each credential with respect to the entire mechanism, and not only with respect to the credential itself.
+To demonstrate the potential impact, we present a synthetic experiment of two sampled score distributions and observe a reduction of over~66\% in the failure rate, when comparing the~\EER and the optimal threshold. 
 
-We quantitatively demonstrate our theoretical analysis with experiments using real public biometric data and a standard algorithm for fingerprint verification~\cite{sourceafis}~$(\S\ref{sec:7})$. We use a dataset of fingerprints from multiple users and evaluate matching scores by comparing samples of one user against those of other users. When different users attempt to authenticate as one another, the biometric sensors succeed in distinguishing and preventing unintended user access. In this setting, we observe high seperability between the two players, as the algorithm effectively extracts minutiae and distinguishes between different individuals, resulting in low \EER. Thus, no significant improvement is observed when comparing the mechanism's success under Equal Error Rate (\EER) threshold to the optimal threshold. However, since an attacker does not attempt to authenticate using their own biometric features, the relevant threat model involve attempts to physically impersonate a legitimate user. We conduct a spoofing attack experiment using the LivDet database~\cite{LivDet2009,LivDet2011,LivDet2013,LivDet2015}, which includes both genuine fingerprint scans and corresponding spoofing attempts. These spoof samples produce matching scores that closely resemble those of the legitimate user. Integrating the biometric credential into a mechanism comprised of an atomic credential, reduces the mechanism’s failure probability by~30-70\% compared to the probability with the \EER threshold. Furthermore, the results show a~50\% reduction in the mechanism’s failure probability compared to a mechanism based solely on an atomic credential, demonstrating the benefit of integrating the biometric credential.
+We then turn to analyze mechanisms that integrate a biometric and an atomic credential. Trying to identify the impact of an atomic credential on the optimal match threshold, we derive closed-form expressions for the mechanism's success probability. We symbolically calculate the optimal and~\EER thresholds and find that the optimum depends on the values of the atomic credential. These expressions reveal that the mechanism's success can primarily depend on either an atomic credential or a biometric credential, depending on the atomic credential probability values. For example, in an \emph{AND mechanism}, the mechanism grants access to a user if and only if all credentials are available to the user and at least one credential is unavailable to the attacker. The derived relation for this mechanism shows that when the atomic credential has a high probability of being safe, the mechanism’s success probability depends mainly on the atomic credential. In this case, even biometric samples that closely match the user reference have only a limited impact on the overall mechanism success probability; conversely, for other probability values of an atomic credential, success may depend more strongly on the biometric credential.
 
-In summary~$(\S\ref{sec:8})$ our contributions are both theoretical and practical: (1)~Formalization of the mechanism's success function composed of biometric and atomic credentials; (2)~Symbolic analysis of the optimal threshold for biometric and atomic authentication mechanisms. (3)~Characterization of the conditions under which biometric credential integration enhances the mechanism's success; (4)~Proof that any biometric credential, under a specified condition, always enhances the mechanism's success. (5)~Empirical analysis using real biometric data, demonstrating the theoretical analysis. (6)~Direct implications to how fingerprint readers should work in practice for immediate security improvements.
+Motivated by this observation, we analyze whether the integration of a biometric credential with an atomic credential will always enhance mechanism's success probability~$(\S\ref{sec:6})$. First, we link the biometric credential to the improvement it has on the mechanism's success probability when it comprises an atomic credential. This link shows that when an atomic credential has zero \emph{loss} or \emph{leak} state probabilities, it is not worthwhile to integrate, as the atomic credential mechanism dominates the mechanism success probability. Then, we characterize the conditions under which integrating a biometric and an atomic credential improves the mechanism's success probability. 
+
+We introduce a necessary and sufficient condition for an \emph{asymptotic separable} biometric credential: for every score above or below a match threshold, the error rates converge to zero. We prove that every \emph{asymptotically separable} biometric credential integrated with an atomic credential that has non-zero probabilities for the states of \emph{safe} and either \emph{loss} or \emph{leak}, improves the mechanism success probability. However, biometric credentials often exhibit a more common and weaker behavior~\cite{Slob2005,anil2004}. Thus, we introduce \emph{asymptotic dominance}: where the genuine distribution dominates the attacker distribution by a factor $c$ for every score above a specific threshold, or the attacker dominates the user by a factor $c$ for every score below a specific threshold. We show that this condition is sufficient for a biometric credential to improve the mechanism's success probability when integrated with an atomic credential.
+
+We quantitatively demonstrate our theoretical analysis using public biometric data and a standard algorithm for fingerprint verification~\cite{sourceafis}~$(\S\ref{sec:7})$. We use a dataset of fingerprints from multiple users and evaluate matching scores by comparing samples of one user against those of other users. When calculating the matching score produced when different players attempt to authenticate as one another, we observe that the algorithm effectively extracts minutiae and the score is low. This results in a low~\EER value and a small overlapping area between the user and the attacker distributions. Thus, no significant improvement is observed when comparing the mechanism's success under the~\EER threshold and the optimal threshold. This indicates that the~\EER threshold may be sufficient and satisfactory when different users are trying to authenticate as one another.
+
+
+However, since an attacker does not attempt to authenticate using their own biometric features, the relevant threat model involves attempts to physically impersonate a legitimate user. We conduct a spoofing attack evaluation using the LivDet database~\cite{LivDet2009,LivDet2011,LivDet2013,LivDet2015}, which includes both genuine fingerprint scans and corresponding spoofing attempts. These spoof samples produce matching scores that closely resemble those of the legitimate user. Integrating the biometric credential into a mechanism comprised of an atomic credential, reduces the mechanism’s failure probability by~30-70\% compared to the probability with the \EER threshold. Furthermore, the results show a~50\% reduction in the mechanism’s failure probability compared to a mechanism based solely on an atomic credential, demonstrating the benefit of integrating the biometric credential.
+
+In summary~$(\S\ref{sec:8})$, our contributions are both theoretical and practical: (1)~Formalization of the mechanism's success function composed of biometric and atomic credentials; (2)~Symbolic analysis of the optimal threshold for biometric and atomic authentication mechanisms. (3)~Characterization of the conditions under which biometric credential integration enhances the mechanism's success; (4)~Proof that any biometric credential, under a specified condition, always enhances the mechanism's success. (5)~Empirical analysis using real biometric data. (6)~Direct implications suggesting biometric sensor vendors allow setting the sensors' thresholds for immediate security improvements.
 
 \section{Related Work}\label{sec:2}
 Authentication is a constant active and prominent research area, with prior work broadly categorized into two main aspects: credentials and mechanisms. Credentials are commonly manifested as passwords~\cite{password1979}, One-Time-Password (OTP)~\cite{otp2017}, physical devices~\cite{FIDO2021} or biometric features such as fingerprints, face recognition or iris~\cite{anil2004}. 
@@ -215,72 +228,60 @@ An authentication mechanism is a function that evaluates a set of credentials pr
 %%%
 %%%
 \section{Model}\label{sec:3}
-We formalize the authentication problem by specifying the system participants~$(\S\ref{sec:3.1})$, Credential types and their characteritics~$(\S\ref{sec:3.2})$, the authentication mechanism~$(\S\ref{sec:3.3})$, and mechanism success~$(\S\ref{sec:3.4})$. 
+We formalize the authentication problem by specifying an execution and the system participants~$(\S\ref{sec:3.1})$, credential types and their characteritics~$(\S\ref{sec:3.2})$, and the authentication mechanism and its success~$(\S\ref{sec:3.3})$.
 
 \subsection{System Participants}\label{sec:3.1}
-The system comprises an authentication mechanism~$M$ and two players: a user $U$ and an attacker $A$. All three are finite and deterministic automata. Each player interacts with the mechanism~$M$ by presenting credentials, which serve as a proof of being the legitimate user. We abstract away the concrete implementation of the credential and model only the evidence that a player can present to the mechanism. Let
-\[
+The system comprises an authentication mechanism~$M$ and two players: a user $U$ and an attacker~$A$. Each player interacts with the mechanism~$M$ by \emph{presenting credentials}. We abstract away the concrete implementation of a credential and model only its presentation to the mechanism. Denote the set of credentials by
+\begin{equation*}
     \mathcal{C}=\{c_1,c_2,\ldots,c_n\}
-\]
-be the set of credentials used by the mechanism.
-\begin{definition} (Availability Vector)
-    An availability vector specifies, for each credential, whether a user $U$ or an attacker $A$ has an access to that credential or not. Denote by $\sigma^U$,$\sigma^A$ the availability vectors of the user and the attacker, respectively.
+\end{equation*}
+The system runs an execution, which describes the interaction between the players and mechanism until the mechanism makes a decision. In an execution, each player~$P$ may \emph{present} a credential~$c_i$ to the mechanism by calling a random function~$\textit{present}_P(i)$. The outcome of the~\emph{presentation function} determines whether the credential is available to the player or not, and the mechanism makes a decision based on this outcome. We define the availability of credentials as
+\begin{definition}(Availability Vector)
+    An \emph{availability vector} specifies, for each credential, whether a player successfully presented each credential or not. Denote by $\sigma^U$, \textit{and} $\sigma^A$ the availability vectors of the user and of the attacker, respectively.
 \end{definition}
-For a player~$P\in\{U,A\}$, the entry~$\sigma_i^P=1$ means that credential~$c_i$ is available to~$P$, and~$\sigma_i^P=0$ means that it is not. The player presents each credential~$c_i \in \mathcal{C}$ to produce evidence of access to that credential. We denote by~$\mathsf{present}_P(i)$ the presentation function, of a player~$P$ and credential~$c_i$, that produces the evidence, where the form of the function depends on the type of the credential. The outcome of the presentation function determines whether~$\sigma_i^P=1$ or $\sigma_i^P=0$. We denote by
-\[
-    C_P(\sigma)=\{c_i\in\mathcal{C}|\sigma_i^P=1\}
-\]
-the set of credentials available to player~$P$.
+
+For a player~$P\in\{U,A\}$, the entry~$\sigma_i^P=1$ means that~$P$ successfully presented credential~$c_i$, and~$\sigma_i^P=0$ means that it is not. The outcome of the presentation function determines whether~$\sigma_i^P=1$ or $\sigma_i^P=0$. Denote the set of credentials available to player~$P$ by
+\begin{equation*}
+    C_P(\sigma)=\{c_i\in\mathcal{C}|\sigma_i^P=1\}.
+\end{equation*}
+
+Each credential can be either:~$\textit{Safe}$: Only available to the user, $\textit{Lost}$: Not available to either player, $\textit{Leaked}$: Available to both players, or~$\textit{Stolen}$: Only available to the attacker. A scenario~$\sigma$ is the vector of states of each credential in the mechanism. We denote by~$\sigma_i$ the state of credential~$c_i$ in scenario~$\sigma$. 
+Each state corresponds to the outcome of the presentation functions for a user and an attacker. Specifically, the pair $(\textit{present}_U(i), \textit{present}_A(i))$ determines whether the credential is~\emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. Therefore, the state probabilities are
+\begin{equation*}
+P_{\text{safe}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 0].
+\end{equation*}
+\begin{equation*}
+P_{\text{loss}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 0].
+\end{equation*}
+\begin{equation*}
+P_{\text{leak}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 1].
+\end{equation*}
+\begin{equation*}
+P_{\text{stolen}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 1].
+\end{equation*}
 
 \subsection{Credentials}\label{sec:3.2}
 
-To authenticate, a player uses credentials to convince the mechanism that it is the legitimate user. A credential may correspond to secret data, such as a password or one time password~(OTP); a physical object, such as a phone or security
-key; or a biometric property, such as a fingerprint or face.
-\begin{definition} (Atomic Credential)
-An atomic credential $c^{\mathrm{atm}}$ is a credential for which the presentation function~$\mathsf{present}_P(i)$ applies a perfect match criterion. For a player~$P \in \{U,A\}$ and credential~$c^{\mathrm{atm}}$, we define
-\[
-x_{c^{\mathrm{atm}}}^P \in \{0,1\},
-\]
-where~$x_{c^{\mathrm{atm}}}^P=1$ means that player $P$ perfectly satisfies credential~$c^{\mathrm{atm}}$, and~$x_{c^{\mathrm{atm}}}^P=0$ means that player~$P$ does not satisfy it. Thus:
-\[
-\mathsf{present}_P(i) = 
-\begin{cases}
-    1, & x_{c^{\mathrm{atm}}}^P = 1,\\
-    0, & x_{c^{\mathrm{atm}}}^P = 0.
-\end{cases}
-\]
+A credential may correspond to secret data, such as a password or one time password~(OTP); a physical object, such as a phone or security key. We model these credentials as atomic: the player either presents the credential correctly or not in a perfect match criterion. 
+\begin{definition} (Atomic Credential)~If a credential is atomic, Denote by~$c^\star_{i}$ the correct credential stored in advance, then the presentation function~$\textit{present}_P(i)$ defined by 
+\begin{equation*}
+    \textit{present}_P(i) = \begin{cases}
+        1 &  c_i = c^\star_{i} \\
+        0 & \text{otherwise}
+    \end{cases}
+\end{equation*}
 \end{definition}
 
-\begin{definition} (Biometric Credential)
-A biometric credential~$c^{\mathrm{bio}}$ is a credential for which the presentation function~$\mathsf{present}_P(i)$ applies a similarity criterion.
-For a player $P \in \{U,A\}$ let $s^P$ denote a \emph{matching score} which quantifies the similarity between the biometric input of $P$ and the reference stored in database. Let $t$ denote the \emph{match threshold}, thus
-\[
-\mathsf{present}_P(i) = 
-\begin{cases}
-    1, & s^P \geq t,\\
-    0, & s^P < t.
-\end{cases},
-\]
-\end{definition}
-
-Each credential either \emph{atomic} or \emph{biometric} can belong to one of the states:~\emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. A scenario~$\sigma$ is the vector of states of each credential in the mechanism. We denote by~$\sigma_i$ the state of credential~$c_i$ in scenario~$\sigma$. 
-Each state corresponds to the outcome of the presentation functions for a user and an attacker. Specifically, the pair $(\mathsf{present}_U(i), \mathsf{present}_A(i))$ determines whether the credential is in the \emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. Therefore, the state probabilities are
-\[
-P_{\text{safe}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 0].
-\]
-\[
-P_{\text{loss}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 0].
-\]
-\[
-P_{\text{leak}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 1].
-\]
-\[
-P_{\text{stolen}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 1].
-\]
-
-For example, if~$\sigma_i = \text{leak}$ then the credential is available to both players, namely~$\sigma_i^U = \text{True}$ and~$\sigma_i^A = \text{True}$. If~$c_i$ is an atomic credential, we can deduce that~$x_{c_i^{\mathrm{atm}}}^{U}=1$ $\ \text{and}\ x_{c_i^{\mathrm{atm}}}^{A}=1$. In the case where~$c_i$ is a biometric credential, this implies~$s_{i}^U \ge t \ \text{and}\ s_{i}^A \ge t$. The probabilities that a user or an attacker satisfies an atomic credential can be characterized using password statistics from company databases~\cite{password_leak}. In contrast, the probabilities that a user or an attacker satisfies a biometric credential are characterized by the score distributions of the biometric credential.
-
-For biometric credentials, the genuine distribution~$f_U(s)$ denotes the score distribution induced by samples produced by the legitimate user, whereas the impostor distribution~$f_A(s)$ denotes the score distribution induced by samples produced by the attacker. These distributions establish two error metrics:~\FAR and~\FRR both are functions of the match threshold~$t$. 
+Alternatively, a credential may correspond to a biometric property, such as a fingerprint or face. The biometric sensor evaluates a measurement of the biometric property and produces a score~$s$. The user distribution~$f_U(s)$ denotes the score distribution of samples from the user, whereas the attacker distribution~$f_A(s)$ denotes the score distribution of samples from the attacker.
+\begin{definition} (Biometric Credential)~If a credential is biometric, the presentation function~$\textit{present}_P(i)$ is defined by~$f_U(s)$,~$f_A(s)$ and a match threshold~$t$. For a player~$P\in\{U,A\}$, the presentation function draw random value for the score~$s$ from the distribution~$f_P(s)$, and outputs~1 if~$s\ge t$ and~0 otherwise.
+    \begin{equation*}
+    \textit{present}_P(i) = \begin{cases}
+        1 &  s \ge t \\
+        0 & \text{otherwise}
+    \end{cases}
+    \end{equation*}
+\end{definition} 
+The user and attacker distributions establish two error metrics:~\FAR and~\FRR both are functions of the match threshold~$t$. 
 \begin{equation}
     \label{eqn:FAR}
 \FAR(t) = \int_{t}^{a_2} f_A[s] ds
@@ -289,43 +290,52 @@ For biometric credentials, the genuine distribution~$f_U(s)$ denotes the score d
     \label{eqn:FRR}
 \FRR(t) = \int_{u_1}^{t} f_U[s] ds
 \end{equation}
-We use the~\FAR and~\FRR to find the probability of the biometric credential availability states. The user has access to the biometric cedential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$1-\FRR(t)$. The attacker has access to the biometric credential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$\FAR(t)$. Thus, the probabilities of the four states are given by: 
-\[
-P_{\text{loss}} = \FRR(t) \cdot (1 - \FAR(t))
-\]
-\[
-P_{\text{leak}} = \FAR(t) \cdot (1 - \FRR(t))
-\]
-\[
-P_{\text{stolen}} = \FRR(t) \cdot \FAR(t)
-\]
-\[
-P_{{\text{safe}}} =1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{stolen}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t))
-\]
+We use the~\FAR and~\FRR to find the probability of the biometric credential availability states. The user has access to the biometric cedential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$1-\FRR(t)$. The attacker has access to the biometric credential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$\FAR(t)$. Thus, the probabilities of the four states are
+\begin{equation*}
+    P_{\text{loss}} = \FRR(t) \cdot (1 - \FAR(t)),
+\end{equation*}
+\begin{equation*}
+P_{\text{leak}} = \FAR(t) \cdot (1 - \FRR(t)),
+\end{equation*}
+\begin{equation*}
+P_{\text{stolen}} = \FRR(t) \cdot \FAR(t), \textit{ and }
+\end{equation*}
+\begin{equation}\label{eqn:safe_prob}
+P_{{\text{safe}}} =1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P_{\text{stolen}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t)).
+\end{equation}
 
+% For example, if~$\sigma_i = \text{leak}$ then the credential is available to both players, namely~$\sigma_i^U = \text{True}$ and~$\sigma_i^A = \text{True}$. If~$c_i$ is an atomic credential, we can deduce that~$x_{c_i^{\mathrm{atm}}}^{U}=1$ $\ \text{and}\ x_{c_i^{\mathrm{atm}}}^{A}=1$. In the case where~$c_i$ is a biometric credential, this implies~$s_{i}^U \ge t \ \text{and}\ s_{i}^A \ge t$. The probabilities that a user or an attacker satisfies an atomic credential can be characterized using password statistics from company databases~\cite{password_leak}. In contrast, the probabilities that a user or an attacker satisfies a biometric credential are characterized by the score distributions of the biometric credential.
 \subsection{Mechanism}\label{sec:3.3}
 
-An authentication mechanism $M$ interacts with two players: a user $U$ and an attacker $A$. The mechanism receives the evaluation of each player's credential evidence and outputs a decision which is a function of the mechanism's logic.
-\begin{definition} (Authentication Mechanism) An authentication mechanism $M$ is a finite deterministic function that takes as input:
+An authentication mechanism~$M$ receives the~\emph{evaluation} of the presentation function~$\textit{present}_P(i)$ for each player~$P$ and outputs a \emph{decision}.
+\begin{definition} (Authentication Mechanism) An authentication mechanism $M$ is a predicate that takes as input:
 \begin{itemize}
-     \item~$C_P(\sigma)$ the set of credentials available to player~$P$ in scenario~$\sigma$ (perhaps no set, represented by~$\bot$).
-     \item~$\sigma_i$ the state of each credential~$c_i$ in scenario~$\sigma$.
+     \item~$C_P(\sigma)$ the set of credentials available to player~$P$ in scenario~$\sigma$ (perhaps an empty set, represented by~$\varnothing$).
 \end{itemize}
-and outputs a variable~$\text{decide}_M$, where~$\text{decide}_M=1$ means that the mechanism accepts the player and~$\text{decide}_M=0$ means that the mechanism rejects the player.
+and outputs either~1 meaning that the mechanism accepts the player or~0, meaning that the mechanism rejects the player.
 \end{definition}
 
-For example, in an \emph{AND mechanism}, the mechanism grants access to a user if and only if all credentials are available to the user and at least one of them not available to the attacker. In an \emph{OR mechanism}, the mechanism grants access to a user if at least one credential is available to the user and none are available to the attacker. We are now ready to define the mechanism's success.
-
-\subsection{Mechanism Success}\label{sec:3.4}
-A mechanism is successful in a scenario~$\sigma$ if the user is accepted and the attacker is rejected when the credentials available to them in~$\sigma$ are given as input. Formally, 
-\begin{definition} (Mechanism Success) Mechanism success is the probability that the authentication mechanism~$M$ accepts a user~$U$ and rejects an attacker~$A$ given~$C_P(\sigma)$ and~$\sigma_i$. For a player~$P$ the mechanism success is
-\[
-P_{\text{Success}}(M)=\Pr[\mathrm{decide}_M(U)=1 \wedge \mathrm{decide}_M(A)=0].
-\]
-\end{definition}
-
-\section{Single Biometric Credential}\label{sec:4}
-The optimal threshold differs from the~\EER. We explore the change in optimal mechanism success probability as a function of the attacker's and user's variance. We start by analyzing single biometric credential mechanisms comprises first~$(\S\ref{sec:4.1})$ and second~$(\S\ref{sec:4.2})$ order approximations.
+We are now ready to define the mechanism's success.
+The mechanism is successful in a scenario~$\sigma$ if it grants access to the user only. 
+\begin{definition} (Mechanism Success) A mechanism is \emph{successful} in a scenario~$\sigma$ if and only if the authentication mechanism decision~$\mathrm{decide}_M(C_P(\sigma))$ equals~1 for the user only, that is
+\begin{equation*}
+    \mathrm{decide}_M(C_U(\sigma))=1 \wedge \mathrm{decide}_M(C_A(\sigma))=0.
+\end{equation*}
+\end{definition} 
+The mechanism's \emph{success probability} is thus
+\begin{equation*}
+\begin{aligned}
+P_{\text{Success}}(M)
+&= \Pr\big[
+\mathrm{decide}_M(C_U(\sigma))=1 \\
+&\qquad\wedge\ 
+\mathrm{decide}_M(C_A(\sigma))=0
+\big].
+\end{aligned}
+\end{equation*}
+For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants access to a player if and only if all credentials are available to the player. In an \emph{OR mechanism}, the mechanism grants access to a player if at least one credential is available to the player.
+\section{Mechanisms}\label{sec:4}
+We explore optimal mechanism success probability with a single biometric credential. We start with first~$(\S\ref{sec:4.1})$ and second~$(\S\ref{sec:4.2})$ order approximations.
 
 \begin{figure*}[t]
 \centering
@@ -420,9 +430,9 @@ table [x=s, y=PA_case3] {figs/fig_uniform/uniform_three_cases.txt};
 \label{fig:uniform_three_cases}
 \end{figure*}
 
-\subsection{First-Order Approximation}\label{sec:4.1}
+\subsection{Uniform Probability Biometric Credentials}\label{sec:4.1}
 
-We consider uniform distibution as a first-order approximation of a biometric credential's distribution.
+We consider uniform distribution as a first-order approximation of the biometric credential distributions.
 Denote by~$u_1 \textit{ and } u_2$ the user's PDF bounds and by~$a_1 \textit{ and } a_2$  the attacker's PDF bounds as shown in Figure~\ref{fig:uniform_three_cases}. The probability distribution functions for the user and the attacker, $f_U$ and $f_A$ are thus:
 
 \[
@@ -457,23 +467,23 @@ The error metrics~\FAR and~\FRR are both functions of the match threshold~$t$ an
 \right.
 \]
 
-Intuitively, genuine users are expected to produce higher matching scores than
-attackers. Therefore, the user score distribution is expected to be shifted toward higher matching scores $s$ compared to the attacker distribution. Otherwise, the attacker would be more likely to produce scores that lead to successful authentication, rendering the biometric credential ineffective. Thus, we assume that $a_2 < u_2$. There are three distinct cases: 
+For a biometric credentials to be useful, users are expected to produce higher matching scores than attackers. Otherwise, the attacker would be more likely to produce scores that lead to successful authentication, rendering the biometric credential ineffective. Thus, we assume that $a_2 < u_2$. There are three distinct cases: 
 
-(1)~$a_2 < u_1$, Figure~\ref{fig:uniform_case1_pdf}: In this case, the attacker and user distributions are separated. Any threshold ~$a_2 \le t \le u_1$ yields zero~\FAR and~\FRR, and therefore achieves maximal mehcanism success probability.
-
-(2)~$u_1 < a_1 < a_2 < u_2$, Figure~\ref{fig:uniform_case2_pdf}: The attacker distribution bounds lies between the range of the user distribution bounds. For a mechanism $M$ with a single credential $c_1$, the mechanism's success probability is simply the probability that the credential is safe:
+(1)~$a_2 < u_1$~(Figure~\ref{fig:uniform_case1_pdf}): In this case, the attacker and user distributions are \emph{separated}. For a mechanism~$M$ with a single credential~$c_1$, the mechanism's success probability is simply the probability that the credential is safe:
 \begin{equation}
     \label{eqn:safesuccess}
     P_{\text{success}}(M^{\text{single}}) = P_{{\text{safe}}}
-\end{equation}
-Since the credential is biometric, the success probability is: 
-\[
-P_{\text{success}}(t) = (1 - \FAR(t)) \cdot (1 - \FRR(t))
-\]
+\end{equation} 
+Any threshold ~$a_2 \le t \le u_1$ yields zero~\FAR and~\FRR, and therefore achieves a mehcanism success probability of~$1$.
+
+(2)~$u_1 < a_1 < a_2 < u_2$~(Figure~\ref{fig:uniform_case2_pdf}): The attacker distribution bounds lies within the range of the user distribution bounds. 
+The success probability of the biometric credential is given by Equation~\ref{eqn:safe_prob}: 
+\begin{equation*}
+    P_{\text{success}}(t) = (1 - \FAR(t)) \cdot (1 - \FRR(t))
+\end{equation*}
 The~\FAR is one for any~$t \le a_1$ and zero for any~$t \ge a_2$.
 Thus:
-\[
+\begin{equation*}
 P_{\text{success}}(t) = 
 \begin{cases}
     0, & t \le a_1 \\
@@ -481,9 +491,9 @@ P_{\text{success}}(t) =
     1 - \frac{t-u_1}{u_2-u_1}, & a_2 < t \le u_2 \\
     0, & t > u_2
 \end{cases}
-\]
+\end{equation*}
 
-(3)~$a_1 < u_1 < a_2 < u_2$, Figure~\ref{fig:uniform_case3_pdf}: The user and attacker distributions partially overlap.
+(3)~$a_1 < u_1 < a_2 < u_2$~(Figure~\ref{fig:uniform_case3_pdf}): The user and attacker distributions partially overlap.
 
 % \begin{figure}[t]
 % \centering
@@ -558,20 +568,19 @@ P_{\text{success}}(t) =
 % \label{fig:uniforms_distributions}
 % \end{figure}
 
-We maintain same approach as the case where the attacker's support lies inside the user's support to calculate the probability of success. The~\FAR is one for any~$t \le a_1$ and zero for any~$t \ge a_2$ while the~\FRR is zero for any~$t \le u_1$ and one for any~$t \ge u_2$. Thus in this case we receive 4 intervals of the success probability function:
-
-\[
+We maintain the same approach as the case~(2) to calculate the probability of success. The~\FAR is one for any~$t \le a_1$ and zero for any~$t \ge a_2$, and the~\FRR is zero for any~$t \le u_1$ and one for any~$t \ge u_2$. Thus, in this case, we obtain 4 regions of the success probability function:
+\begin{equation*}
 P_{\text{success}}(t) = 
 \begin{cases}
     0, & t \le a_1 \\
     1 - \frac{a_2-t}{a_2-a_1}, & a_1 < t \le u_1 \\
     (1 - \frac{a_2-t}{a_2-a_1})\cdot(1-\frac{t-u_1}{u_2-u_1}), & u_1 < t \le a_2\\
     1 - \frac{t-u_1}{u_2-u_1}, & a_2 < t \le u_2 \\
-    0, & t > u_2
+    0, & t > u_2.
 \end{cases}
-\]
+\end{equation*}
 
-We analyze the probability of success in both the case where the attacker's support lies inside the user's support and the overlapping case, and find the optimal threshold that maximizes the mechanism's success probability in each interval. The third and fourth regions of the overlapping case are equivalent to the second and third intervals in the case where the attacker's support lies inside the user's support, thus we analyze them together. First, we show that~$P_{\text{success}}(t)$ is continuous. Since~$P_{\text{success}}(t)$ is continuous on each interval of its piecewise definition, it remains only to check the boundary points. At each boundary point, the left-hand and right-hand limits of~$P_{\text{success}}$ coincide with~$P_{\text{success}}$ itself; therefore,~$P_{\text{success}}$ is continuous on its entire domain. In the overlapping case, the success probability function is linearly increasing in $a_1 \le t \le u_1$, and therefore its maximum is achieved at the right boundary,~$t = u_1$. In both cases, the success probability is linearly decreasing on $a_2 \le t \le u_2$, and therefore its maximum is achieved at the left boundary,~$t = a_2$. Since~$t = u_1$ and~$t = a_2$ are the boundary points of the interval where~\FAR and~\FRR are strictly between zero and one, the maxima of the adjacent regions are already included in this interval. Therefore, it is sufficient to analyze the interval where~$u_1 \le t \le a_2$ in the overlapping case or~$a_1 \le t \le a_2$ in the case where the attacker's support lies inside the user's support.
+We analyze the probability of success in cases~(2) and~(3). First, we show that~$P_{\text{success}}(t)$ is continuous. Since~$P_{\text{success}}(t)$ is continuous on each region of its piecewise definition, it remains only to check the boundary points. At each boundary point, the left-hand and right-hand limits of~$P_{\text{success}}$ coincide with~$P_{\text{success}}$ itself; therefore,~$P_{\text{success}}$ is continuous on its entire domain. Then, we find the optimal threshold that maximizes the mechanism's success probability in each region. The second and third regions of case~(2) are equivalent to the third and fourth regions of case~(3), thus we analyze them together. In case~(3), the success probability function is linearly increasing in $a_1 \le t \le u_1$, and therefore its maximum is achieved at the right boundary,~$t = u_1$. In both cases, the success probability is linearly decreasing on $a_2 \le t \le u_2$, and therefore its maximum is achieved at the left boundary,~$t = a_2$. Since~$t = u_1$ and~$t = a_2$ are the boundary points of the region where~\FAR and~\FRR are strictly between zero and one, the maxima of the adjacent regions are already included in this region. Therefore, it is sufficient to analyze the region where~$u_1 \le t \le a_2$ in case~(3) or~$a_1 \le t \le a_2$ in case~(2).
 Thus, we find the global maximum by differentiating the success probability function in this region and comparing the resulting critical point with the boundary values.
 
 We differentiate the success function and set it to zero.
@@ -579,24 +588,27 @@ We find that at: $t = \frac{a_1+u_2}{2}$ we get $\frac{d}{dt} P_{\text{success}}
 $\frac{d}{dt} P_{\text{success}}(t) > 0 \text{, For every } t \in (u_1, \frac{a_1+u_2}{2})$
 $\textit{and }$
 $\frac{d}{dt} P_{\text{success}}(t) < 0 \text{, For every } t \in (\frac{a_1+u_2}{2}, a_2).$
-Thus, the maximum point is at~$t_{\text{Max}} = \frac{a_1 + u_2}{2}$ if:~$\frac{a_1+u_2}{2} \in [u_1, a_2]$ in the overlapping case, or~$\frac{a_1+u_2}{2} \in [a_1, a_2]$ in the case where the attacker's support lies inside the user's support.
+Thus, the maximum point is at~$t_{\text{Max}} = \frac{a_1 + u_2}{2}$ if:~$\frac{a_1+u_2}{2} \in [u_1, a_2]$ in case~(3), or~$\frac{a_1+u_2}{2} \in [a_1, a_2]$ in case~(2).
 
-For both cases, the probability of success at the optimal point if the condition is satisfied is:
-\[
+For both cases, the probability of success at the optimal point if the condition is satisfied is
+\begin{equation*}
 P_{\text{success}}(t_{\text{opt}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}.
-\]
-For the overlapping case, if the condition is not satisfied the maximum point is at the boundary of the interval, which is either~$t = u_1$ or~$t = a_2$. Thus:
-\[P_{\text{success}}(t_{\text{opt}}) = \max\left\{\frac{u_1 - a_1}{a_2 - a_1}, \frac{u_2 - a_2}{u_2 - u_1}\right\}.\]
-For the case where the attacker's support lies inside the user's support, if the condition is not satisfied the maximum point is at the boundary of the interval, which is either~$t = a_1$ or~$t = a_2$. Thus:
-\[P_{\text{success}}(t_{\text{opt}}) = \max\left\{0, \frac{u_2 - a_2}{u_2 - u_1}\right\}.\]
+\end{equation*}
+For case~(3), if the condition is not satisfied the maximum point is at the boundary of the interval, which is either~$t = u_1$ or~$t = a_2$. Thus
+\begin{equation*}
+P_{\text{success}}(t_{\text{opt}}) = \max\left\{\frac{u_1 - a_1}{a_2 - a_1}, \frac{u_2 - a_2}{u_2 - u_1}\right\}.  
+\end{equation*}
+For case~(2), if the condition is not satisfied the maximum point is at the boundary of the interval, which is either~$t = a_1$ or~$t = a_2$. Thus
+\begin{equation*}
+P_{\text{success}}(t_{\text{opt}}) = \max\left\{0, \frac{u_2 - a_2}{u_2 - u_1}\right\}.
+\end{equation*}
 Figure~\ref{fig:uniform_success_1_cred} illustrates our analysis of the probability of success for a single biometric credential mechanism as a function of threshold~$t$ in the overlapping case. The figure shows that in the second interval the success function is monotonically increasing, while in the fourth interval it is monotonically decreasing. Therefore, the optimal operating point is achieved in the interval where~\FAR and~\FRR are strictly between zero and one, which in this scenario is where~$u_1 \le t \le a_2$.
 
-We calculate the~\EER point and show that it is not equal to the optimal point:
-\[
+We calculate the~\EER point and show that it is not, in general, equal to the optimal point:
+\begin{equation*}
 t_{\EER} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{a_1 - a_2 + u_1 - u_2} \neq \left\{a_1, \frac{a_1 + u_2}{2}, u_1, a_2 \right\} = t_{\text{opt}}.
-\] 
-The maximum point represents the optimal threshold of the mechanism. From the optimal success probability expression, we can see that when the attacker can produce scores over a wider interval, i.e., when~$(a_2 - a_1)$ increases, the mechanism’s success probability may significantly decrease. In contrast, a biometric sensor that successfully separates a user and an attacker, by assigning higher scores to a genuine user and lower scores to an attacker, is therfore expected to achieve a higher mechanism's success probability. 
-We calculate the~$\FAR$ and~$\FRR$ at the optimal point to find a relation between thier values at the optimal point and the~\EER point:
+\end{equation*}
+The maximum point represents the optimal threshold of the mechanism. From the optimal success probability expression, we can see that when an attacker distribution spans a wider interval, i.e., when~$(a_2 - a_1)$ increases, the mechanism’s success probability may significantly decrease.
 
 \begin{figure}[t]
 \centering
@@ -638,12 +650,7 @@ table [x=s, y=safe] {figs/fig_uniform/success_uniform_data.txt};
 \label{fig:uniform_success_1_cred}
 \end{figure}
 
-\[\FAR(t_{\text{opt}}) = \frac{2a_2 - a_1 - u_2}{2(a_2 - a_1)} \textit{ and }\]
-
-\[\FRR(t_{\text{opt}}) = \frac{a_1 + u_2 - 2u_1}{2(u_2 - u_1)}.\]
-
-Comparing these expressions indicate that when the user and attacker distributions are symmetric, i.e., when the distance between the roots:~${a_2 - a_1 = u_2 - u_1}$, the~\FAR equals the~\FRR. 
-Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrates our analysis of the~\FAR vs~\FRR operating curve for a single biometric credential mechanism in the overlapping case. We can see that the optimal point differs from the~\EER when the user and attacker distributions are asymmetric. This indicates that as the distributions become closer to symmetric, the distance between the~\EER threshold and the optimal threshold becomes smaller.
+Figure~\ref{fig:FAR_FRR_uniform_1_cred} indicate that when the user and attacker distributions are symmetric, i.e., when the intervals of each distribution are equal:~${a_2 - a_1 = u_2 - u_1}$, the~\FAR equals the~\FRR.
 
 \begin{figure}[t]
 \centering
@@ -672,7 +679,11 @@ Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrates our analysis of the~\FAR vs~
 
 \addplot[thick, myPurple, mark=none]
 table [x=FRR, y=FAR] {figs/fig_uniform/success_uniform_data.txt};
-\addlegendentry{Operating Curve}
+\addlegendentry{Asymmetric Curve}
+
+\addplot[thick, dashed, black, mark=none]
+table [x=FRR_sym, y=FAR_sym] {figs/fig_uniform/success_uniform_data.txt};
+\addlegendentry{Symmetric Curve}
 
 \addplot[only marks, mark=*, mark size=1.3pt, blue]
 table [x=FRR_opt, y=FAR_opt] {figs/fig_uniform/success_uniform_data.txt};
@@ -682,71 +693,18 @@ table [x=FRR_opt, y=FAR_opt] {figs/fig_uniform/success_uniform_data.txt};
 table [x=FRR_eer, y=FAR_eer] {figs/fig_uniform/success_uniform_data.txt};
 \addlegendentry{\EER Point}
 
-\node[anchor=west,font=\scriptsize] at (axis cs:0.20,0.16) {Optimal};
-\node[anchor=east,font=\scriptsize] at (axis cs:0.16,0.10) {\EER};
+\addplot[only marks, mark=*, mark size=1.3pt, blue]
+table [x=FRR_opt_sym, y=FAR_opt_sym] {figs/fig_uniform/success_uniform_data.txt};
+
+
+\addplot[only marks, mark=*, mark size=1.3pt, red]
+table [x=FRR_eer_sym, y=FAR_eer_sym] {figs/fig_uniform/success_uniform_data.txt};
 
 \end{axis}
 \end{tikzpicture}
-% \Description{A \FAR versus \FRR operating curve showing the operating curve, the optimal operating point, and the equal error rate point.}
-\caption{\FAR vs. \FRR operating curve with optimal and \EER points.}
+\caption{\FAR vs. \FRR operating curves for the asymmetric and symmetric distributions in~(3) case, with optimal and~\EER points.}
 \label{fig:FAR_FRR_uniform_1_cred}
 \end{figure}
-
-% \begin{figure}[t]
-% \centering
-
-% \begin{subfigure}{0.48\columnwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     width=\columnwidth,
-%     height=0.8\columnwidth,
-%     xmin=0.4, xmax=0.75,
-%     xlabel={$u_1$},
-%     ylabel={$P_{\max}-P_{\mathrm{EER}}$},
-%     grid=major,
-%     legend to name=sharedlegend,
-%     legend columns=2
-% ]
-
-% \addplot[thick, blue]
-% table [x=u1, y=delta] {figs/fig_uniform/delta_vs_u1.txt};
-% \addlegendentry{$u_1$ sweep}
-
-% % Dummy entry for red
-% \addplot[thick, red] coordinates {(0,0)};
-% \addlegendentry{$a_2$ sweep}
-
-% \end{axis}
-% \end{tikzpicture}
-% \caption{$u_1$ sweep}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}{0.5\columnwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     width=\columnwidth,
-%     height=0.8\columnwidth,
-%     xmin=0.4, xmax=0.75,
-%     xlabel={$a_2$},
-%     grid=major
-% ]
-
-% \addplot[thick, red]
-% table [x=a2, y=delta] {figs/fig_uniform/delta_vs_a2.txt};
-
-% \end{axis}
-% \end{tikzpicture}
-% \caption{$a_2$ sweep}
-% \end{subfigure}
-
-% \centering
-% \ref{sharedlegend}
-% \caption{Difference between the optimal success probability and the success probability at EER under parameter sweeps.}
-% \label{fig:delta_uniform_sweep}
-
-% \end{figure}
 
 \subsection{Quadratic Distributed Credential}\label{sec:4.2}
 %%%
@@ -951,51 +909,48 @@ Similarly to the analysis of the uniform distribution, the x axis represents the
 \[P_{{\text{safe}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t))\]
 By setting the~$\FAR(t)$ and~$\FRR(t)$, we can cacluclate the probability of success. Denote:
 \[
+\begin{aligned}
 G(t)=
--\frac{
+-&\frac{
 (t-\alpha_2)^2(t-\beta_1)^2
-(2t-3\alpha_1+\alpha_2)
-(2t+\beta_1-3\beta_2)
 }{
 (\alpha_1-\alpha_2)^3(\beta_1-\beta_2)^3
-}.
+} \\
+&\cdot
+(2t-3\alpha_1+\alpha_2)
+(2t+\beta_1-3\beta_2).
+\end{aligned}
 \]
-
-\[
-P_{\mathrm{success}}(t)=
+\begin{multline*}
+P_{\mathrm{success}}(t)=\\
 \begin{cases}
 0,
 & t<\beta_1 \lor t>\alpha_2,\\
-
 G(t),
 & \beta_1 \le t \le \beta_2,\\
-
 -\dfrac{(t-\alpha_2)^2(2t-3\alpha_1+\alpha_2)}
 {(\alpha_1-\alpha_2)^3},
 & \beta_2 \le t \le \alpha_2.
 \end{cases}
-\]
+\end{multline*}
 
 (3)~$\beta_{1} \le \alpha_{1} \le \beta_{2} \le \alpha_{2}$: The user and attacker distributions partially overlap like shown in figure~\ref{fig:quadratic_case3_pdf}. We mainatain same approach as the second case and calculate the probability of success. By setting the~$\FAR(t)$ and~$\FRR(t)$ into safe probability, the probability of success is:
 
-\[
-P_{\mathrm{success}}(t)=
+\begin{multline*}
+P_{\mathrm{success}}(t)=\\
 \begin{cases}
 0,
 & t<\beta_1 \lor t>\alpha_2,\\
-
 \dfrac{(t-\beta_1)^2(2t+\beta_1-3\beta_2)}
 {(\beta_1-\beta_2)^3},
 & \beta_1 \le t \le \alpha_1,\\
-
 G(t),
 & \alpha_1 \le t \le \beta_2,\\
-
 -\dfrac{(t-\alpha_2)^2(2t-3\alpha_1+\alpha_2)}
 {(\alpha_1-\alpha_2)^3},
 & \beta_2 \le t \le \alpha_2.
 \end{cases}
-\]
+\end{multline*}
 
 % \begin{figure}[t]
 % \centering
@@ -1549,18 +1504,18 @@ P_{\text{Success}}(M^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}
 
 We calculate the error metrics of each credential~$c_i$ which are given by Equations~\ref{eqn:FAR} and~\ref{eqn:FRR} as a function of threshold $t$ to calculate the state probabilities of each credential as seen in Section~\ref{sec:3.2}.
 \[
-    \FAR(t) = \int_{-\infty}^{t} \frac{1}{\sigma_{a,i}\sqrt{2\pi}}
+\FAR(t) = \int_{-\infty}^{t} \frac{1}{\sigma_{a,i}\sqrt{2\pi}}
 \exp\left(
 -\frac{(s-\mu_{a,i})^2}{2\sigma_{a,i}^2}
 \right)
-, ds, \textit{ and}
+ds, \textit{ and}
 \]
 \[
-    \FRR(t) = \int_{t}^{\infty} \frac{1}{\sigma_{u,i}\sqrt{2\pi}}
+\FRR(t) = \int_{t}^{\infty} \frac{1}{\sigma_{u,i}\sqrt{2\pi}}
 \exp\left(
 -\frac{(s-\mu_{u,i})^2}{2\sigma_{u,i}^2}
 \right)
-, ds.
+ds.
 \]
 
 We analyze both~\emph{AND} and~\emph{OR} mechanisms success given by Equations~\ref{eqn:andsuccess} and~\ref{eqn:orsuccess} and find their optimal threshold~$t$, using LBFGS optimization algorithm. We also compute the~\EER point for each credential and find the corresponding success probability at this point.
