@@ -202,7 +202,7 @@ Having characterized the optimal threshold of a single biometric credential mech
 To evaluate a mechanism comprising two biometric credentials, we consider first and second order approximations of the biometric credential distributions and use a numerical optimization algorithm to find the optimal thresholds for each biometric credential. The optimal thresholds of the biometric credentials in such a mechanism are not, in general, the same as the optimal thresholds if used individually. This difference arises as we optimize each credential with respect to the entire mechanism.
 To demonstrate the potential impact, we present a synthetic experiment of two sampled score distributions and observe a reduction of over~66\% in the failure rate, when comparing the~\EER and the optimal threshold. 
 
-We then turn to analyze mechanisms that integrate a biometric and an atomic credential. We derive closed-form expressions for the mechanism's success probability. We symbolically calculate the optimal and~\EER thresholds and find that the optimal threshold depends on the values of the atomic credential. These expressions reveal that the mechanism's success can primarily depend on either an atomic credential or a biometric credential, depending on their properties. For example, in a mechanism that requires all credentials known as an~\emph{AND mechanism} the mechanism grants access to a user if and only if all credentials are available to the user and at least one credential is unavailable to the attacker. The derived relation for this mechanism shows that when the atomic credential has arbitrarily low fault probabilities, the mechanism’s success probability depends primarily on the atomic credential. In this case, biometric samples do not significantly improve the overall mechanism success probability. Conversely, for other probability values of an atomic credential, the biometric credential might improve the mechanism success probability more significantly.
+We then turn to analyze mechanisms that integrate a biometric and an atomic credential. We derive closed-form expressions for the mechanism's success probability. We symbolically calculate the optimal and~\EER thresholds and find that the optimal threshold depends on the values of the atomic credential. These expressions reveal that the mechanism's success can primarily depend on either an atomic credential or a biometric credential, depending on their properties. For example, in an~\emph{AND mechanism} the mechanism grants access to a user if and only if all credentials are available to the user and at least one credential is unavailable to the attacker. The derived relation for this mechanism shows that when the atomic credential has arbitrarily low fault probabilities, the mechanism’s success probability depends primarily on the atomic credential. In this case, biometric samples do not significantly improve the overall mechanism success probability. Conversely, for other probability values of an atomic credential, the biometric credential might improve the mechanism success probability more significantly.
 
 Motivated by this observation, we characterize the conditions under which the integration of a biometric credential with an atomic credential will always enhance the mechanism's success probability~$(\S\ref{sec:6})$. First, we show that when an atomic credential has zero \emph{loss} or \emph{leak} state probabilities, it is not worthwhile to integrate, as the atomic credential mechanism dominates the mechanism success probability. Then, we introduce a necessary and sufficient condition for an \emph{asymptotically separable} biometric credential: for every score above or below a match threshold, the error rates converge to zero. We prove that every \emph{asymptotically separable} biometric credential integrated with an atomic credential that has non-zero probabilities for the states of \emph{safe} and either \emph{loss} or \emph{leak}, improves the mechanism success probability. However, biometric credentials often exhibit a more common and weaker behavior~\cite{Slob2005,anil2004}. Thus, we introduce \emph{asymptotic dominance}: the genuine distribution dominates the impostor distribution by a factor~$c$ for every score above a specific threshold, or the impostor distribution dominates the genuine distribution by a factor~$c$ for every score below a specific threshold. We show that this condition is sufficient for a biometric credential to improve the mechanism's success probability when integrated with an atomic credential.
 
@@ -227,66 +227,61 @@ An authentication mechanism is a function that evaluates a set of credentials pr
 We formalize the authentication problem by specifying an execution and the system participants~$(\S\ref{sec:3.1})$, credential types and their characteritics~$(\S\ref{sec:3.2})$, and the authentication mechanism and its success~$(\S\ref{sec:3.3})$.
 
 \subsection{System Participants}\label{sec:3.1}
-The system comprises an authentication mechanism~$M$ and two players: a user $U$ and an attacker~$A$. Each player interacts with the mechanism~$M$ by \emph{presenting credentials}. We abstract away the concrete implementation of a credential and model only its presentation to the mechanism. Denote the set of credentials by
-\begin{equation*}
-    \mathcal{C}=\{c_1,c_2,\ldots,c_n\}
-\end{equation*}
-The system runs an execution, which describes the interaction between the players and mechanism until the mechanism makes a decision. In an execution, each player~$P$ may \emph{present} a credential~$c_i$ to the mechanism by calling a random function~$\textit{present}_P(i)$. The outcome of the~\emph{presentation function} determines whether the credential is available to the player or not, and the mechanism makes a decision based on this outcome. We define the availability of credentials as
+The system comprises an authentication mechanism~$M$ and two players: a user~$U$ and an attacker~$A$. In an execution~$E$, a player~$P$ \emph{presents} a credential~$c_i$ to the mechanism by calling a random function \emph{present credentials} denoted by~$\textit{present}_P(i)$. We abstract away the concrete implementation of a credential and model only its presentation. The value of the~\emph{presentation function} determines whether a credential is available to a player. The entry~$\sigma_i^P=1$ means that~$P$ successfully presented credential~$c_i$, and~$\sigma_i^P=0$ means that it is not. Whether a credential is successfully presented depends on the outcome of the \emph{allocation function} denoted by~$\textit{allocate}_P(i)$.
+
 \begin{definition}(Availability Vector)
-    An \emph{availability vector} specifies, for each credential, whether a player successfully presented each credential or not. Denote by $\sigma^U$, \textit{and} $\sigma^A$ the availability vectors of the user and of the attacker, respectively.
+    An \emph{availability vector} specifies, for each credential, whether it is successfully presented by a player~$P$ or not. Denote by $\sigma^U$ \textit{and} $\sigma^A$ the availability vectors of the user and of the attacker, respectively.
+    \begin{equation*}
+    \sigma_i^P = \textit{present}_P(i)
+    \end{equation*}
 \end{definition}
-
-For a player~$P\in\{U,A\}$, the entry~$\sigma_i^P=1$ means that~$P$ successfully presented credential~$c_i$, and~$\sigma_i^P=0$ means that it is not. The outcome of the presentation function determines whether~$\sigma_i^P=1$ or $\sigma_i^P=0$. Denote the set of credentials available to player~$P$ by
-\begin{equation*}
-    C_P(\sigma)=\{c_i\in\mathcal{C}|\sigma_i^P=1\}.
-\end{equation*}
-
-Each credential can be either:~$\textit{Safe}$: Only available to the user, $\textit{Lost}$: Not available to either player, $\textit{Leaked}$: Available to both players, or~$\textit{Stolen}$: Only available to the attacker. A scenario~$\sigma$ is the vector of states of each credential in the mechanism. We denote by~$\sigma_i$ the state of credential~$c_i$ in scenario~$\sigma$. 
-Each state corresponds to the outcome of the presentation functions for a user and an attacker. Specifically, the pair $(\textit{present}_U(i), \textit{present}_A(i))$ determines whether the credential is~\emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. Therefore, the state probabilities are
-\begin{equation*}
-P_{\text{safe}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 0].
-\end{equation*}
-\begin{equation*}
-P_{\text{loss}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 0].
-\end{equation*}
-\begin{equation*}
-P_{\text{leak}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 1].
-\end{equation*}
-\begin{equation*}
-P_{\text{stolen}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 1].
-\end{equation*}
+The outcome of the presentation function determines whether~$\sigma_i^P=1$ or $\sigma_i^P=0$. Denote the set of credentials available to player~$P$ by $\sigma^P$.
 
 \subsection{Credentials}\label{sec:3.2}
-
-A credential may correspond to secret data, such as a password or one time password~(OTP); a physical object, such as a phone or security key. We model these credentials as atomic: the player either presents the credential correctly or not in a perfect match criterion. 
-\begin{definition} (Atomic Credential)~If a credential is atomic, Denote by~$c^\star_{i}$ the correct credential stored in advance, then the presentation function~$\textit{present}_P(i)$ defined by 
-\begin{equation*}
-    \textit{present}_P(i) = \begin{cases}
-        1 &  c_i = c^\star_{i} \\
-        0 & \text{otherwise}
-    \end{cases}
-\end{equation*}
+A credential may correspond to secret data, such as a password or one time password~(OTP); a physical object, such as a phone or security key; or a biometric property, such as a fingerprint or face. We model these credentials as either \emph{atomic} or \emph{biometric}. Each credential can be either:~$\textit{Safe}$: Only available to the user, $\textit{Lost}$: Not available to either player, $\textit{Leaked}$: Available to both players, or~$\textit{Stolen}$: Only available to the attacker.
+\subsubsection*{3.2.1}\label{sec:3.2.1}
+Passwords, OTPs and security keys are credential types evaluated according to a perfect match criterion, namely, atomic credentials.
+\begin{definition} (Atomic Credential)~For an atomic credential the allocation function~$\textit{allocate}_P(i)$ randomly draws the state probabilities of the credential, namely~$P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and~$P_{\text{stolen}}$.
 \end{definition}
-
+When a player~$P$ presents an atomic credential~$c_i$, the presentation function ouputs~1 with probability~$P_{\text{safe}} + P_{\text{leak}}$ when allocated to the user and~$P_{\text{leak}} + P_{\text{stolen}}$ when allocated to the attacker.
+\subsubsection*{3.2.2}\label{sec:3.2.2}
 Alternatively, a credential may correspond to a biometric property, such as a fingerprint or face. The biometric sensor evaluates a measurement of the biometric property and produces a score~$s$. The user distribution~$f_U(s)$ denotes the score distribution of samples from the user, whereas the attacker distribution~$f_A(s)$ denotes the score distribution of samples from the attacker.
-\begin{definition} (Biometric Credential)~If a credential is biometric, the presentation function~$\textit{present}_P(i)$ is defined by~$f_U(s)$,~$f_A(s)$ and a match threshold~$t$. For a player~$P\in\{U,A\}$, the presentation function draw random value for the score~$s$ from the distribution~$f_P(s)$, and outputs~1 if~$s\ge t$ and~0 otherwise.
+\begin{definition} (Biometric Credential)~For a biometric credential the presentation function~$\textit{present}_P(i)$ is defined by the user score distribution~$f_U(s)$, attacker score distribution~$f_A(s)$ and a match threshold~$t$. For a player~${P\in\{U,A\}}$, the allocation function~$\textit{allocate}_P(i)$ draws a random value for the score~$s$ from the distribution~$f_P(s)$, and outputs~1 if~$s\ge t$ and~0 otherwise.
+    \begin{equation*}
+    s = \textit{allocate}_P(i) \sim f_P(s)
+    \end{equation*}
     \begin{equation*}
     \textit{present}_P(i) = \begin{cases}
         1 &  s \ge t \\
         0 & \text{otherwise}
     \end{cases}
     \end{equation*}
-\end{definition} 
-The user and attacker distributions establish two error metrics:~\FAR and~\FRR both are functions of the match threshold~$t$. 
+\end{definition}
+A scenario~$\sigma$ is the vector of states of each credential in the mechanism. We denote by~$\sigma_i$ the state of credential~$c_i$ in scenario~$\sigma$. 
+% Each state of the biometric credential corresponds to the outcome of the presentation functions for a user and an attacker. Specifically, the pair $(\textit{present}_U(i), \textit{present}_A(i))$ determines whether the biometric credential is~\emph{Safe}, \emph{Loss}, \emph{Leak} or \emph{Stolen}. Therefore, the state probabilities are
+% \begin{equation*}
+% P_{\text{safe}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 0].
+% \end{equation*}
+% \begin{equation*}
+% P_{\text{loss}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 0].
+% \end{equation*}
+% \begin{equation*}
+% P_{\text{leak}} = \Pr[\mathsf{present}_U(i) = 1 \wedge \mathsf{present}_A(i) = 1].
+% \end{equation*}
+% \begin{equation*}
+% P_{\text{stolen}} = \Pr[\mathsf{present}_U(i) = 0 \wedge \mathsf{present}_A(i) = 1].
+% \end{equation*}
+The user and attacker distributions establish two error metrics:(1)~\FAR, the false acceptance rate, is the probability that the sensor outputs \emph{accept} for an attacker sample. We calculate it by integrating the attacker distribution from the match threshold to the maximum score, thus
 \begin{equation}
     \label{eqn:FAR}
-\FAR(t) = \int_{t}^{a_2} f_A[s] ds
+\FAR(t) = \int_{t}^{\infty} f_A[s] ds
 \end{equation}
+(2)~\FRR, the false rejection rate, is the probability that the sensor outputs \emph{reject} for a user sample. We calculate it by integrating the user distribution from the minimum score to the match threshold, thus
 \begin{equation}
     \label{eqn:FRR}
-\FRR(t) = \int_{u_1}^{t} f_U[s] ds
+\FRR(t) = \int_{-\infty}^{t} f_U[s] ds
 \end{equation}
-We use the~\FAR and~\FRR to find the probability of the biometric credential availability states. The user has access to the biometric cedential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$1-\FRR(t)$. The attacker has access to the biometric credential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$\FAR(t)$. Thus, the probabilities of the four states are
+We use~\FAR and~\FRR to find the state probabilities of the biometric credential. The user has access to the biometric credential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$1-\FRR(t)$. The attacker has access to the biometric credential when the output of the biometric sensor is \emph{accept}, which occurs with probability~$\FAR(t)$. Thus, the probabilities of the four states are
 \begin{equation*}
     P_{\text{loss}} = \FRR(t) \cdot (1 - \FAR(t)),
 \end{equation*}
@@ -306,30 +301,25 @@ P_{{\text{safe}}} =1-\mathrm{P_{\text{loss}}}-\mathrm{P_{\text{leak}}}-\mathrm{P
 An authentication mechanism~$M$ receives the~\emph{evaluation} of the presentation function~$\textit{present}_P(i)$ for each player~$P$ and outputs a \emph{decision}.
 \begin{definition} (Authentication Mechanism) An authentication mechanism $M$ is a predicate that takes as input:
 \begin{itemize}
-     \item~$C_P(\sigma)$ the set of credentials available to player~$P$ in scenario~$\sigma$ (perhaps an empty set, represented by~$\varnothing$).
+     \item~$\sigma^P$ the set of credentials available to player~$P$ in scenario~$\sigma$ (perhaps an empty set, represented by~$\varnothing$).
 \end{itemize}
-and outputs either~1 meaning that the mechanism accepts the player or~0, meaning that the mechanism rejects the player.
+and outputs either~1, meaning that the mechanism accepts the player or~0, meaning that the mechanism rejects the player.
 \end{definition}
 
 We are now ready to define the mechanism's success.
-The mechanism is successful in a scenario~$\sigma$ if it grants access to the user only. 
-\begin{definition} (Mechanism Success) A mechanism is \emph{successful} in a scenario~$\sigma$ if and only if the authentication mechanism decision~$\mathrm{decide}_M(C_P(\sigma))$ equals~1 for the user only, that is
+The mechanism is successful if it grants access to the user only. 
+\begin{definition} (Mechanism Success) A mechanism~$M$ is \emph{successful} in a scenario~$\sigma$ if for a player~$P$ and the set of available credentials~$\sigma^P$, the authentication mechanism decision~$\mathrm{decide}_M(\sigma^P)$ equals~1 for the user only over an execution~$E$, that is
 \begin{equation*}
-    \mathrm{decide}_M(C_U(\sigma))=1 \wedge \mathrm{decide}_M(C_A(\sigma))=0.
+    \mathrm{decide}_M(\sigma^U)=1 \wedge \mathrm{decide}_M(\sigma^A)=0.
 \end{equation*}
+Otherwise, the mechanism is \emph{unsuccessful}.
 \end{definition} 
 The mechanism's \emph{success probability} is thus
 \begin{equation*}
-\begin{aligned}
-P_{\text{Success}}(M)
-&= \Pr\big[
-\mathrm{decide}_M(C_U(\sigma))=1 \\
-&\qquad\wedge\ 
-\mathrm{decide}_M(C_A(\sigma))=0
-\big].
-\end{aligned}
+P_{\text{Success}}(M) =
+\Pr\big[\mathrm{decide}_M(\sigma^U)=1 \wedge \mathrm{decide}_M(\sigma^A)=0\big].
 \end{equation*}
-For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants access to a player if and only if all credentials are available to the player. In an \emph{OR mechanism}, the mechanism grants access to a player if at least one credential is available to the player.
+For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants access to a player if and only if all credentials are available to the player; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for every credential~$c_i$. In an \emph{OR mechanism}, the mechanism grants access to a player if at least one credential is available to the player; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for at least one credential~$c_i$.
 \section{Mechanisms}\label{sec:4}
 We explore optimal mechanism success probability with a single biometric credential. We start with first~$(\S\ref{sec:4.1})$ and second~$(\S\ref{sec:4.2})$ order approximations.
 
