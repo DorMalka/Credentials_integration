@@ -20,7 +20,7 @@ mu_u = 0.68
 sigma_u = 0.10
 
 # Chosen threshold
-T = 0.52
+T = 0.5
 
 # Plot range
 x_min = 0.0
