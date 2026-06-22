@@ -778,7 +778,7 @@ table [x=s, y=PA_case3] {figs/fig_parabola/quadratic_three_cases.txt};
 \caption{Illustration of three distinct cases of quadratic attacker and user score distributions. In case (1), the distributions are separated. Case (2) illustrates the case where the attacker distribution is fully contained within the user distribution, and case (3) illustrates partial overlap between the two distributions.}
 \label{fig:quadratic_three_cases}
 \end{figure*}
-Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:7})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005} on Eigenfinger and Eigenpalm feature distributions. Accordingly, we define two probability density functions (PDFs). Let $f_U$ denote the user distribution with roots $\alpha_{1}, \alpha_{2}$ and let $f_A$ denote the attacker distribution with roots $\beta_{1}, \beta_{2}$. Donte by $a, b, c$ and $d, e, f$ the quadratic coefficients of the user and attacker distributions, respectively, hence:
+Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:7})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005} on Eigenfinger and Eigenpalm feature distributions. Accordingly, we define two probability density functions (PDFs). Let~$f_U$ denote the user distribution with roots~$\alpha_{1}, \alpha_{2}$ and let~$f_A$ denote the attacker distribution with roots~$\beta_{1}, \beta_{2}$. Donte by $a, b, c$ and $d, e, f$ the quadratic coefficients of the user and attacker distributions, respectively, hence:
 \[
 f_U(s) = 
 \left\{
@@ -798,37 +798,27 @@ f_A(s) =
 \right.
 \]
 
-To reduce the degrees of freedom of the quadratic distributions while maintaining a symbolic analysis, we express the coefficients directly in terms of their roots. The integral of each PDF over its roots interval is set to~1, which enforces the normalization condition. This condition unsures that the resulting error metrics,~\FAR and~\FRR are bounded to~1. Under this condition, the coefficients become fully determined. Accordingly, we define the coefficients as
-\begin{equation*}
-    \alpha_1 \cdot \alpha_2 = \frac{c}{a} \rightarrow a = \frac{c}{\alpha_1 \cdot \alpha_2} \\
-\end{equation*}
-\begin{equation*}
-\alpha_1 + \alpha_2 = -\frac{b}{a} \rightarrow b = - \frac{c \cdot (\alpha_1 + \alpha_2)}{\alpha_1 \cdot \alpha_2} \\
-\end{equation*}
-\begin{equation*}
-\beta_1 \cdot \beta_2 = \frac{f}{d} \rightarrow d = \frac{f}{\beta_1 \cdot \beta_2}\\
-\end{equation*}
-\begin{equation*}
-\beta_1 + \beta_2 = -\frac{e}{d} \rightarrow e = - \frac{f \cdot (\beta_1 + \beta_2)}{\beta_1 \cdot \beta_2} \\
-\end{equation*}
-\begin{equation*}
-\int_{\alpha_1}^{\alpha_2} (a \cdot x^2+b \cdot x+c) dx = 1 \Rightarrow c = \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3} \\
-\end{equation*}
-\begin{equation*}
-\int_{\beta_1}^{\beta_2} (d \cdot x^2+e \cdot x+f) dx = 1 \Rightarrow f = \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} \\
-\end{equation*}
+To reduce the degrees of freedom of the quadratic distributions, we express the coefficients directly in terms of their roots. The integral of each PDF over its roots interval is set to~1, which enforces the normalization condition. This condition unsures that the resulting error metrics~\FAR and~\FRR are bounded to~1. Under this condition, the coefficients become fully determined. Accordingly, we define the coefficients as
+\begin{align*}
+    &\alpha_1 \cdot \alpha_2 = \frac{c}{a} \rightarrow a = \frac{c}{\alpha_1 \cdot \alpha_2}\\
+    &\alpha_1 + \alpha_2 = -\frac{b}{a} \rightarrow b = - \frac{c \cdot (\alpha_1 + \alpha_2)}{\alpha_1 \cdot \alpha_2} \\
+    &\beta_1 \cdot \beta_2 = \frac{f}{d} \rightarrow d = \frac{f}{\beta_1 \cdot \beta_2}\\
+    &\beta_1 + \beta_2 = -\frac{e}{d} \rightarrow e = - \frac{f \cdot (\beta_1 + \beta_2)}{\beta_1 \cdot \beta_2} \\
+    &\int_{\alpha_1}^{\alpha_2} (a \cdot x^2+b \cdot x+c) dx = 1 \Rightarrow c = \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3} \\
+    &\int_{\beta_1}^{\beta_2} (d \cdot x^2+e \cdot x+f) dx = 1 \Rightarrow f = \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} \\
+\end{align*}
 Therefore, we can write the quadratic PDFs as
 \begin{equation*}
 f_U(s) =
 \begin{cases}
-     \frac{6}{(\alpha_1 - \alpha_2)^3} s^2 - \frac{6 (\alpha_1 + \alpha_2)}{(\alpha_1 - \alpha_2)^3} s + \frac{6 \alpha_1 \alpha_2}{(\alpha_1 - \alpha_2)^3} & \alpha_1 \leq s \leq \alpha_2 \\
+     \frac{6s^2}{(\alpha_1 - \alpha_2)^3} - \frac{6s (\alpha_1 + \alpha_2)}{(\alpha_1 - \alpha_2)^3} + \frac{6 \alpha_1 \alpha_2}{(\alpha_1 - \alpha_2)^3} & \alpha_1 \leq s \leq \alpha_2 \\
     0, & \text{otherwise}
 \end{cases}
 \end{equation*}
 \begin{equation*}
 f_A(s) =
 \begin{cases}
-     \frac{6}{(\beta_1 - \beta_2)^3}  s^2 - \frac{6  (\beta_1 + \beta_2)}{(\beta_1 - \beta_2)^3}  s + \frac{6  \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} & \beta_1 \leq s \leq \beta_2 \\
+     \frac{6s^2}{(\beta_1 - \beta_2)^3} - \frac{6s  (\beta_1 + \beta_2)}{(\beta_1 - \beta_2)^3} + \frac{6  \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} & \beta_1 \leq s \leq \beta_2 \\
     0, & \text{otherwise}
     \end{cases}
 \end{equation*}
@@ -877,10 +867,7 @@ Similarly to the analysis of the uniform distribution, the x axis represents the
 (1)~$\beta_{2} < \alpha_{1}$~(Figure~\ref{fig:quadratic_case1_pdf}): The two distributions are separated. Any threshold $t$ chosen within the range~$\beta_{2} \le t \le \alpha_{1}$ yields zero~\FAR and~\FRR, and therefore achieves a mehcanism success probability of~$1$.
 
 (2)~$\alpha_{1} < \beta_{1} < \beta_{2} < \alpha_{2}$~(Figure~\ref{fig:quadratic_case2_pdf}): The attacker distribution bounds lies within the range of the user distribution bounds. The mechanisms probability of success reduces to the safe probability of the biometric credential, which is given by Equation~\ref{eqn:safe_prob}
-\begin{equation*}
-P_{{\text{safe}}} = (1 - \FAR(t)) \cdot (1 - \FRR(t))
-\end{equation*}
-The~\FAR is one for any~$t \le \beta_1$ and zero for any~$t \ge \beta_2$. Thus:
+The~\FAR is one for any~$t \le \beta_1$ and zero for any~$t \ge \beta_2$. Thus
 \begin{equation*}
 \begin{aligned}
 G(t)=
@@ -908,7 +895,6 @@ G(t),
 \end{multline*}
 
 (3)~$\beta_{1} \le \alpha_{1} \le \beta_{2} \le \alpha_{2}$~(Figure~\ref{fig:quadratic_case3_pdf}): The user and attacker distributions partially overlap. We mainatain same approach as the case~(2) to calculate the probability of success. The~\FAR is one for any~$t \le \beta_1$ and zero for any~$t \ge \beta_2$, and the~\FRR is zero for any~$t \le \alpha_1$ and one for any~$t \ge \alpha_2$. Thus, in this case, we obtain 4 regions of the success probability function
-
 \begin{multline*}
 P_{\mathrm{success}}(t)=\\
 \begin{cases}
@@ -924,70 +910,21 @@ G(t),
 & \beta_2 \le t \le \alpha_2.
 \end{cases}
 \end{multline*}
-
-% \begin{figure}[t]
-% \centering
-
-% \begin{tikzpicture}
-% \pgfplotsset{compat=1.18}
-
-% \begin{axis}[
-%     scale only axis,
-%     width=0.80\columnwidth,
-%     height=0.45\columnwidth,
-%     xlabel={Matching Score},
-%     ylabel={Probability Density},
-%     xmin=1.5, xmax=4.5,
-%     ymin=-0.1, ymax=1.65,
-%     grid=none,
-%     xtick={2,3,3.5,4},
-%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-%     ytick=\empty,
-%     legend style={
-%         at={(0.3,0.92)},
-%         anchor=north east,
-%         font=\scriptsize,
-%         fill=white,
-%         fill opacity=0.85,
-%         text opacity=1,
-%         draw=black
-%     },
-% ]
-
-% \addplot+[blue, thick, mark=none]
-% table [x=s, y=PU] {figs/fig_parabola/parabola_graphs.txt};
-% \addlegendentry{User}
-
-% \addplot+[red, thick, mark=none]
-% table [x=s, y=PA] {figs/fig_parabola/parabola_graphs.txt};
-% \addlegendentry{Attacker}
-
-% \end{axis}
-% \end{tikzpicture}
-
-% \caption{Quadratic user and attacker distributions.}
-% \label{fig:quadratic_pdf_1_cred}
-% \end{figure}
-
 The second and third intervals in case~(2) are identical to the third and fourth intervals in case~(3) and therefore, we analyze them together. 
 We differentiate~$P_{\text{success}}(t)$ and compute its critical points in every interval. By comparing the stationary values obtained in all valid regions, we identify the global maximum, which corresponds to the optimal threshold~$t_{\text{opt}}$.
-
 Before writing the piecewise derivative, we define the polynomial coefficients and the following function:
-\[
-\begin{aligned}
-q &= 4, \\[6pt]
-m &= -(5\alpha_1 + \alpha_2 + \beta_1 + 5\beta_2), \\[6pt]
-n &= \alpha_1(3\alpha_2 + \beta_1 + 6\beta_2)
-    - \alpha_2^2 + \alpha_2\beta_2 - \beta_1^2 + 3\beta_1\beta_2, \\[6pt]
-\ell &= \alpha_1\bigl(\beta_1^2 - 3\beta_2(\alpha_2 + \beta_1)\bigr)
-       + \alpha_2^2 \beta_2.
-\end{aligned}
-\]
-\[R(t)= -\frac{6 (t-\alpha_2)(t-\beta_1)\bigl(qt^3 + mt^2 + nt + \ell\bigr)}
+\begin{align*}
+&q = 4, \\
+&m = -(5\alpha_1 + \alpha_2 + \beta_1 + 5\beta_2),\\ 
+&n = \alpha_1(3\alpha_2 + \beta_1 + 6\beta_2)
+    - \alpha_2^2 + \alpha_2\beta_2 - \beta_1^2 + 3\beta_1\beta_2,\\
+&\ell = \alpha_1\bigl(\beta_1^2 - 3\beta_2(\alpha_2 + \beta_1)\bigr)
+       + \alpha_2^2 \beta_2,\\
+&R(t) = -\frac{6 (t-\alpha_2)(t-\beta_1)\bigl(qt^3 + mt^2 + nt + \ell\bigr)}
      {(\alpha_1-\alpha_2)^3 (\beta_1-\beta_2)^3}.
-\]
+\end{align*}
 With these coefficients and function $R(t)$, the derivative of $P_{\text{success}}(t)$ is given by the following piecewise expression:
-\[
+\begin{equation*}
 \frac{dP_{\text{success}}}{dt} =
 \begin{cases}
 0, & t < \beta_1 \;\lor\; t > \alpha_2, \\
@@ -1001,9 +938,8 @@ R(t),
 -\dfrac{6 (t-\alpha_1) (t-\alpha_2)}{(\alpha_1-\alpha_2)^3},
 & \beta_2 \le t \le \alpha_2.
 \end{cases}
-\]
-
-In the second interval, the derivative has a single critical point at $t=\beta_{1}$. Since the derivative is strictly positive for all $t>\beta_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $t=\alpha_{2}$, and the derivative is strictly negative for all $t<\alpha_{2}$. Therefore, this interval also contains no maximum either.
+\end{equation*}
+In the second interval, the derivative has a single critical point at $t=\beta_{1}$. Since the derivative is strictly positive for all $t>\beta_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $t=\alpha_{2}$, and the derivative is strictly negative for all $t<\alpha_{2}$. Therefore, this interval also contains no maximum either. We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at~$t=\beta_{1}$ and~$t=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic, reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution cannot be simplified further more than a complex expression. Thus, we denote the solution as $t_{\text{cubic}}$.
 
 \begin{figure*}[t]
 \centering
@@ -1309,56 +1245,53 @@ table [x=FRR_eer, y=FAR_eer]
 \caption{\FAR vs. \FRR operating curves for different attacker distributions.}
 \label{fig:FAR_FRR_1_quadratic_cred}
 \end{figure*}
+By examining the sign of the derivative on both sides of the critical point $t_{\text{cubic}}$, we verify that it constitutes a global maximum of $P_{\text{safe}}(t)$. We denote this maximizing point by $t_{\text{opt}}$. Figure~\ref{fig:success_per_attacker_1_quadratic_cred} illustrates this analysis.
 
-We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at $t=\beta_{1}$ and $t=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic, reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution can not be simplified further more than a complex expression. Thus, we denote the solution as $t_{\text{cubic}}$.
+To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we computed the~\EER point separately as follows:
+\begin{equation*}
+t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2}
+\end{equation*}
+We can observe that the~\EER threshold is not equal to the~$t_{\text{opt}}$. To evaluate the difference between the~$t_{\text{opt}}$ and the~\EER, we illustrate different attacker distributions, each spanning a wider interval~$(\beta_1,\beta_2)$, which corresponds to increasing the variance, as shown in Figure~\ref{fig:different_attackers_pdf_1_quadratic_cred}.
+Comparing each case with its corresponding success probability curve, we observe that the optimal threshold~$t_{\text{opt}}$ becomes more distinct from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases and the more asymmetric the user and attacker distributions become. 
 
-By examining the sign of the derivative on both sides of the critical point $t_{\text{cubic}}$, we verify that it constitutes a global maximum of $P_{\text{safe}}(t)$. We denote this maximizing point by $t_{\text{opt}}$.
+Moreover, we also observe that increasing the variance of an attacker distribution, shifts the optimal threshold~$t_{\text{opt}}$ towards~$\alpha_1$ reducing the~\FRR to zero, while the~\EER point remains fixed trying to balance between the~\FAR and~\FRR. This shift indicates that when increasing the variance, the optimal threshold prioritizes minimizing the false rejection rate, rather than balancing both error rates, as shown in Figure~\ref{fig:FAR_FRR_1_quadratic_cred}.
 
-To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we computed the \EER point separately as follows:
-
-\[t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2} \neq t_{\text{opt}}
-\]
-
-We illustrate several user and attacker distributions and present their corresponding probability of success curves, expressed as functions of the threshold $t$ in Figure~\ref{fig:different_attackers_pdf_1_quadratic_cred} and Figure~\ref{fig:success_per_attacker_1_quadratic_cred} respectively. Comparing each case with its corrsponding success probability curve, we observe that the optimal threshold $t_{\text{opt}}$ becomes more distinct from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases and the more asymmetric the user and attacker distributions become. 
-
-Moreover, we illustrate the~\FAR-\FRR curves for each pair of user and attacker distributions, and mark both the optimal point and the \EER point, as shown in Figure~\ref{fig:FAR_FRR_1_quadratic_cred}. We can deduce that as the attacker's variance increases, the optimal point shifts towards~$\alpha_1$ reducing the~\FRR to zero, while the~\EER point remains fixed trying to balance between the~\FAR and~\FRR. This shift indicates that the optimal operating point prioritizes minimizing the false rejection rate, rather than balancing both error rates.
-
-To quantify the effect of the variance on the deviation between the optimal operating threshold~$t_{\text{opt}}$ and~\EER threshold~$t_{\EER}$, we numerically computed this gap as a function of the attacker's variance. Decreasing the variance of the attacker achieved by reducing the distance between its roots, corresponds to reduced separability between the two distributions. The simulations reveal that as the variance increases, the gap $\lvert t_{\text{opt}} - t_{\EER} \rvert$ grows accordingly, until the operating threshold moves into a regime where it effectively minimizes only one of the error rates, either \FAR or \FRR, driving the other to zero. This phenomenon is shown in Figure~\ref{fig:gap_vs_variance_parabola_gap}. The simulation also indicate that higher attacker variance enlarges the gap between the success probability at the optimal threshold and the success probability at the~\EER threshold as show in Figure~\ref{fig:gap_vs_variance_parabola_success}. This finding highlights the potential success advantage gained by operating at~$t_{\text{opt}}$ rather than at the~\EER point when an attacker distribution spans over wider intervals.
+To quantify the effect of the variance on the deviation between the optimal threshold~$t_{\text{opt}}$ and~\EER threshold~$t_{\EER}$, we numerically computed this gap as a function of the attacker's variance. The simulation indicate that higher attacker variance enlarges the gap between the success probability at the optimal threshold and the success probability at the~\EER threshold as show in Figure~\ref{fig:gap_vs_variance_parabola_success}. This finding highlights the potential success advantage gained by operating at~$t_{\text{opt}}$ rather than at the~\EER point when an attacker distribution spans over wider intervals.
 
 \begin{figure}[t]
 \centering
 
-\begin{subfigure}[t]{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.48\columnwidth,
-    xlabel={Attacker Variance $\mathrm{Var}(s)$},
-    ylabel={$|t_{\mathrm{opt}}-t_{\EER}|$},
-    xtick=\empty,
-    ytick=\empty,
-    grid=none,
-    legend style={
-        at={(0.98,0.98)},
-        anchor=north east,
-        draw=black,
-        fill=white
-    }
-]
-\addplot[thick, myPurple, mark=none]
-table [x=variance, y=gap] {figs/fig_parabola/gap_vs_variance_parabola.txt};
-\end{axis}
-\end{tikzpicture}
-\caption{Threshold gap.}
-\label{fig:gap_vs_variance_parabola_gap}
-\end{subfigure}
+% \begin{subfigure}[t]{\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.82\columnwidth,
+%     height=0.48\columnwidth,
+%     xlabel={Attacker Variance $\mathrm{Var}(s)$},
+%     ylabel={$|t_{\mathrm{opt}}-t_{\EER}|$},
+%     xtick=\empty,
+%     ytick=\empty,
+%     grid=none,
+%     legend style={
+%         at={(0.98,0.98)},
+%         anchor=north east,
+%         draw=black,
+%         fill=white
+%     }
+% ]
+% \addplot[thick, myPurple, mark=none]
+% table [x=variance, y=gap] {figs/fig_parabola/gap_vs_variance_parabola.txt};
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Threshold gap.}
+% \label{fig:gap_vs_variance_parabola_gap}
+% \end{subfigure}
 
-\vspace{0.7em}
+% \vspace{0.7em}
 
-\begin{subfigure}[t]{\columnwidth}
-\centering
+% \begin{subfigure}[t]{\columnwidth}
+% \centering
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
@@ -1386,11 +1319,10 @@ table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 \end{axis}
 \end{tikzpicture}
 \caption{Success at the optimal and \EER thresholds.}
-\label{fig:gap_vs_variance_parabola_success}
-\end{subfigure}
+% \end{subfigure}
 
 \caption{Comparison between the optimal threshold and the \EER threshold as a function of the attacker's variance.}
-\label{fig:gap_vs_variance_parabola}
+\label{fig:gap_vs_variance_parabola_success}
 \end{figure}
 
 \section{Two Credentials}\label{sec:5}
@@ -1399,7 +1331,7 @@ We explore mechanisms that integrate two independently and identically distribut
 \subsection{Two Biometric Credentials}\label{sec:5.1}
 %%%
 %%%
-To analyze the case of a mechanism $M$ comprises two biometric credentials, we conduct a numerical study over several probability distribution functions. For each distribution pair, we derive the optimal operating point for both \emph{AND} and \emph{OR} mechanisms by maximizing the respective success probabilities using a LBFGS optimization algorithm. We additionally compare the optimal operating point to the~\EER point, thereby characterizing the conditions under which the \emph{AND} or \emph{OR} mechanisms yields superior performance. 
+To analyze the case of a mechanism $M$ comprises two biometric credentials, we conduct a numerical study over several probability distribution functions. For each distribution pair, we derive the optimal operating point for each possible mechanism composition by maximizing the respective success probabilities using a LBFGS optimization algorithm. We additionally compare the optimal operating point to the~\EER point, thereby characterizing the conditions under which the \emph{AND} or \emph{OR} mechanisms yields superior performance. 
 We start by considering Gaussian distributions as a third-order approximation of a biometric credential's distribution. We defined the user and attacker distributions as~$f_U(s) = \mathcal{N}(\mu_u, \sigma_u^2)$ and~$f_A(s) = \mathcal{N}(\mu_a, \sigma_a^2)$ respectively. We randomly generate the Gaussian parameters to construct a user and an attacker PDF's closely resemble the empirical findings of Slobodan~\cite{Slob2005}. We focus on the overlapping case between the user and attacker distributions, as this represents the common case among real-world scenarios. For the first credential as~$\mu_u = 0.8$, $\sigma_u = 0.12$, $\mu_a = 0.3, \sigma_a = 1$ and for the second credential~$\mu_u = 1.0$, $\sigma_u = 0.2$, $\mu_a = 0.4, \sigma_a = 0.18$ as shown in Figure~\ref{fig:01_gaussians}.
 \begin{figure}[t]
 \centering
@@ -1935,43 +1867,57 @@ table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_
 \label{fig:biometric_atomic_success}
 \end{figure}
 
-\section{Characterizing Success Improvement}\label{sec:6}
+\section{Characterizing Success Improvement}\label{sec:6} 
+\noindent
 We will now characterize the conditions under which integrating a biometric credential into a single atomic credential mechanism, enhances its success. We show that for any mechanism type whose atomic credential characterized by non-zero probabilities~$ P^1_\text{safe} \text{ and } P^1_\text{stolen}$ only, integrating a biometric credential does not improve mechanism's success~$(\S\ref{sec:6.1})$. Next, we present a necessary and sufficient condition for such improvement~$(\S\ref{sec:6.2})$ and derive a more commong criterion that provides a sufficient condition~$(\S\ref{sec:6.3})$.
 \subsection{No Improvement In Mechanisms Success}\label{sec:6.1}
+\noindent
+We consider a mechanism that initially consists of a single atomic credential. We then examine whether adding a biometric credential into this mechanism can produce a new mechanism whose success probability is higher than that of the atomic credential alone.
+
 \begin{proposition}
-    For any mechanism~$M$ comprises an atomic credential with non-zero probabilities~$ P^1_\text{safe}$ and~$ P^1_\text{stolen}$ only, integrating the mechanism with a biometric credential does not enhance its mechanism's success.
+    Let~$M$ be a mechanism comprising an atomic credential with non-zero probabilities~$P^1_\text{safe}$ and~$P^1_\text{stolen}$ only. Then, adding a biometric credential to~$M$ cannot produce a new mechanism~$\bar{M}$ whose success probability is higher than that of~$M$.
 \end{proposition}
 \begin{proof}
-    Integrating a biometric credential into a mechanism~$M$ comprises an atomic credential with non-zero probabilities~$ P^1_\text{safe}$ and~$ P^1_\text{stolen}$ only, leads to mechanism success probability described by Equation~\ref{eqn:andsuccess} or Equation~\ref{eqn:orsuccess}. Since the state probabilities of an atomic credential are~$ P^1_\text{leak} =  P^1_\text{loss} = 0$, the success probability in both mechanism cases reduces to:
-
-    \[P_{\text{success}}(t) = P^1_\text{safe} \cdot P^2_{\text{safe}}(t).\]
-    Where~$P^2_{\text{safe}}(t)$ is the safe probability of the biometric credential as a function of the operating threshold $t$.
-    However, $P^2_{\text{safe}}(t) \le 1$ for every value of $t$. Then $P_{\text{success}}(t) \le P^1_\text{safe}$ and thus, integrating a biometric credential does not enhance the success of the mechanism.
+    Adding a biometric credential into a mechanism~$M$ comprising an atomic credential with non-zero probabilities~$ P^1_\text{safe}$ and~$ P^1_\text{stolen}$ only, produces a new mechanism~$\bar{M}$. This new mechanism~$\bar{M}$ comprises one atomic credential and one biometric credential in two possible compositions~(see~$\S\ref{sec:5}$). An \emph{AND mechanism} has success probability described by Equation~\ref{eqn:andsuccess}, and an \emph{OR mechanism} has success probability described by Equation~\ref{eqn:orsuccess}. Since the state probabilities of the atomic credential are~$ P^1_\text{leak} =  P^1_\text{loss} = 0$, the success probability of~$\bar{M}$ reduces in both cases to
+    \begin{equation*}
+        P_{\text{success}}(t) = P^1_\text{safe} \cdot P^2_{\text{safe}}(t).
+    \end{equation*}
+    Here,~$P^2_{\text{safe}}(t)$ denotes the safe probability of the biometric credential as a function of the operating threshold $t$.
+    Each state probability of the biometric credential is strictly lower or equal to one; in particular,~$P^2_{\text{safe}}(t) \le 1$ for every value of $t$. Therefore,~$P_{\text{success}}(t) \le P^1_\text{safe}$ and thus, adding a biometric credential does not produce a new mechanism whose success probability is higher than that of of a single atomic credential mechanism.
 \end{proof}
 \subsection{Sufficient And Necessary Condition for Integrating Biometric Credentials}\label{sec:6.2}
-First, we define the condition of \emph{asymptotic separability} of a biometric credential. Then, we will show that its a necessary and sufficient condition for enhancing the mechanism's success when integrating a biometric credential.
+\noindent
+%We have shown that adding a biometric credential to a mechanism comprising an atomic credential with non-zero probabilities~$ P^1_\text{safe}$ and~$ P^1_\text{stolen}$ only, cannot produce a new mechanism with greater success probability. 
+We now identify the conditions under which adding a biometric credential to a single atomic credential mechanism, can produce a new mechanism with a higher success probabiltiy.
+We consider an atomic credential with non-zero probabilities~$ P^1_\text{safe}$ and at least one of~$P^1_\text{leak}$ $\text{or } P^1_\text{loss}$. We define the condition of \emph{asymptotic separability} for a biometric credential and show that it is a necessary and sufficient condition for adding the biometric credential to produce a new mechanism whose success probability is higher than that of a single atomic credential mechanism.
 \begin{definition}
-A biometric credential with user distribution function $f_U(s)$
-and attacker distribution function $f_A(s)$ is said to be \emph{asymptotically separable} if
-\[
-\inf_{t}
-\min\!\left\{
-\frac{\FAR(t)}{1-\FRR(t)},\,
-\frac{\FRR(t)}{1-\FAR(t)}
-\right\}
-= 0,
-\]
-where $\FAR(t) = \int_{t}^{\infty} f_A(s) ds$ and $\FRR(t) = \int_{-\infty}^{t} f_U(s) ds$.
+A biometric credential with user distribution function~$f_U(s)$ and attacker distribution function~$f_A(s)$ produces~\FAR and~\FRR that equal 
+\begin{equation*}
+    \begin{aligned}
+    &\FAR(t) = \int_{t}^{\infty} f_A(s) ds \textit{ and,} \\
+    &\FRR(t) = \int_{-\infty}^{t} f_U(s) ds.
+    \end{aligned}
+\end{equation*}
+Therefore the user distribution and attacker distribution are \emph{asymptotically separable} if
+\begin{equation*}
+    \inf_{t}
+    \min\!\left\{
+    \frac{\FAR(t)}{1-\FRR(t)},\,
+    \frac{\FRR(t)}{1-\FAR(t)}
+    \right\}
+    = 0,
+\end{equation*}
 \end{definition}
 
-\begin{proposition}
-    For any mechanism $M$ comprises an atomic credential with non-zero probabilities~$P^1_\text{safe}$ $\text{and}$ $P^1_\text{leak}$ $\text{or}$ $P^1_\text{loss}$, integrating the mechanism with a biometric credential whose user and attacker distributions are asymptotically separable, enhances the success of the mechanism.
+\begin{proposition}\label{thm:suf_nec_cond_for_improve}
+    Let~$M$ be a mechanism comprising an atomic credential with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$. Then, adding a biometric credential whose user and attacker distributions are asymptotically separable, produces a new mechanism~$\bar{M}$ whose success probability is higher than that of~$M$.
 \end{proposition}
 
 \begin{proof}
-    The success probability of a mechanism comprises an atomic credential only is given by Equation~\ref{eqn:safesuccess}. A biometric credential is characterized by four state probabilities which are function of~$t$: $P^{2}_{\text{safe}}(t)$, $P^{2}_{\text{loss}}(t)$, $P^{2}_{\text{leak}}(t)$, $P^{2}_{\text{theft}}(t)$. We can describe each one of these probabilities as a function of~\FAR and ~\FRR as:
+    The success probability of a mechanism comprising an atomic credential only is given by Equation~\ref{eqn:safesuccess}. A biometric credential is characterized by four state probabilities, that are functions of~$t$: $P^{2}_{\text{safe}}(t)$, $P^{2}_{\text{loss}}(t)$, $P^{2}_{\text{leak}}(t)$, $P^{2}_{\text{theft}}(t)$. We can describe each one of these probabilities as a function of~\FAR and~\FRR as:
     \contprobabilities
-    The success probability of the integrated mechanism comprises two credentials is described by Equation~\ref{eqn:andsuccess} and Equation~\ref{eqn:orsuccess}. Thus, by placing the biometric credential in each configuration we can express the success probability of the integrated mechanism as a function of the operating threshold $t$:
+    Adding a biometric credential to a mechanism~$M$ comprising an atomic credential under the given settings, produces a new mechanism~$\bar{M}$ in two possible compositions.
+    The success probability described by Equation~\ref{eqn:andsuccess} refers to \emph{AND mechanism}, while the success probability described by Equation~\ref{eqn:orsuccess} refers to \emph{OR mechanism}. Thus, by placing the biometric credential in each configuration we can express the success probability of~$\bar{M}$ as a function of the operating threshold $t$
     \begin{equation}
         \label{eqn:andineq}
     \ANDintegration
@@ -1980,23 +1926,22 @@ where $\FAR(t) = \int_{t}^{\infty} f_A(s) ds$ and $\FRR(t) = \int_{-\infty}^{t} 
         \label{eqn:orineq}
     \ORintegration
     \end{equation}
-    To prove the integration of a biometric credential improved mechanism success, we need to prove that there exists an operating threshold $t$ such that either 
+    To prove that the integration of a biometric credential produces a mechanism~$\bar{M}$ with higher success probability than that of~$M$, we need to prove that there exists an operating threshold $t$ such that either 
     $P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}}$ or $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}$.
     By algebraic manipulation of Equation~\ref{eqn:andineq} we will demand that~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}}$ if and only if:
-    \[
-    1-\FRR(t) > \frac{P^{1}_{\text{safe}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}\cdot(1-\FAR(t))} \iff
-    \]
-    \[
+    \begin{equation*}
+        \frac{P^{1}_{\text{safe}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}\cdot(1-\FAR(t))} < 1-\FRR(t)  \iff
+    \end{equation*}
+    \begin{equation*}
     \FRR(t) < 1 - \frac{P^{1}_{\text{safe}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}\cdot(1-\FAR(t))} \iff
-    \]
-    \[
+    \end{equation*}
+    \begin{equation*}
     \FRR(t) < \frac{P^{1}_{\text{leak}}\cdot(1-\FAR(t))}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}\cdot(1-\FAR(t))} \iff
-    \]
-    \[
+    \end{equation*}
+    \begin{equation*}
     \frac{\FRR(t)}{1-\FAR(t)} < \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}\cdot(1-\FAR(t))}
-    \]
-    Since~$P^{1}_{\text{leak}}\cdot(1-\FAR(t)) \le P^{1}_{\text{leak}}$, a sufficient condition for the above inequality is:
-
+    \end{equation*}
+    Since~$P^{1}_{\text{leak}}\cdot(1-\FAR(t)) \le P^{1}_{\text{leak}}$, a sufficient condition for the above inequality is
     \begin{equation}
         \label{eqn:FRRineq}
     \frac{\FRR(t)}{1-\FAR(t)} < \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}}
@@ -2004,30 +1949,33 @@ where $\FAR(t) = \int_{t}^{\infty} f_A(s) ds$ and $\FRR(t) = \int_{-\infty}^{t} 
 
     Similarly, we can deduce that~$P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}$ if and only if:
     \[\frac{\FAR(t)}{1-\FRR(t)} < \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}\cdot(1-\FRR(t))}\]
-    Since $P^{1}_{\text{loss}}\cdot(1-\FRR(t)) \le P^{1}_{\text{loss}}$, a sufficient condition for the above inequality is:
+    Since $P^{1}_{\text{loss}}\cdot(1-\FRR(t)) \le P^{1}_{\text{loss}}$, a sufficient condition for the above inequality is
     \begin{equation}
         \label{eqn:FARineq}
         \frac{\FAR(t)}{1-\FRR(t)} < \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}}
     \end{equation}
-    By the definition of asymptotic separability, there exists an operating threshold~$t$ such that: \[
+    By the definition of asymptotic separability, there exists an operating threshold~$t$ such that 
+    \begin{equation*}
     \inf_{t}
     \min\!\left\{
     \frac{\FAR(t)}{1-\FRR(t)},\,
     \frac{\FRR(t)}{1-\FAR(t)}
     \right\}
     = 0.
-    \] 
+    \end{equation*}
     Equivalently,~$\forall \varepsilon > 0, \exists t$ such that either~$\frac{\FAR(t)}{1-\FRR(t)} < \varepsilon$ or~$\frac{\FRR(t)}{1-\FAR(t)} < \varepsilon$. Thus, we can choose $\varepsilon$ that equals the right hand side of either Equation~\ref{eqn:FRRineq} or Equation~\ref{eqn:FARineq} and by definition we know that a~$t$ satisfies the inequality exists. More precisely, if \[\inf_{t}\frac{\FAR(t)}{1-\FRR(t)} = 0,\] 
-    then the \textsc{OR} mechanism composition is preferable, whereas if \[\inf_{t}\frac{\FRR(t)}{1-\FAR} = 0,\] then the \textsc{AND} mechanism composition is preferable. Therefore, integrating an asymptotically separable biometric credential enhances the success of the mechanism.
-
+    then the \textsc{OR} mechanism composition is preferable, whereas if \[\inf_{t}\frac{\FRR(t)}{1-\FAR} = 0,\] then the \textsc{AND} mechanism composition is preferable. Therefore, adding an asymptotically separable biometric credential to~$M$ produces a new mechanism~$\bar{M}$ with higher success probability.
 \end{proof}
 
 \begin{proposition}
-Suppose there~$\exists t$ such that the integrated mechanism~$M$ comprises a biometric credential and an atomic credential with non zero probabilities~$P_\text{safe}$ $\text{and}$ $P_\text{leak}$ $\text{or}$ $P_\text{loss}$ achieves a strictly higher success probability than an atomic credential mechanism, i.e.,\[P^{\text{integrated}}_{\text{success}}(t) > P^{\text{atomic}}_{\text{success}}.\] Then necessarily, the biometric credential is asymptotically separable.
+Suppose there exists~$t$ such that the integrated mechanism~$\bar{M}$ comprises a biometric credential and an atomic credential with~$P_\text{safe}>0$ and at least one of~$P_\text{leak},P_\text{loss} > 0$, then~$\bar{M}$ achieves a strictly higher success probability than~$M$, i.e.,
+\begin{equation*}
+P^{\text{integrated}}_{\text{success}}(t) > P^{\text{atomic}}_{\text{success}}.
+\end{equation*}
+Then the biometric credential is asymptotically separable.
 \end{proposition} 
-
 \begin{proof}
-    We prove by contradiction. Assume for the sake of contradiction, that the biometric credential is not asymptotically separable. Then $\exists \varepsilon > 0$ such that $\forall t$ both $\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and $\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$. Since it's given that the integrated mechanism $M$ achieves a strictly higher success probability than an atomic credential mechanism, then there exists a threshold $t$ such that either:~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}} \textit{ or }$ $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}.$ Thus, either Equation~\ref{eqn:FRRineq} or Equation~\ref{eqn:FARineq} holds for every value of~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ in the range of~$(0,1)$. In particular, we can choose~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that either
+    Assume by contradiction that the biometric credential is not asymptotically separable. Then $\exists \varepsilon > 0$ such that $\forall t$ both $\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and $\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$. Since it is given that the integrated mechanism~$\bar{M}$ achieves a strictly higher success probability than an atomic credential mechanism~$M$, then there exists a threshold $t$ such that either:~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}} \textit{ or }$ $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}.$ Thus, either Equation~\ref{eqn:FRRineq} or Equation~\ref{eqn:FARineq} holds for every value of~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ in the range~$(0,1)$. In particular, we can choose~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that either
     \[\frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}} < \varepsilon \textit{ or } \] 
     \[\frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}} < \varepsilon.\] 
     Since the equation holds~$\forall \varepsilon > 0$, but both~$\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and $\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$ derive by the sake of contradiction assumption, we can deduce that
@@ -2039,34 +1987,30 @@ Suppose there~$\exists t$ such that the integrated mechanism~$M$ comprises a bio
 We show that \emph{asymptotic separability} of the user and attacker distributions is a sufficient and necessary condition for enhancing the success of a mechanism comprises an atomic credential with non zero probabilities $P_\text{safe}, P_\text{leak} \text{ or } P_\text{loss}$ by integrating it with a biometric credential.
 
 \subsection{A Sufficient Condition For Integrating Biometric Credentials}\label{sec:6.3}
-We define a \emph{asymptotic dominancy}, which is a more common condition of a biometric credential, and prove this is a sufficient condition for enhancing the success of an atomic credential mechanism.
+\noindent
+Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce an \emph{asymptotic dominancy} notion which captures this property. We prove that adding an \emph{asymptotically dominated} biometric credential can produce a new mechanism~$\bar{M}$ with higher success probability than that of a single atomic credential mechanism~$M$, and show it is a sufficient condition.
 \begin{definition}
 \label{def:User and Attacker distribution functions}
-A biometric credential with user a distribution fucntion~$f_U(s)$ and an attacker distribution function~$f_A(s)$
-is said to be \emph{asymptotically dominated} if:
-\[
-\forall c>0\;\exists t\; \text{s.t.}:\forall s \ge t:
-f_A(s)\le c\,f_U(s)
-\]
-\[\quad\text{or}\quad\] 
-\[
-\forall c>0\;\exists t\; \text{s.t.}:\forall s \le t:
-f_U(s)\le c\,f_A(s)
-\]
+A biometric credential with a user distribution fucntion~$f_U(s)$ and an attacker distribution function~$f_A(s)$ are \emph{asymptotically dominated} if
+\begin{equation*}
+\begin{aligned}
+&\forall c>0\;\exists t\; \text{s.t.}:\forall s \ge t: f_A(s)\le c\,f_U(s),\textit{ or} \\
+&\forall c>0\;\exists t\; \text{s.t.}:\forall s \le t: f_U(s)\le c\,f_A(s).
+\end{aligned}
+\end{equation*}
 \end{definition}
 
-\begin{proposition}
-\label{thm:biometric-improves-security}
-For any mechanism $M$ comprises an atomic credential and mechanism success probability $P^{\text{atomic}}_{\text{success}}$, integrating the mechanism with an asymptotically dominated biometric credential improves its achievable success. That is
-\[
-P^{\text{integrated}}_{\text{success}}(t) > P^{\text{atomic}}_{\text{success}} .
-\]
+\begin{proposition}\label{thm:biometric-improves-security}
+Let~$M$ be a mechanism comprising an atomic credential with success probability~$P^{\text{atomic}}_{\text{success}}$. Then adding a biometric credential that is asymptotically dominated to~$M$ produces a new mechanism~$\bar{M}$ whose success probability is higher than that of~$M$, i.e.,
+\begin{equation*}
+    P^{\text{integrated}}_{\text{success}}(t) \ge P^{\text{atomic}}_{\text{success}} .
+\end{equation*}
 \end{proposition}
 
 \begin{proof}
-The success probability of a mechanism comprises an atomic credential only is given by Equation~\ref{eqn:safesuccess}. A biometric credential is characterized by four state probabilities which are function of~$t$: $P^{2}_{\text{safe}}(t)$, $P^{2}_{\text{loss}}(t)$, $P^{2}_{\text{leak}}(t)$, $P^{2}_{\text{theft}}(t)$. We can describe each one of these probabilities as a function of~\FAR and ~\FRR as:
+The success probability of a mechanism comprising an atomic credential only is given by Equation~\ref{eqn:safesuccess}. A biometric credential is characterized by four state probabilities, that are functions of~$t$: $P^{2}_{\text{safe}}(t)$, $P^{2}_{\text{loss}}(t)$, $P^{2}_{\text{leak}}(t)$, $P^{2}_{\text{theft}}(t)$. We can describe each one of these probabilities as a function of~\FAR and ~\FRR as:
 \contprobabilities
-The success probability of the integrated mechanism comprises two credentials is described by Equation~\ref{eqn:andsuccess} and Equation~\ref{eqn:orsuccess}. Thus, we can express the success probability of the integrated mechanism as a function of the operating threshold~$t$ as shown in Equation~\ref{eqn:andineq} and Equation~\ref{eqn:orineq}. We previously observed that a sufficient condition for improvement of mechanism's success is described by Equation~\ref{eqn:FRRineq} and Equation~\ref{eqn:FARineq}. Thus, we need to show that there exists an operating threshold $t$ such that either:
+Adding a biometric credential to~$M$ produces two mechanism compositions with success probabilities given by Equation~\ref{eqn:andsuccess} or Equation~\ref{eqn:orsuccess}. Thus, we can express the success probability of~$\bar{M}$ as a function of the operating threshold~$t$ as shown in Equation~\ref{eqn:andineq} and Equation~\ref{eqn:orineq}. We previously observed that a sufficient condition for producing a new mechanism with higher success is described by Equation~\ref{eqn:FRRineq} and Equation~\ref{eqn:FARineq}. Thus, we need to show that there exists an operating threshold $t$ such that either:
 \[\frac{\FRR(t)}{1-\FAR(t)} < \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}} \textit{ or }\]
 \[
     \frac{\FAR(t)}{1-\FRR(t)} < \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}}
@@ -2091,8 +2035,8 @@ By Definition~\ref{def:User and Attacker distribution functions}, since the biom
 We showed that~$\forall c>0$  either~$\frac{\FAR(t)}{1-\FRR(t)} < c$ or $\frac{\FRR(t)}{1-\FAR(t)} < c$. Therefore, integrating an asymptotically dominated biometric credential with an atomic credential improves mechanism success probability.
 \end{proof}
 
-This proof is not trivial, as the integration of another atomic credential to an atomic credential mechanism, does not always enhance its success. Moreover, we have shown when integrating biometric credential into an atomic credential mechanism without adjusting the match threshold~$t$ might reduce the mechanism's success probability~$(\S\ref{sec:5.2})$. Thus, Proposition~\ref{thm:biometric-improves-security} shows that by using an \emph{asymptotically dominated} biometric credential, we can always improve the success of all mechanism's composed of an atomic credential.
-This condition supports practical scenarios, as we expect that for very low values of score~$s$ the attacker distribution dominates the user, vice versa for very high values of~$s$. We supports this claim with real public biometric data in Section~\ref{sec:7}.
+This proof is non trivial, as the integration of an atomic credential mechanism with another atomic credential, does not necessarily produce a new mechanism with higher success probability. Moreover, we have shown that integrating a biometric credential into an atomic credential mechanism without adjusting the match threshold~$t$ may reduce the mechanism's success probability~$(\S\ref{sec:5.2})$. Thus, Proposition~\ref{thm:suf_nec_cond_for_improve} and Proposition~\ref{thm:biometric-improves-security} emphasize the importance of adjusting the threshold when adding a biometric credential into an authentication mechanism.
+The \emph{asymptotically dominated} condition reflects practical scenarios, as for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We validate this claim with real public biometric data in Section~\ref{sec:7}.
 
 
 \section{Measuremens}\label{sec:7}
