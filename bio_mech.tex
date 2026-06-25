@@ -1874,13 +1874,13 @@ We will now characterize the conditions under which integrating a biometric cred
 \noindent
 We first present a condition under which adding a biometric credential into the mechanism~$M$ cannot produce a new mechanism~$\bar{M}$ whose success probability is higher than that of the atomic credential alone.
 \begin{proposition}
-    Let~$M$ be a mechanism comprising an atomic credential with~$P^1_\text{loss} = P^1_\text{leak} = 0$. Then, for every mechanism~$\bar{M}$ obtained by adding a biometric credential to~$M$,
+    Let~$c_1$ be an atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$, $c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$ and~$M$ be a mechanism using~$c_1$. Then, for every mechanism~$\bar{M}$ using~$c_1$,~$c_2$ it holds that
     \begin{equation*}
         P_{\mathrm{success}}^{\bar{M}} < P_{\mathrm{success}}^{M}.
     \end{equation*}
 \end{proposition}
 \begin{proof}
-    The mechanism~$\bar{M}$ comprises one atomic credential and one biometric credential under two possible compositions~(see~$\S\ref{sec:5}$). An \emph{AND mechanism} has success probability described by Equation~\ref{eqn:andsuccess}, and an \emph{OR mechanism} has success probability described by Equation~\ref{eqn:orsuccess}. For both equations,~$P^2_{\text{safe}}(t)$ denotes the safe probability of the biometric credential as a function of the operating threshold~$t$. Since the state probabilities of the atomic credential satisfy~$P^1_\text{leak} =  P^1_\text{loss} = 0$, the success probability of~$\bar{M}$ reduces in both cases to
+    The mechanism~$\bar{M}$ uses one atomic credential and one biometric credential under two possible compositions~(see~$\S\ref{sec:5}$). An \emph{AND mechanism} has success probability described by Equation~\ref{eqn:andsuccess}, and an \emph{OR mechanism} has success probability described by Equation~\ref{eqn:orsuccess}. For both equations,~$P^2_{\text{safe}}(t)$ denotes the safe probability of the biometric credential as a function of the operating threshold~$t$. Since the state probabilities of the atomic credential satisfy~$P^1_\text{leak} =  P^1_\text{loss} = 0$, the success probability of~$\bar{M}$ reduces in both cases to
     \begin{equation*}
         P_{\text{success}}(t) = P^1_\text{safe} \cdot P^2_{\text{safe}}(t).
     \end{equation*}
@@ -1904,7 +1904,7 @@ A user distribution function~$f_U(s)$ and an attacker distribution function~$f_A
 \end{definition}
 
 \begin{proposition}\label{thm:suf_nec_cond_for_improve}
-    Let~$M$ be a mechanism comprising an atomic credential with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$. Then, there exists~$\bar{M}$ obtained by adding to~$M$ a biometric credential whose user and attacker distributions are asymptotically separable, such that
+    Let~$c_1$ be an atomic credential with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$, $c_2$ be a biometric credential whose user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$ are asymptotically separable and~$M$ be a mechanism using~$c_1$. Then, there exists a mechanism~$\bar{M}$ using~$c_1$,~$c_2$, such that
     \begin{equation*}
         P_{\mathrm{success}}^{\bar{M}} > P_{\mathrm{success}}^{M}
     \end{equation*}
@@ -1913,17 +1913,15 @@ A user distribution function~$f_U(s)$ and an attacker distribution function~$f_A
 \begin{proof}
     The success probability of a mechanism comprising an atomic credential only is~$P^{1}_{\text{safe}}$~(Equation~\ref{eqn:safesuccess}). A biometric credential is characterized by four state probabilities, which are functions of~$t$: $P^{2}_{\text{safe}}(t)$, $P^{2}_{\text{loss}}(t)$, $P^{2}_{\text{leak}}(t)$, $P^{2}_{\text{theft}}(t)$. As previously presented in the model~$(\S\ref{sec:3.2})$, these probabilities are functions of~\FAR and~\FRR.
     \contprobabilities
-    Integrating a biometric credential into~$M$, which comprises an atomic credential under the given settings, produces a new mechanism~$\bar{M}$ in two possible compositions: an \emph{AND mechanism} with success probability described by Equation~\ref{eqn:andsuccess}, and an \emph{OR mechanism} with success probability described by Equation~\ref{eqn:orsuccess}. Thus, by placing the biometric credential in each configuration, we can express the success probability of~$\bar{M}$ as a function of the operating threshold~$t$
-    \begin{equation}
-        \label{eqn:andineq}
-    \ANDintegration
-    \end{equation}
-    \begin{equation}
-        \label{eqn:orineq}
-    \ORintegration
-    \end{equation}
+    A mechanism~$\bar{M}$ using~$c_1$ and~$c_2$ has three possible compositions: an \emph{AND mechanism} with success probability described by Equation~\ref{eqn:andsuccess}, an \emph{OR mechanism} with success probability described by Equation~\ref{eqn:orsuccess} and a mechanism using only the biometric credential with success probability described by Equation~\ref{eqn:safe_prob}. Thus, by placing the biometric credential in each configuration, we can express the success probability of~$\bar{M}$ as a function of the operating threshold~$t$
+    \begin{align}
+    &\ANDintegration \label{eqn:andineq} \\
+    &\ORintegration \label{eqn:orineq} \\
+    &P^{\textit{biometric}}_{\textit{success}}(t)=P^{2}_{\textit{safe}}(t)\label{eqn:bioeq}.
+    \end{align}
     To prove that the integration of a biometric credential produces a mechanism~$\bar{M}$ with higher success probability than that of~$M$, we need to prove that there exists an operating threshold $t$ such that either 
-    $P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}}$ or $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}$.
+    $P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}}$ or $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}$ or $P^{\textit{biometric}}_{\textit{success}}(t) > P^1_{\text{safe}}$.
+    If there exists a threshold~$t$ such that~$P^{\textit{biometric}}_{\textit{success}}(t) > P^1_{\text{safe}}$ then the proof is trivial. Otherwise, we use both credentials to acheive dominance over using the atomic credential alone.
     By algebraic manipulation of Equation~\ref{eqn:andineq}~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}}$ if and only if:
     \begin{equation*}
         \frac{P^{1}_{\text{safe}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}\cdot(1-\FAR(t))} < 1-\FRR(t)  \iff
@@ -1968,11 +1966,11 @@ A user distribution function~$f_U(s)$ and an attacker distribution function~$f_A
 \end{proof}
 
 \begin{proposition}
-    Let~$\bar{M}$ be a mechanism comprising a biometric credential and an atomic credential with~$P_\text{safe}>0$ and at least one of~$P_\text{leak},P_\text{loss} > 0$. Suppose there exists~$t$ such that
+    Let~$c_1$ be an atomic credential with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$, $c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$ and~$\bar{M}$ be a mechanism using both~$c_1$ and~$c_2$. Suppose there exists~$t$ such that
     \begin{equation*}
     P^{\bar{M}}_{\text{success}}(t) > P^{M}_{\text{success}}.
     \end{equation*}
-    Then the biometric credential is asymptotically separable.
+    Then the biometric credential~$c_2$ is asymptotically separable.
 \end{proposition} 
 \begin{proof}
     Assume by contradiction that the biometric credential is not asymptotically separable. Then, there exists~$\varepsilon > 0$ such that for all~$t$ both~$\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and~$\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$. Since it is given that the integrated mechanism~$\bar{M}$ achieves a strictly greater success probability than an atomic credential mechanism~$M$, then there exists a threshold $t$ such that either:~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}} \textit{ or }$ $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}.$ Thus, for every value of~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ in the range~$(0,1)$ necessarily either Equation~\ref{eqn:necessary term_1} or Equation~\ref{eqn:necessary term_2} holds. In particular, for a mechanism~$\bar{M}$ comprising an atomic credential with state probabilities~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that either
@@ -2009,10 +2007,10 @@ A biometric credential with a user distribution function~$f_U(s)$ and an attacke
 \end{definition}
 
 \begin{proposition}\label{thm:biometric-improves-security}
-Let~$M$ be a mechanism comprising an atomic credential with~$P_\text{safe}>0$ and at least one of~$P_\text{leak},P_\text{loss} > 0$. Then, there exists~$\bar{M}$ obtained by adding to~$M$ a biometric credential whose user and attacker distributions are asymptotically dominated, such that 
-\begin{equation*}
-    P^{\bar{M}}_{\text{success}}(t) \ge P^{M}_{\text{success}} .
-\end{equation*}
+Let~$c_1$ be an atomic credential with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$, $c_2$ be a biometric credential whose user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$ are asymptotically dominated and~$M$ be a mechanism using~$c_1$. Then, there exists a mechanism~$\bar{M}$ using~$c_1$,~$c_2$, such that
+    \begin{equation*}
+        P_{\mathrm{success}}^{\bar{M}} > P_{\mathrm{success}}^{M}
+    \end{equation*}
 \end{proposition}
 
 \begin{proof}
