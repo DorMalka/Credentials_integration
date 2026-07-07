@@ -1958,12 +1958,12 @@ We now prove that asymptotic separability of a biometric credential is a suffici
     then the \textsc{OR} mechanism composition is preferable, whereas if \[\inf_{t}\frac{\FRR(t)}{1-\FAR(t)} = 0,\] then the \textsc{AND} mechanism composition is preferable. Therefore, a mechanism~$\bar{M}$ uses an asymptotically separable biometric credential and an atomic credential achieves a greater success probability than that of~$M$.
 \end{proof}
 We showed that \emph{asymptotic separability} is a sufficient condition. We now show it is a necessary condition for producing a new mechanism~$\bar{M}$ with greater success probability than that of~$M$.
-\begin{proposition}
-    Let $c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. Suppose that for every~$c_1$ an atomic credential with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$, there exists a threshold~$t$ and a mechanism~$\bar{M}$ which is an \emph{AND} or \emph{OR} composition using both~$c_1$ and~$c_2$, such that
+\begin{proposition}\label{thm:nec_cond_for_improve}
+    Let~$c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. If for every atomic credential~$c_1$ with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$, there exists a threshold~$t$ and a mechanism~$\bar{M}$ formed as an \emph{AND} or \emph{OR} composition such that
     \begin{equation*}
     P^{\bar{M}}_{\text{success}}(t) > P^{M}_{\text{success}}.
     \end{equation*}
-    Then the biometric credential~$c_2$ is asymptotically separable.
+    Then the biometric credential~$c_2$ must be asymptotically separable.
 \end{proposition} 
 \begin{proof}
     Assume by contradiction that the biometric credential is not asymptotically separable. Then, there exists~$\varepsilon > 0$ such that for all~$t$ both~$\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and~$\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$. Since it is given that~$\bar{M}$ using both credentials~$c_1$ and~$c_2$ and achieves a strictly greater success probability than an atomic credential mechanism~$M$, then there exists a threshold~$t$ such that either:~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}} \textit{ or }$ $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}.$ Thus, for every atomic credential~$c_1$ necessarily either the inequality of \textsc{AND} mechanism holds~(Equation~\ref{eqn:necessary term_1}) or the inequality of \textsc{OR} mechanism holds~(Equation~\ref{eqn:necessary term_2}). In particular, these inequalities hold for an atomic credential with state probabilities~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that
@@ -1987,7 +1987,46 @@ We showed that \emph{asymptotic separability} is a sufficient condition. We now 
     This contradicts the fact that, for every atomic credential~$c_1$, the success probability of~$\bar{M}$ is strictly greater than that of~$M$, as presented in both Equation~\ref{eqn:necessary term_1} and Equation~\ref{eqn:necessary term_2}. Therefore, the biometric credential must be asymptotically separable.
 \end{proof}
 \noindent
-We showed that~$\bar{M}$ achieves greater success probability than that of~$M$ if and only if the biometric credential is \emph{asymptotically separable} and the atomic credential has~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$. Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential achieves a greater success probability than that of a single atomic credential mechanism~$M$, and show it is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}).
+We showed that~$\bar{M}$ achieves greater success probability than that of~$M$ if and only if the biometric credential is \emph{asymptotically separable} and the atomic credential has~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$. We extend our proof to a mechanism that uses a biometric credential and~$k$ atomic credentials and show that the mechanism achieves greater success probability than that of a mechanism using only the atomic credentials. First, every authentication mechanism~$M$ can be represented as a sum of products, i.e., a disjunctive normal form~(DNF)~\cite{Mendelson1997}. Then, we define an induced credential of~$k$ atomic credentials as if it were itself a single atomic credential.
+
+\begin{definition}
+Let~$M$ be an authentication mechanism over~$k$ atomic credentials. The \emph{induced credential} of~$M$ is the single abstract credential whose availability to the user and attacker is determined by the outputs of~$M$ on their respective availability vectors~$\sigma^U,\sigma^A\in\{0,1\}^k$. The fault probabilities of the induced credential are thus
+\begin{align*}
+P^M_{\text{safe}}
+&=
+\Pr\left[M(\sigma^U)=1,\ M(\sigma^A)=0\right],\\
+P^M_{\text{loss}}
+&=
+\Pr\left[M(\sigma^U)=0,\ M(\sigma^A)=0\right],\\
+P^M_{\text{leak}}
+&=
+\Pr\left[M(\sigma^U)=1,\ M(\sigma^A)=1\right],\\
+P^M_{\text{stolen}}
+&=
+\Pr\left[M(\sigma^U)=0,\ M(\sigma^A)=1\right].
+\end{align*}
+\end{definition}
+\begin{proposition}\label{thm:suf_nec_cond_for_improve_k_atm}
+    Let~$\{c_1,c_2,\ldots,c_k\}$ be a set of~$k$ independent atomic credentials with~$P^i_\text{safe} > 0$ and at least one of~$P^i_\text{leak},P^i_\text{loss} > 0$, $c_{k+1}$ be a biometric credential whose user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$ are asymptotically separable and~$M$ be a mechanism using~$\{c_1,c_2,\ldots,c_k\}$. Then, there exists a mechanism~$\bar{M}$ using~$\{c_1,c_2,\ldots,c_k,c_{k+1}\}$ such that
+    \begin{equation*}
+        P_{\mathrm{success}}^{\bar{M}} > P_{\mathrm{success}}^{M}
+    \end{equation*}
+\end{proposition}
+\begin{proof}
+    Let~$M$ be a mechanism using~$\{c_1,c_2,\ldots,c_k\}$. The mechanism~$M$ induces a reduction of the~$k$ credentials into a single abstract credential. Since each atomic credential~$c_i$ has~$P^i_\text{safe} > 0$ and at least one of~$P^i_\text{leak}$, or~$P^i_\text{loss} > 0$, then the induced credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak}$, or~$P^M_\text{loss} > 0$. By Proposition~\ref{thm:suf_nec_cond_for_improve}, there exists a mechanism~$\bar{M}$ using the induced credential and the biometric credential that achieves greater success probability than that of the induced credential mechanism. Since the induced credential is equivalent to the original mechanism~$M$, it follows that there exists a mechanism~$\bar{M}$ using~$\{c_1,c_2,\ldots,c_k,c_{k+1}\}$ that achieves greater success probability than that of~$M$.
+\end{proof}
+\begin{proposition}
+    Let~$c_{k+1}$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. Suppose that for every set of~$k$ independent atomic credentials~$\{c_1,\ldots,c_k\}$ and every mechanism~$M$ over these credentials whose induced credential has~$P^M_\text{safe} > 0$ and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$, there exists a mechanism~$\bar{M}$ using~$\{c_1,\ldots,c_k,c_{k+1}\}$ such that
+    \begin{equation*}
+    P^{\bar{M}}_{\text{success}}(t) > P^{M}_{\text{success}}.
+    \end{equation*}
+    Then the biometric credential~$c_{k+1}$ must be asymptotically separable.
+\end{proposition} 
+\begin{proof}
+    The mechanism~$M$ induces a reduction of the~$k$ credentials into a single abstract credential. The induced credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$. Then,~$\bar{M}$ is a mechanism using the induced credential of~$M$ and the biometric credential. By Proposition~\ref{thm:nec_cond_for_improve}, the biometric credential must be asymptotically separable.
+\end{proof}
+
+Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential achieves a greater success probability than that of a single atomic credential mechanism~$M$, and show it is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}). 
 
 \section{Measuremens}\label{sec:7}
 We now present experiments' results based on fingerprints taken from~$\textit{FVC2002}$ database~\cite{fvc2002} and \textit{FVC2004} database~\cite{fvc2004}. We use a standard fingerprint verification algorithm~\textit{SourceAFIS} created by Vazan~\cite{sourceafis} for scoring fingerprints out of their images based on minutiae triplets. We use fingerprints, as it is a widely common and used example of a biometric credential in authentication mechanisms. For a test set, we took five templates out of~$\textit{FVC2002}$ \textit{database1} of user 103 and compare them against the whole database of both~$\textit{FVC2002}$ and~$\textit{FVC2004}$. A geniune will be considered the templates of user 103 against its other templates while imposter considered as all the other combinations. For scoring methodology, we define the final score as the maximum similarity across all 5 user templates. For example, if the matching scores between a sample and the 5 probes are~$[0.1,0.3,0.6,0.9,0.4]$, then the resulting score is 0.9. 
