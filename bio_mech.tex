@@ -1963,10 +1963,10 @@ We showed that \emph{asymptotic separability} is a sufficient condition. We now 
     \begin{equation*}
     P^{\bar{M}}_{\text{success}}(t) > P^{M}_{\text{success}}.
     \end{equation*}
-    Then the biometric credential~$c_2$ must be asymptotically separable.
+    Then the biometric credential~$c_2$ is asymptotically separable.
 \end{proposition} 
 \begin{proof}
-    Assume by contradiction that the biometric credential is not asymptotically separable. Then, there exists~$\varepsilon > 0$ such that for all~$t$ both~$\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and~$\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$. Since it is given that~$\bar{M}$ using both credentials~$c_1$ and~$c_2$ and achieves a strictly greater success probability than an atomic credential mechanism~$M$, then there exists a threshold~$t$ such that either:~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}} \textit{ or }$ $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}.$ Thus, for every atomic credential~$c_1$ necessarily either the inequality of \textsc{AND} mechanism holds~(Equation~\ref{eqn:necessary term_1}) or the inequality of \textsc{OR} mechanism holds~(Equation~\ref{eqn:necessary term_2}). In particular, these inequalities hold for an atomic credential with state probabilities~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that
+    Assume by contradiction that the biometric credential is not asymptotically separable. Then, there exists~$\varepsilon > 0$ such that for all~$t$ both~$\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and~$\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$. Since it is given that~$\bar{M}$ uses both credentials~$c_1$ and~$c_2$ and achieves a strictly greater success probability than an atomic credential mechanism~$M$, then there exists a threshold~$t$ such that either:~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}} \textit{ or }$ $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}.$ Thus, for every atomic credential~$c_1$ necessarily either the inequality of \textsc{AND} mechanism holds~(Equation~\ref{eqn:necessary term_1}) or the inequality of \textsc{OR} mechanism holds~(Equation~\ref{eqn:necessary term_2}). In particular, these inequalities hold for an atomic credential with state probabilities~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that
     \begin{equation*}
         \max\left\{\frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}}, \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}}\right\} < \varepsilon.
     \end{equation*}
@@ -1987,10 +1987,10 @@ We showed that \emph{asymptotic separability} is a sufficient condition. We now 
     This contradicts the fact that, for every atomic credential~$c_1$, the success probability of~$\bar{M}$ is strictly greater than that of~$M$, as presented in both Equation~\ref{eqn:necessary term_1} and Equation~\ref{eqn:necessary term_2}. Therefore, the biometric credential must be asymptotically separable.
 \end{proof}
 \noindent
-We showed that~$\bar{M}$ achieves greater success probability than that of~$M$ if and only if the biometric credential is \emph{asymptotically separable} and the atomic credential has~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$. We extend our proof to a mechanism that uses a biometric credential and~$k$ atomic credentials and show that the mechanism achieves greater success probability than that of a mechanism using only the atomic credentials. First, every authentication mechanism~$M$ can be represented as a sum of products, i.e., a disjunctive normal form~(DNF)~\cite{Mendelson1997}. Then, we define an induced credential of~$k$ atomic credentials as if it were itself a single atomic credential.
+We showed that~$\bar{M}$ achieves greater success probability than that of~$M$ the biometric credential is \emph{asymptotically separable} and the atomic credential has~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$. We also presented that asymptotic separability is a necessary condition for~$\bar{M}$ achieving greater success probability than every atomic credential mechanism. We extend our proof to a mechanism that uses a biometric credential and~$k$ atomic credentials and show that the mechanism achieves greater success probability than that of a mechanism using only the atomic credentials. First, every authentication mechanism~$M$ can be represented as a sum of products, i.e., a disjunctive normal form~(DNF)~\cite{Mendelson1997}. Then, we define a \emph{consolidated credential} of~$k$ atomic credentials as if it were itself a single atomic credential.
 
 \begin{definition}
-Let~$M$ be an authentication mechanism over~$k$ atomic credentials. The \emph{induced credential} of~$M$ is the single abstract credential whose availability to the user and attacker is determined by the outputs of~$M$ on their respective availability vectors~$\sigma^U,\sigma^A\in\{0,1\}^k$. The fault probabilities of the induced credential are thus
+Let~$M$ be an authentication mechanism over~$k$ atomic credentials. The \emph{consolidated credential} of~$M$ is the single abstract credential whose availability to the user and attacker is determined by the outputs of~$M$ on their respective availability vectors~$\sigma^U,\sigma^A\in\{0,1\}^k$. The fault probabilities of the consolidated credential are thus
 \begin{align*}
 P^M_{\text{safe}}
 &=
@@ -2007,33 +2007,33 @@ P^M_{\text{stolen}}
 \end{align*}
 \end{definition}
 \begin{proposition}\label{thm:suf_nec_cond_for_improve_k_atm}
-    Let~$\{c_1,c_2,\ldots,c_k\}$ be a set of~$k$ independent atomic credentials,~$c_{k+1}$ be a biometric credential whose user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$ are asymptotically separable and~$M$ be a mechanism using~$\{c_1,c_2,\ldots,c_k\}$ whose induced credential has~$P^M_\text{safe} > 0$ and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$. Then, there exists a mechanism~$\bar{M}$ using~$\{c_1,c_2,\ldots,c_k,c_{k+1}\}$ such that
+    Let~$\{c_1,c_2,\ldots,c_k\}$ be a set of~$k$ independent atomic credentials,~$c_{k+1}$ be a biometric credential whose user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$ are asymptotically separable and~$M$ be a mechanism using~$\{c_1,c_2,\ldots,c_k\}$ whose consolidated credential has~$P^M_\text{safe} > 0$ and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$. Then, there exists a mechanism~$\bar{M}$ using~$\{c_1,c_2,\ldots,c_k,c_{k+1}\}$ such that
     \begin{equation*}
         P_{\mathrm{success}}^{\bar{M}} > P_{\mathrm{success}}^{M}
     \end{equation*}
 \end{proposition}
 \begin{proof}
-    Let~$M$ be a mechanism using~$\{c_1,c_2,\ldots,c_k\}$. The mechanism~$M$ induces a reduction of the~$k$ credentials into a single abstract credential. The induced credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak}$, or~$P^M_\text{loss} > 0$. By Proposition~\ref{thm:suf_nec_cond_for_improve}, there exists a mechanism~$\bar{M}$ using the induced credential and the biometric credential that achieves greater success probability than that of the induced credential mechanism. Since the induced credential is equivalent to the original mechanism~$M$, it follows that there exists a mechanism~$\bar{M}$ using~$\{c_1,c_2,\ldots,c_k,c_{k+1}\}$ that achieves greater success probability than that of~$M$.
+    Let~$M$ be a mechanism using~$\{c_1,c_2,\ldots,c_k\}$. The mechanism~$M$ induces a reduction of the~$k$ credentials into a single consolidated credential. The consolidated credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak}$, or~$P^M_\text{loss} > 0$. By Proposition~\ref{thm:suf_nec_cond_for_improve}, there exists a mechanism~$\bar{M}$ using the consolidated credential and the biometric credential that achieves greater success probability than that of the consolidated credential mechanism. Since the consolidated credential is equivalent to the original mechanism~$M$, it follows that there exists a mechanism~$\bar{M}$ using~$\{c_1,c_2,\ldots,c_k,c_{k+1}\}$ that achieves greater success probability than that of~$M$.
 \end{proof}
 \begin{proposition}
-    Let~$c_{k+1}$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. Suppose that for every set of~$k$ independent atomic credentials~$\{c_1,\ldots,c_k\}$ and every mechanism~$M$ over these credentials whose induced credential has~$P^M_\text{safe} > 0$ and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$, there exists a mechanism~$\bar{M}$ using~$\{c_1,\ldots,c_k,c_{k+1}\}$ such that
+    Let~$c_{k+1}$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. Suppose that for every set of~$k$ independent atomic credentials~$\{c_1,\ldots,c_k\}$ and every mechanism~$M$ over these credentials whose consolidated credential has~$P^M_\text{safe} > 0$ and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$, there exists a mechanism~$\bar{M}$ using~$\{c_1,\ldots,c_k,c_{k+1}\}$ such that
     \begin{equation*}
     P^{\bar{M}}_{\text{success}}(t) > P^{M}_{\text{success}}.
     \end{equation*}
     Then the biometric credential~$c_{k+1}$ must be asymptotically separable.
 \end{proposition} 
 \begin{proof}
-    The mechanism~$M$ induces a reduction of the~$k$ credentials into a single abstract credential. The induced credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$. Then,~$\bar{M}$ is a mechanism using the induced credential of~$M$ and the biometric credential. By Proposition~\ref{thm:nec_cond_for_improve}, the biometric credential must be asymptotically separable.
+    The mechanism~$M$ induces a reduction of the~$k$ credentials into a single consolidated credential. The consolidated credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$. Then,~$\bar{M}$ is a mechanism using the consolidated credential of~$M$ and the biometric credential. By Proposition~\ref{thm:nec_cond_for_improve}, the biometric credential must be asymptotically separable.
 \end{proof}
 
 Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential achieves a greater success probability than that of a single atomic credential mechanism~$M$, and show it is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}). 
 
 \section{Measurements}\label{sec:7}
-We now present experiments' results based on fingerprints taken from~$\textit{FVC2002}$ database~\cite{fvc2002} and \textit{FVC2004} database~\cite{fvc2004}. We use a standard fingerprint verification algorithm~\textit{SourceAFIS} created by Vazan~\cite{sourceafis} for scoring fingerprints out of their images based on minutiae triplets. We use fingerprints, as it is a widely common and used example of a biometric credential in authentication mechanisms. For a test set, we took five templates out of~$\textit{FVC2002}$ \textit{database1} of user 103 and compare them against the whole database of both~$\textit{FVC2002}$ and~$\textit{FVC2004}$. A geniune will be considered the templates of user 103 against its other templates while imposter considered as all the other combinations. For scoring methodology, we define the final score as the maximum similarity across all 5 user templates. For example, if the matching scores between a sample and the 5 probes are~$[0.1,0.3,0.6,0.9,0.4]$, then the resulting score is 0.9. 
+We now evaluate our framework on real-world public datasets based on fingerprints taken from~$\textit{FVC2002}$ database~\cite{fvc2002} and \textit{FVC2004} database~\cite{fvc2004}. We chose fingerprints databases, as it is a widely common and used example of a biometric credential in authentication mechanisms. We use a standard fingerprint verification algorithm~\textit{SourceAFIS} created by Vazan~\cite{sourceafis} for scoring fingerprints out of their images based on minutiae triplets. For a test set, we took five templates out of~$\textit{FVC2002}$ \textit{database1} of user 103 and compare them against the whole database of both~$\textit{FVC2002}$ and~$\textit{FVC2004}$. A geniune will be considered the templates of user 103 against its other templates while imposter considered as all the other combinations. For scoring methodology, we define the final score as the maximum similarity across all 5 user templates. For example, if the matching scores between a sample and the 5 probes are~$[0.1,0.3,0.6,0.9,0.4]$, then the resulting score is 0.9. 
 
-We maintain same approach as Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005} and build histograms of the geniune and imposter combinations as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we turn the histogram into a smoothed probability distribution function. We find the~\FAR and~\FRR and calculate~\EER as shown in Figure~\ref{fig:sourceafis_far_frr}. 
+We maintain same approach as Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005} and build histograms of the geniune and imposter combinations as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we turn the histogram into a smoothed probability density function to find the~\FAR and~\FRR Figure~\ref{fig:sourceafis_far_frr}. These findings are consistent with the results of Slobodan et al.~\cite{Slob2005} and Cappelli et al.~\cite{Cappelli2006} presented in their test results.
 
-The most important outcome from this approach was to achieve similar~\EER of around 2\% as achieved at industry and academical level sensors.~\cite{Maio2002}, to objectively make a comparison with state-of-the-art algorithms. We calculate the mechanisms successs probability as given in Equation~\ref{eqn:safesuccess} of a mechanism comprises a biometric credential and show that the optimal operating point is different from the~\EER point and achieves higher success probability as shown in Figure~\ref{fig:sourceafis_success}. Finally, we illustrate the probability success function of a mechanism composed of an atomic credential with~$P^{1}_\text{safe} = 0.9$ and~$P^{1}_\text{leak} = 0.04$, $P^{1}_\text{loss} = 0.04$ and $P^{1}_\text{stolen} = 0.02$ and integrate it with a biometric credential.
+The most important outcome from this approach was to achieve similar~\EER of approximately 2\% as achieved at industry and academical level sensors when testing different users~\cite{Maio2002,Cappelli2006}, to objectively make a comparison with state-of-the-art algorithms. We calculate the mechanisms successs probability (Equation~\ref{eqn:safesuccess}) of a mechanism uses a biometric credential only and show that the optimal operating point is different from the~\EER point and achieves higher success probability Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. Finally, we illustrate the success probability function of a mechanism uses an atomic credential with arbitrary fault probabilities~$P^{1}_\text{safe} = 0.7$ and~$P^{1}_\text{leak} = 0.15$, $P^{1}_\text{loss} = 0.1$ and $P^{1}_\text{stolen} = 0.05$ and a biometric credential Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}.
 
 \begin{figure}[t]
 \centering
@@ -2158,6 +2158,7 @@ table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_succe
 \end{axis}
 \end{tikzpicture}
 \caption{Single biometric credential mechanism's success.}
+\label{fig:bio_only_sourceafis_reg_scoring}
 \end{subfigure}
 
 \begin{subfigure}{\columnwidth}
@@ -2194,19 +2195,20 @@ table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_succ
 \end{axis}
 \end{tikzpicture}
 \caption{biometric credential integrated with an atomic credential into AND and OR mechanisms.}
+\label{fig:bio_atm_sourceafis_reg_scoring}
 \end{subfigure}
 
 % \Description{Success probability curves as a function of threshold, including \EER and optimal operating points.}
 \caption{
 Success probability as a function of the threshold.
 The AND and OR mechanisms achieve success probabilities of 
-$0.93$ and $0.94$ at the \EER point, and 
-$0.96$ and $0.95$ at their respective optimal operating points.
+$0.82$ and $0.78$ at the \EER point, and 
+$0.84$ and $0.79$ at their respective optimal operating points.
 }
 \label{fig:sourceafis_success}
 \end{figure}
 
-We show that the optimal operating point of the integrated mechanism is different from the \EER point and achieves higher success probability by around 3\% compared to the \EER point, as the \EER itself is only 1.8\%. In addition, we can observe that the optimal point in both mechanisms achieves higher success probability than both the atomic credetial mechanisms and biometric credential mechanism when tested individually as shown in Figure~\ref{fig:sourceafis_success}. Although there is an improvement in the success probability of the integrated mechanism, we can observe the improvement is not as significant as the one observed in the theoretical analysis. This can be explained by the fact that the \EER point of the biometric credential is already very low, indicating high seperability between a user and an attacker and thus, there is no much room for improvement. In that scenario, we compared several templates of user 103 against templates of different users. However, our main approach in this paper was to increase the mechanism's success in scenarios where an imposter will try to spoof the user templates and authenticate into the user account. Hence, we expect the imposter to use spoofing tools, producing samples resamble with score distribution function that much more similar to the genuine distribution function, which might lead to increased \EER point. 
+We show that the optimal operating point of the mechanism uses both an atomic credential and a biometric credential is different from the~\EER point and achieves higher success probability by approximately 2\% compared to the~\EER point. In addition, the optimal point in both \emph{AND mechanism} and \emph{OR mechanism} achieves higher success probability than the atomic credetial only mechanism as observed in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. However, the success probability of the mechanism uses both an atomic credential and a biometric credential which operates in optimal threshold is not significantly greater then the one operates at the~\EER point. This can be explained by the fact that the~\EER point of the biometric credential is already very low, indicating high seperability between a user and an attacker and thus, there is no much room for improvement. In that scenario, we compared several templates of user 103 against templates of different users. However, our main approach in this paper was to increase the mechanism's success in scenarios where an imposter will try to spoof the user templates and authenticate into the user account. Hence, we expect the imposter to use spoofing tools, producing samples resamble with score distribution function that much more similar to the genuine distribution function, which might lead to an increased~\EER point. 
 
 \begin{figure}[t]
 \centering
@@ -2286,7 +2288,6 @@ table [x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of
 }
 \label{fig:livdet_sourceafis_far_frr}
 \end{figure}
-
 
 \begin{figure}[t]
 \centering
@@ -2380,10 +2381,27 @@ At the \EER operating point, the success probabilities are $0.759$ and $0.684$ f
 }
 \label{fig:livdet_sourceafis_success}
 \end{figure}
+
 To support this claim, we use the LivDet2015 database \cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale live and spoof fingerprint samples. 
-We follow the same methodology as before and used the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As probe templates, we select six Digital Persona scanner images of user 002\_0. Each probe was matched against 14 additional images of the same user to generate genuine scores. 
-For each target image, we define the final score methodolodgy as the maximum similarity across 6 probe templates, similarly to the previous experiment. For example, if the matching scores between a target image and the six probes are [0.3, 0.5, 0.4, 0.8, 0.9, 0.7], then the resulting score is 0.9. 
-To simulate a spoofing attack, we use fake fingerprint images of the same user (002\_0) produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the probe templates to obtain the imposter score distribution. We present the resulting histogram in Figure~\ref{fig:livdet_sourceafis_histogram}. We then compute the~\EER point and plot the~\FAR-\FRR curve, as shown in Figure~\ref{fig:livdet_sourceafis_far_frr}. As expected, the \EER increased significantly to 17.8\%. Finally, we calculate the success probability for both a single biometric credential and for a mechanism comprises an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We can observe that the optimal operating point reducing the failure probability of an \textit{AND} mechanism by 60\% and \textit{OR} mechanism by 44\% compared to the~\EER point. Moreover, we reduced the failure probability by 50\% when integrating into \textit{AND} mechanism compared to an atomic credential mechanism with $P_{\text{safe}} = 0.8$, $P_{\text{loss}} = 0.04$, $P_{\text{leak}} = 0.15$, $P_{\text{theft}} = 0.01$ probabilities. We observe that fixing the match threshold~$t$ to the~\EER when we integrate the biometric credential into the mechanism, significantly reduces its success probability, compared to the success probability of an atomic credential mechanism only.
+We follow the same methodology as before and use the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As probe templates, we select six Digital Persona scanner images of user 002\_0. Each probe was matched against 14 additional images of the same user to generate genuine scores. 
+For each target image, we define the final score methodolodgy as the maximum similarity across 6 probe templates, similarly to the previous simulation. 
+\begin{table*}[t]
+    \centering
+    \caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities. Bold EER values indicate the worse composition, whereas bold maximal values indicate the best composition. The bold safe column indicating the success probability of a mechanism uses an atomic credential only.}
+    \label{tab:psafe_sweep_improvement}
+    \begin{tabular}{cccccccccc}
+        \toprule
+        $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\mathrm{theft}}$ & AND at EER & OR at EER & Max AND & Max OR & Improvement \\
+        \midrule
+        \textbf{0.55} & 0.40 & 0.04 & 0.01 & \textbf{0.478} & 0.721 & 0.575 & \textbf{0.807} & 30.64\% \\
+        \textbf{0.63} & 0.04 & 0.32 & 0.01 & 0.733 & \textbf{0.544} & \textbf{0.836} & 0.655 & 38.79\% \\
+        \textbf{0.72} & 0.04 & 0.23 & 0.01 & 0.746 & \textbf{0.618} & \textbf{0.868} & 0.745 & 47.91\% \\
+        \textbf{0.81} & 0.14 & 0.04 & 0.01 & \textbf{0.692} & 0.760 & 0.835 & \textbf{0.899} & 58.25\% \\
+        \textbf{0.90} & 0.05 & 0.04 & 0.01 & \textbf{0.766} & 0.773 & 0.925 & \textbf{0.932} & 70.03\% \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+To simulate a spoofing attack, we use fake fingerprint images of the same user (002\_0) produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the probe templates to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR curve to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}). As we expect, the~\EER increased significantly to 17.8\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 30\% to 70\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only Table~\ref   {tab:psafe_sweep_improvement}.
 
 \section{Conclusion}\label{sec:8}
 We introduce a formal model of authentication mechanisms comprising, for the first time, both biometric and atomic credentials. Our model characterizes each credential through four state probabilities, which allows us to analyze the success of different mechanism types. Using this model, we show that the optimal threshold of a biometric credential differs from the heuristic threshold commonly used today. We then symbolically calculate the optimal threshold and find that it depends on the other credentials integrated into the mechanism.

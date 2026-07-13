@@ -1,0 +1,18 @@
+\begin{table*}[t]
+    \centering
+    \caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities obtained using mechanism-aware thresholds. Bold EER values indicate the worse composition, whereas bold maximal values indicate the better composition.}
+    \label{tab:psafe_sweep_improvement}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{cccccccccc}
+        \toprule
+        $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\mathrm{theft}}$ & AND at EER & OR at EER & Max AND & Max OR & Improvement \\
+        \midrule
+        \textbf{0.55} & 0.40 & 0.04 & 0.01 & \textbf{0.4789} & 0.7219 & 0.5754 & \textbf{0.8071} & 30.64\% \\
+        \textbf{0.63} & 0.04 & 0.32 & 0.01 & 0.7336 & \textbf{0.5446} & \textbf{0.8369} & 0.6556 & 38.79\% \\
+        \textbf{0.72} & 0.04 & 0.23 & 0.01 & 0.7468 & \textbf{0.6185} & \textbf{0.8681} & 0.7456 & 47.91\% \\
+        \textbf{0.81} & 0.14 & 0.04 & 0.01 & \textbf{0.6925} & 0.7600 & 0.8353 & \textbf{0.8998} & 58.25\% \\
+        \textbf{0.90} & 0.05 & 0.04 & 0.01 & \textbf{0.7664} & 0.7732 & 0.9253 & \textbf{0.9320} & 70.03\% \\
+        \bottomrule
+    \end{tabular}%
+    }
+\end{table*}

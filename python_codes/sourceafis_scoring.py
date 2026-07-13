@@ -301,9 +301,11 @@ def compute_eer_intersection(thresholds, fars, frrs):
 def compute_p_success(thresholds, fars, frrs):
     p_success = (1 - fars) * (1 - frrs)
     idx_max = np.argmax(p_success)
+    idx_eer = np.argmin(np.abs(fars - frrs))
     max_threshold = thresholds[idx_max]
     max_success = p_success[idx_max]
-    return p_success, max_success, max_threshold
+    eer_success = p_success[idx_eer]
+    return p_success,eer_success, max_success, max_threshold
 
 
 def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
@@ -521,9 +523,10 @@ if __name__ == "__main__":
 
     plot_far_frr(thresholds, fars, frrs, eer, eer_threshold)
     export_far_frr(thresholds, fars, frrs, eer, eer_threshold)
-    p_success, max_success, max_threshold = compute_p_success(thresholds, fars, frrs)
+    p_success,eer_success, max_success, max_threshold = compute_p_success(thresholds, fars, frrs)
 
     print(f"[i] Max P_success = {max_success:.4f}")
+    print(f"[i] EER P_success = {eer_success:.4f}")
     print(f"[i] Max P_success threshold = {max_threshold:.4f}")
 
     plot_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold)
@@ -533,10 +536,10 @@ if __name__ == "__main__":
         fars,
         frrs,
         eer_threshold=eer_threshold,
-        P_safe=0.9,
-        P_leak=0.04,
-        P_loss=0.04,
-        P_theft=0.02,
+        P_safe=0.7,
+        P_leak=0.15,
+        P_loss=0.1,
+        P_theft=0.05,
     )
 
     print(f"[i] AND max P_success = {p_and[idx_and]:.4f} at T={thresholds[idx_and]:.4f}")

@@ -359,6 +359,199 @@ def plot_histograms(genuine_scores, impostor_scores):
     plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" / "livdet_sourceafis_histogram_best_of_probes.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
+def latex_bold(value: str) -> str:
+    return rf"\textbf{{{value}}}"
+
+
+def select_representative_rows(
+    rows: List[Dict[str, float]],
+    n_rows: int = 5,
+) -> List[Dict[str, float]]:
+    """
+    Select n_rows configurations distributed evenly across the observed
+    improvement range.
+
+    The first row has the smallest improvement and the last row has the
+    largest improvement.
+    """
+    if not rows:
+        raise ValueError("Cannot create a LaTeX table from an empty row list.")
+
+    if n_rows < 1:
+        raise ValueError("n_rows must be at least 1.")
+
+    valid_rows = [
+        row for row in rows
+        if np.isfinite(row["failure_improvement_ratio"])
+    ]
+
+    if not valid_rows:
+        raise ValueError("No rows have a finite improvement value.")
+
+    sorted_rows = sorted(
+        valid_rows,
+        key=lambda row: row["failure_improvement_ratio"],
+    )
+
+    n_rows = min(n_rows, len(sorted_rows))
+
+    # Evenly spaced indices, including the minimum and maximum improvement.
+    indices = np.linspace(
+        0,
+        len(sorted_rows) - 1,
+        num=n_rows,
+        dtype=int,
+    )
+
+    # Remove accidental duplicate indices while preserving their order.
+    unique_indices = list(dict.fromkeys(indices.tolist()))
+
+    return [sorted_rows[index] for index in unique_indices]
+
+
+def format_comparison_pair(
+    first: float,
+    second: float,
+    *,
+    bold: str,
+    precision: int = 4,
+) -> Tuple[str, str]:
+    """
+    Format two values while bolding either the minimum or maximum.
+
+    bold="min":
+        bold the smaller value.
+
+    bold="max":
+        bold the larger value.
+
+    When the values are equal, both are bolded.
+    """
+    first_text = f"{first:.{precision}f}"
+    second_text = f"{second:.{precision}f}"
+
+    if np.isclose(first, second):
+        return latex_bold(first_text), latex_bold(second_text)
+
+    if bold == "min":
+        if first < second:
+            return latex_bold(first_text), second_text
+        return first_text, latex_bold(second_text)
+
+    if bold == "max":
+        if first > second:
+            return latex_bold(first_text), second_text
+        return first_text, latex_bold(second_text)
+
+    raise ValueError("bold must be either 'min' or 'max'.")
+
+
+def generate_psafe_latex_table(
+    all_rows: List[Dict[str, float]],
+    out_tex: Path,
+    *,
+    n_rows: int = 5,
+    caption: str = (
+        "Success probabilities at the EER threshold and at the "
+        "mechanism-aware optimal threshold."
+    ),
+    label: str = "tab:psafe_improvement",
+) -> None:
+    """
+    Generate a LaTeX table containing representative sweep configurations.
+
+    Formatting:
+      - The P_safe column is bold.
+      - The worse EER result is bold. Because these are success
+        probabilities, the lower value is considered worse.
+      - The larger of Max AND and Max OR is bold.
+      - Improvement is shown as a percentage.
+    """
+    selected_rows = select_representative_rows(
+        all_rows,
+        n_rows=n_rows,
+    )
+
+    out_tex.parent.mkdir(parents=True, exist_ok=True)
+
+    table_lines = [
+        r"\begin{table*}[t]",
+        r"    \centering",
+        r"    \caption{" + caption + r"}",
+        r"    \label{" + label + r"}",
+        r"    \resizebox{\textwidth}{!}{%",
+        r"    \begin{tabular}{cccccccccc}",
+        r"        \toprule",
+        (
+            r"        $\mathbf{P_{\mathrm{safe}}}$ & "
+            r"$P_{\mathrm{loss}}$ & "
+            r"$P_{\mathrm{leak}}$ & "
+            r"$P_{\mathrm{theft}}$ & "
+            r"AND at EER & "
+            r"OR at EER & "
+            r"Max AND & "
+            r"Max OR & "
+            r"Improvement \\"
+        ),
+        r"        \midrule",
+    ]
+
+    for row in selected_rows:
+        # Lower success probability means worse EER performance.
+        eer_and_text, eer_or_text = format_comparison_pair(
+            row["eer_AND"],
+            row["eer_OR"],
+            bold="min",
+            precision=4,
+        )
+
+        # Bold the better maximum between the two compositions.
+        max_and_text, max_or_text = format_comparison_pair(
+            row["max_AND"],
+            row["max_OR"],
+            bold="max",
+            precision=4,
+        )
+
+        psafe_text = latex_bold(f"{row['P_safe']:.2f}")
+        ploss_text = f"{row['P_loss']:.2f}"
+        pleak_text = f"{row['P_leak']:.2f}"
+        ptheft_text = f"{row['P_theft']:.2f}"
+
+        improvement_pct = 100.0 * row["failure_improvement_ratio"]
+        improvement_text = rf"{improvement_pct:.2f}\%"
+
+        table_lines.append(
+            "        "
+            + " & ".join([
+                psafe_text,
+                ploss_text,
+                pleak_text,
+                ptheft_text,
+                eer_and_text,
+                eer_or_text,
+                max_and_text,
+                max_or_text,
+                improvement_text,
+            ])
+            + r" \\"
+        )
+
+    table_lines.extend([
+        r"        \bottomrule",
+        r"    \end{tabular}%",
+        r"    }",
+        r"\end{table*}",
+        "",
+    ])
+
+    out_tex.write_text(
+        "\n".join(table_lines),
+        encoding="utf-8",
+    )
+
+    print(f"[i] LaTeX table saved to: {out_tex}")
+
 def export_histograms(genuine_scores, impostor_scores):
     out_dir = OUTPUT_DIR / "figs" / "fig_spoofed_users"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1121,5 +1314,25 @@ if __name__ == "__main__":
 
     print_psafe_sweep_summary(all_rows, family_best, overall_best)
     save_psafe_sweep_csv(all_rows, SWEEP_RESULTS_CSV)
-    print(f"[i] Sweep CSV saved to: {SWEEP_RESULTS_CSV}")
-    print_psafe_summary_simple(SWEEP_RESULTS_CSV)   
+    print(f"[i] Sweep CSV saved to: {SWEEP_RESULTS_CSV}")   
+    SWEEP_RESULTS_TEX = (
+        OUTPUT_DIR
+        / "figs"
+        / "fig_spoofed_users"
+        / "psafe_sweep_table.tex"
+    )
+
+    generate_psafe_latex_table(
+        all_rows,
+        SWEEP_RESULTS_TEX,
+        n_rows=5,  # Change to 4 for four rows.
+        caption=(
+            "Comparison between the success probabilities obtained at the "
+            "EER threshold and the maximal success probabilities obtained "
+            "using mechanism-aware thresholds. Bold EER values indicate the "
+            "worse composition, whereas bold maximal values indicate the "
+            "better composition."
+        ),
+        label="tab:psafe_sweep_improvement",
+    )
+    print_psafe_summary_simple(SWEEP_RESULTS_CSV)
