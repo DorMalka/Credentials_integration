@@ -247,7 +247,7 @@ Passwords, OTPs and security keys are credential types evaluated according to a 
 When a player~$P$ presents an atomic credential~$c_i$, the presentation function ouputs~1 with probability~$P_{\text{safe}} + P_{\text{leak}}$ when allocated to the user and~$P_{\text{leak}} + P_{\text{stolen}}$ when allocated to the attacker.
 \subsubsection*{3.2.2}\label{sec:3.2.2}
 Alternatively, a credential may correspond to a biometric property, such as a fingerprint or face. The biometric sensor evaluates a measurement of the biometric property and produces a score~$s$. The user distribution~$f_U(s)$ denotes the score distribution of samples from the user, whereas the attacker distribution~$f_A(s)$ denotes the score distribution of samples from the attacker.
-\begin{definition} (Biometric Credential)~For a biometric credential the presentation function~$\textit{present}_P(i)$ is defined by the user score distribution~$f_U(s)$, attacker score distribution~$f_A(s)$ and a match threshold~$t$. For a player~${P\in\{U,A\}}$, the allocation function~$\textit{allocate}_P(i)$ draws a random value for the score~$s$ from the distribution~$f_P(s)$. Thus
+\begin{definition} (Biometric Credential) For a biometric credential, the user score distribution~$f_U(s)$, the attacker score distribution~$f_A(s)$, and the match threshold~$t$ define the presentation function~$\textit{present}_P(i)$. For each player~${P\in\{U,A\}}$, the allocation function~$\textit{allocate}_P(i)$ draws a random score~$s$ from the distribution~$f_P(s)$. Thus
     \begin{equation*}
     s = \textit{allocate}_P(i)
     \end{equation*}
@@ -457,7 +457,7 @@ For a biometric credentials to be useful, users are expected to produce higher m
     \label{eqn:safesuccess}
     P_{\text{success}}(M^{\text{single}}) = P_{{\text{safe}}}
 \end{equation} 
-Any threshold ~$a_2 \le t \le u_1$ yields zero~\FAR and~\FRR, and therefore achieves a mehcanism success probability of~$1$.
+Any threshold~$a_2 \le t \le u_1$ yields zero~\FAR and~\FRR, and therefore achieves a mehcanism success probability of~$1$.
 
 (2)~$u_1 < a_1 < a_2 < u_2$~(Figure~\ref{fig:uniform_case2_pdf}): The attacker distribution bounds lies within the range of the user distribution bounds. 
 The success probability of the biometric credential is given by Equation~\ref{eqn:safe_prob}.
@@ -808,27 +808,34 @@ To reduce the degrees of freedom of the quadratic distributions, we express the 
     &\int_{\beta_1}^{\beta_2} (d \cdot x^2+e \cdot x+f) dx = 1 \Rightarrow f = \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} \\
 \end{align*}
 Therefore, we can write the quadratic PDFs as
-\begin{equation*}
-f_U(s) =
-\begin{cases}
-     \frac{6s^2}{(\alpha_1 - \alpha_2)^3} - \frac{6s (\alpha_1 + \alpha_2)}{(\alpha_1 - \alpha_2)^3} + \frac{6 \alpha_1 \alpha_2}{(\alpha_1 - \alpha_2)^3} & \alpha_1 \leq s \leq \alpha_2 \\
-    0, & \text{otherwise}
-\end{cases}
-\end{equation*}
-\begin{equation*}
-f_A(s) =
-\begin{cases}
-     \frac{6s^2}{(\beta_1 - \beta_2)^3} - \frac{6s  (\beta_1 + \beta_2)}{(\beta_1 - \beta_2)^3} + \frac{6  \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3} & \beta_1 \leq s \leq \beta_2 \\
-    0, & \text{otherwise}
-    \end{cases}
-\end{equation*}
-These distributions establish the error metrics,~\FAR and~\FRR, as a function of the match threshold~$t$. Denote
+\begin{flalign*}
+&f_U(s) =
+\left\{
+\begin{array}{@{}l@{\qquad}l@{}}
+     \dfrac{6(s-\alpha_1)(s-\alpha_2)}{(\alpha_1-\alpha_2)^3} & \alpha_1 \leq s \leq \alpha_2 \\
+     0, & \text{otherwise}
+\end{array}
+\right.
+&&
+\end{flalign*}
+\begin{flalign*}
+&f_A(s) =
+\left\{
+\begin{array}{@{}l@{\qquad}l@{}}
+     \dfrac{6(s-\beta_1)(s-\beta_2)}{(\beta_1-\beta_2)^3} & \beta_1 \leq s \leq \beta_2 \\
+     0, & \text{otherwise}
+\end{array}
+\right.
+&&
+\end{flalign*}
+These distributions define the error metrics~\FAR and~\FRR as functions of the match threshold~$t$. Denote
 \begin{equation*}
 A(t)=
 \frac{
-2(\beta_2^3-t^3)
--3(\beta_1+\beta_2)(\beta_2^2-t^2)
-+6\beta_1\beta_2(\beta_2-t)
+\begin{aligned}
+&2(\beta_2^3-t^3)-3(\beta_1+\beta_2)(\beta_2^2-t^2)\\
+&\quad+6\beta_1\beta_2(\beta_2-t)
+\end{aligned}
 }{
 (\beta_1-\beta_2)^3
 },
@@ -836,9 +843,10 @@ A(t)=
 \begin{equation*}
 U(t)=
 \frac{
-2(t^3-\alpha_1^3)
--3(\alpha_1+\alpha_2)(t^2-\alpha_1^2)
-+6\alpha_1\alpha_2(t-\alpha_1)
+\begin{aligned}
+&2(t^3-\alpha_1^3)-3(\alpha_1+\alpha_2)(t^2-\alpha_1^2)\\
+&\quad+6\alpha_1\alpha_2(t-\alpha_1)
+\end{aligned}
 }{
 (\alpha_1-\alpha_2)^3
 }.
@@ -1712,19 +1720,17 @@ t_{\text{opt},4} = a_2 .
 Finally, the fifth interval,~$t > u_2$, corresponds to the case in which the threshold exceeds the maximum value of the user and the attacker distributions, leaving the success probability equal to~0.
 
 To determine the global optimal operating point, we compare all stationary points and boundary maxima obtained in the valid intervals. The optimal threshold is achieved in the third interval, where the attacker and user distributions overlap and the success function attains an interior maximum. Substituting $t_{\text{opt}}=t_{\text{opt},3}$ into $P_{\text{success}}(t)$ yields
-\[
-P_{\text{success}}(t_{\text{opt},3}) =
+\begin{equation*}
+P_{\text{success}}(t_{\text{opt},3})=
 \frac{
 \left(
-- a_1 \big(P^{1}_{\text{safe}} + P^{1}_{\text{leak}}\big)
-+ a_2 P^{1}_{\text{safe}}
+a_2 P^{1}_{\text{safe}} - a_1 \big(P^{1}_{\text{safe}} + P^{1}_{\text{leak}}\big)
 + P^{1}_{\text{leak}}\, u_2
 \right)^2
 }{
 4 P^{1}_{\text{leak}} (a_2 - a_1)(u_2 - u_1)
 }.
-\]
-
+\end{equation*}
 We do similar analysis for the \emph{OR} mechanism. We find the probability of success for the \emph{OR} mechanism. Denote: 
 \[
 Q(t) = \dfrac{t - a_1}{a_2 - a_1}
@@ -1966,7 +1972,7 @@ We showed that \emph{asymptotic separability} is a sufficient condition. We now 
     Then the biometric credential~$c_2$ is asymptotically separable.
 \end{proposition} 
 \begin{proof}
-    Assume by contradiction that the biometric credential is not asymptotically separable. Then, there exists~$\varepsilon > 0$ such that for all~$t$ both~$\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and~$\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$. Since it is given that~$\bar{M}$ uses both credentials~$c_1$ and~$c_2$ and achieves a strictly greater success probability than an atomic credential mechanism~$M$, then there exists a threshold~$t$ such that either:~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}} \textit{ or }$ $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}.$ Thus, for every atomic credential~$c_1$ necessarily either the inequality of \textsc{AND} mechanism holds~(Equation~\ref{eqn:necessary term_1}) or the inequality of \textsc{OR} mechanism holds~(Equation~\ref{eqn:necessary term_2}). In particular, these inequalities hold for an atomic credential with state probabilities~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that
+    Assume by contradiction that the biometric credential is not asymptotically separable. Then, there exists~$\varepsilon > 0$ such that for all~$t$ both~$\frac{\FAR(t)}{1-\FRR(t)} \ge \varepsilon$ and~$\frac{\FRR(t)}{1-\FAR(t)} \ge \varepsilon$. Since it is given that~$\bar{M}$ uses both credentials~$c_1$ and~$c_2$ and achieves a strictly greater success probability than an atomic credential mechanism~$M$, then there exists a threshold~$t$ such that either:~$P^{\text{AND}}_{\text{success}}(t) > P^1_{\text{safe}} \textit{ or }$ $P^{\text{OR}}_{\text{success}}(t) > P^1_{\text{safe}}$. Thus, for every atomic credential~$c_1$ necessarily either the inequality of \textsc{AND} mechanism holds~(Equation~\ref{eqn:necessary term_1}) or the inequality of \textsc{OR} mechanism holds~(Equation~\ref{eqn:necessary term_2}). In particular, these inequalities hold for an atomic credential with state probabilities~$P^{1}_{\text{safe}}, P^{1}_{\text{leak}}, P^{1}_{\text{loss}}$ such that
     \begin{equation*}
         \max\left\{\frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}}, \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}}\right\} < \varepsilon.
     \end{equation*}
@@ -2453,7 +2459,7 @@ Let~$c_1$ be an atomic credential with~$P^1_\text{safe} > 0$ and at least one of
 \end{proposition}
 
 \begin{proof}
-The success probability of a mechanism comprising an atomic credential only is~$P^{1}_\textit{safe}$~(Equation~\ref{eqn:safesuccess}). A biometric credential is characterized by four state probabilities that are functions of~\FAR and ~\FRR
+The success probability of a mechanism comprising an atomic credential only is~$P^{1}_\textit{safe}$~(Equation~\ref{eqn:safesuccess}). A biometric credential is characterized by four state probabilities that are functions of~\FAR and~\FRR
 \contprobabilities
 We previously observed that a sufficient condition for producing a new mechanism with greater success is described by Equation~\ref{eqn:FRRineq} and Equation~\ref{eqn:FARineq}. Thus, we need to show that there exists an operating threshold $t$ such that either
 \begin{equation*}
@@ -2466,7 +2472,7 @@ We expand left hand side of Equation~\ref{eqn:FRRineq}.
 \begin{equation*}
 \frac{\FRR(t)}{1-\FAR(t)} = \frac{\int_{-\infty}^{t} f_U(s) ds}{\int_{-\infty}^{t} f_A(s) ds}
 \end{equation*}
-By Definition~\ref{def:User and Attacker distribution functions}, since the biometric credential is asymptotically dominated, it follows that there exists an operating threshold~$t$ such that for every~$s \le t,$ $f_U(s) \le c\cdot\,f_A(s)$. Therefore:
+By Definition~\ref{def:User and Attacker distribution functions}, since the biometric credential is asymptotically dominated, it follows that there exists an operating threshold~$t$ such that for every~$s \le t$, $f_U(s) \le c\cdot\,f_A(s)$. Therefore:
 \begin{equation*}
 \frac{\int_{-\infty}^{t} f_U(s) ds}{\int_{-\infty}^{t} f_A(s) ds} \le \frac{\int_{-\infty}^{t} c \cdot f_A(s) ds}{\int_{-\infty}^{t} f_A(s) ds} = c
 \end{equation*}
