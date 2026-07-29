@@ -1,4 +1,5 @@
 import csv
+import re
 import subprocess
 from pathlib import Path
 
@@ -13,19 +14,32 @@ from scipy.ndimage import gaussian_filter1d
 REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
 SOURCEAFIS_DIR = REPO_ROOT / "sourceafis-demo"
 
-# Choose dataset here:
-DATA_DIR = SOURCEAFIS_DIR / "fvc2002_png" / "DB1_B"
-# DATA_DIR = SOURCEAFIS_DIR / "fvc2004_png" / "DB1_B"
+# Choose one dataset here.
+#DATA_DIR = SOURCEAFIS_DIR / "fvc2002_png" / "DB1_B"
+DATA_DIR = SOURCEAFIS_DIR / "fvc2004_png" / "DB1_B"
 
-USER_ID = 103
-USER_SAMPLES = {5}
+# Multi-user evaluation:
+# - Set USER_IDS to an explicit list, e.g. [101, 102, 103, 104, 105], or
+# - Leave it as None and the script will use the first NUMBER_OF_USERS found.
+USER_IDS = None
+NUMBER_OF_USERS = 10
+PROBES_PER_USER = 3
+
+# Use only the selected users to construct the impostor distribution.
+# For every unordered pair of selected users {u, v}, only one direction is kept:
+# the smaller user ID is enrolled and templates of the larger user ID are candidates.
+# Example: keep 101 -> 102 and discard 102 -> 101.
+IMPOSTORS_ONLY_AMONG_SELECTED_USERS = True
 
 OUTPUT_DIR = REPO_ROOT
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-SCORES_CSV = OUTPUT_DIR / "sourceafis_scores.csv"
+SCORES_DIR = OUTPUT_DIR / "sourceafis_multiuser_scores"
+SCORES_DIR.mkdir(parents=True, exist_ok=True)
 
-MAX_IMPOSTER_SCORES = 20000   # set to None for all
+# Maximum raw impostor comparisons generated for EACH enrolled user.
+# Set to None to use all comparisons.
+MAX_IMPOSTER_SCORES_PER_USER = 20000
 
 PDF_FINE_STEP = 0.1
 SMOOTH_SIGMA_POINTS = 3.0
@@ -33,13 +47,100 @@ SMOOTH_SIGMA_POINTS = 3.0
 # Fixed normalized bins: 0..100
 HIST_BINS = np.arange(0, 101, 2)
 
+# Matches filenames such as 101_1.png or 101-1.png.
+FILENAME_PATTERN = re.compile(r"^(?P<user>\d+)[_-](?P<sample>\d+)")
+
+
+def discover_dataset_samples():
+    """
+    Return:
+        {
+            user_id: {
+                sample_id: Path(...)
+            }
+        }
+
+    The dataset images must have names such as 101_1.png.
+    """
+    if not DATA_DIR.exists():
+        raise FileNotFoundError(f"Dataset directory does not exist: {DATA_DIR}")
+
+    users = {}
+
+    for path in sorted(DATA_DIR.iterdir()):
+        if not path.is_file():
+            continue
+
+        match = FILENAME_PATTERN.match(path.stem)
+        if match is None:
+            continue
+
+        user_id = int(match.group("user"))
+        sample_id = int(match.group("sample"))
+        users.setdefault(user_id, {})[sample_id] = path
+
+    if not users:
+        raise ValueError(
+            f"No fingerprint images were discovered in {DATA_DIR}. "
+            "Expected filenames such as 101_1.png."
+        )
+
+    return users
+
+
+def select_users_and_probes():
+    """
+    Select several users and the first three available samples of each user
+    as probe/enrolment templates.
+    """
+    dataset_users = discover_dataset_samples()
+
+    if USER_IDS is None:
+        selected_user_ids = sorted(dataset_users)[:NUMBER_OF_USERS]
+    else:
+        selected_user_ids = list(USER_IDS)
+
+    if not selected_user_ids:
+        raise ValueError("No users were selected.")
+
+    selections = {}
+
+    for user_id in selected_user_ids:
+        if user_id not in dataset_users:
+            raise ValueError(f"User {user_id} was not found in {DATA_DIR}")
+
+        available_samples = sorted(dataset_users[user_id])
+
+        if len(available_samples) <= PROBES_PER_USER:
+            raise ValueError(
+                f"User {user_id} has only {len(available_samples)} samples. "
+                f"At least {PROBES_PER_USER + 1} are required: "
+                f"{PROBES_PER_USER} probes and at least one genuine candidate."
+            )
+
+        selections[user_id] = tuple(available_samples[:PROBES_PER_USER])
+
+    return selections
+
 
 # =========================
 # SourceAFIS batch scoring
 # =========================
-def run_sourceafis_batch():
-    probe_csv = ",".join(str(x) for x in sorted(USER_SAMPLES))
-    max_imp = -1 if MAX_IMPOSTER_SCORES is None else int(MAX_IMPOSTER_SCORES)
+def run_sourceafis_batch(user_id, probe_samples, scores_csv):
+    """
+    Run the existing Java BatchScorer for one enrolled user.
+
+    The Java program is expected to:
+      1. Compare every candidate against all selected probes.
+      2. Write one CSV row per probe-candidate comparison.
+      3. Mark each row as genuine or impostor.
+    """
+    probe_csv = ",".join(str(x) for x in sorted(probe_samples))
+    max_imp = (
+        -1
+        if MAX_IMPOSTER_SCORES_PER_USER is None
+        else int(MAX_IMPOSTER_SCORES_PER_USER)
+    )
 
     cmd = [
         "mvn",
@@ -48,10 +149,15 @@ def run_sourceafis_batch():
         "compile",
         "exec:java",
         "-Dexec.mainClass=BatchScorer",
-        f"-Dexec.args={DATA_DIR} {USER_ID} {probe_csv} {SCORES_CSV} {max_imp}",
+        (
+            f"-Dexec.args={DATA_DIR} {user_id} {probe_csv} "
+            f"{scores_csv} {max_imp}"
+        ),
     ]
 
-    print("[i] Running SourceAFIS batch scorer...")
+    print()
+    print(f"[i] Running SourceAFIS for user {user_id}")
+    print(f"[i] Probe samples: {sorted(probe_samples)}")
     print("[i] Working dir:", SOURCEAFIS_DIR)
     print("[i] Command:", " ".join(map(str, cmd)))
 
@@ -63,40 +169,76 @@ def run_sourceafis_batch():
     )
 
 
-def load_scores_from_csv():
+def extract_user_and_sample(candidate):
     """
-    Load SourceAFIS scores and collapse multiple probe-vs-same-candidate matches
-    into a single score per candidate, taking the maximum over all probes.
+    Try to parse a candidate identifier such as:
+      /some/path/103_4.png
+      103_4.png
+      103-4
 
-    Expected CSV columns:
-      - kind   : "genuine" or "impostor"
-      - score  : numeric score
-      - target : candidate file / matched sample   (preferred)
-    Optional fallback:
-      - candidate
+    Returns (user_id, sample_id), or (None, None) when parsing fails.
     """
+    stem = Path(candidate).stem
+    match = FILENAME_PATTERN.match(stem)
 
+    if match is None:
+        return None, None
+
+    return int(match.group("user")), int(match.group("sample"))
+
+
+def load_best_scores_from_csv(
+    scores_csv,
+    enrolled_user_id,
+    probe_samples,
+    selected_user_ids,
+):
+    """
+    Collapse all comparisons between the same candidate and the three probes
+    into one score:
+
+        candidate_score = max(score(probe_1, candidate),
+                              score(probe_2, candidate),
+                              score(probe_3, candidate))
+
+    Returns:
+      - one genuine score per non-probe template of the enrolled user;
+      - one impostor score per candidate template after removing mirrored
+        user-pair comparisons.
+
+    For selected users, only one direction is retained for each unordered pair.
+    With users 101 and 102, this keeps:
+        enrolled 101 -> candidate templates of 102
+    and discards:
+        enrolled 102 -> candidate templates of 101
+    """
     genuine_best = {}
     impostor_best = {}
+    selected_user_ids = set(selected_user_ids)
 
-    with open(SCORES_CSV, "r", newline="") as f:
+    with open(scores_csv, "r", newline="") as f:
         reader = csv.DictReader(f)
 
-        # Validate score column
-        if "score" not in reader.fieldnames:
-            raise ValueError(f"CSV must contain a 'score' column. Found: {reader.fieldnames}")
+        if reader.fieldnames is None:
+            raise ValueError(f"CSV has no header: {scores_csv}")
 
-        # Prefer "target" as the candidate identifier, fallback to "candidate"
-        candidate_col = None
-        for col in ("target", "candidate"):
-            if col in reader.fieldnames:
-                candidate_col = col
-                break
+        required = {"kind", "score"}
+        missing = required.difference(reader.fieldnames)
+        if missing:
+            raise ValueError(
+                f"CSV {scores_csv} is missing columns {sorted(missing)}. "
+                f"Found: {reader.fieldnames}"
+            )
+
+        candidate_col = next(
+            (col for col in ("target", "candidate") if col in reader.fieldnames),
+            None,
+        )
 
         if candidate_col is None:
             raise ValueError(
-                f"CSV must contain a candidate identifier column such as 'target' or 'candidate'. "
-                f"Found: {reader.fieldnames}"
+                f"CSV must contain a candidate identifier column named "
+                f"'target' or 'candidate'. Found: {reader.fieldnames}"
             )
 
         for row in reader:
@@ -104,25 +246,118 @@ def load_scores_from_csv():
             score = float(row["score"])
             candidate = row[candidate_col].strip()
 
+            candidate_user, candidate_sample = extract_user_and_sample(candidate)
+
+            # Do not let an enrolment/probe image become a genuine test sample.
+            if (
+                candidate_user == enrolled_user_id
+                and candidate_sample in probe_samples
+            ):
+                continue
+
             if kind == "genuine":
-                if candidate not in genuine_best or score > genuine_best[candidate]:
+                old_score = genuine_best.get(candidate)
+                if old_score is None or score > old_score:
                     genuine_best[candidate] = score
-            elif kind == "impostor":
-                if candidate not in impostor_best or score > impostor_best[candidate]:
+
+            elif kind in {"impostor", "imposter"}:
+                if candidate_user is None:
+                    raise ValueError(
+                        f"Could not parse impostor candidate identifier: {candidate}"
+                    )
+
+                # Optionally restrict the impostor population to the selected
+                # evaluation cohort.
+                if (
+                    IMPOSTORS_ONLY_AMONG_SELECTED_USERS
+                    and candidate_user not in selected_user_ids
+                ):
+                    continue
+
+                # Remove mirrored user-pair comparisons.
+                #
+                # Keep only:
+                #     enrolled_user_id < candidate_user
+                #
+                # Example:
+                #   keep 101 probes against user 102 templates;
+                #   discard 102 probes against user 101 templates.
+                if candidate_user <= enrolled_user_id:
+                    continue
+
+                old_score = impostor_best.get(candidate)
+                if old_score is None or score > old_score:
                     impostor_best[candidate] = score
 
-    genuine = np.array(list(genuine_best.values()), dtype=float)
-    impostor = np.array(list(impostor_best.values()), dtype=float)
+    if not genuine_best:
+        raise ValueError(
+            f"No genuine candidate scores were loaded for user {enrolled_user_id} "
+            f"from {scores_csv}"
+        )
 
-    if len(genuine) == 0:
-        raise ValueError("No genuine scores loaded.")
-    if len(impostor) == 0:
-        raise ValueError("No impostor scores loaded.")
+    print(
+        f"[i] User {enrolled_user_id}: "
+        f"{len(genuine_best)} genuine candidates, "
+        f"{len(impostor_best)} non-mirrored impostor candidates"
+    )
 
-    print(f"[i] Collapsed genuine candidates:  {len(genuine_best)}")
-    print(f"[i] Collapsed impostor candidates: {len(impostor_best)}")
+    return list(genuine_best.values()), list(impostor_best.values())
 
-    return genuine, impostor
+
+def collect_multiuser_scores():
+    """
+    Run the experiment for every selected user and pool the resulting scores.
+
+    Mirrored impostor directions are removed. For each unordered pair of
+    selected users, only the direction from the smaller user ID to the larger
+    user ID is retained.
+    """
+    selections = select_users_and_probes()
+
+    print("[i] Selected users and probes:")
+    for user_id, probes in selections.items():
+        print(f"    user {user_id}: {list(probes)}")
+
+    all_genuine = []
+    all_impostor = []
+
+    for user_id, probe_samples in selections.items():
+        scores_csv = SCORES_DIR / f"sourceafis_scores_user_{user_id}.csv"
+
+        run_sourceafis_batch(
+            user_id=user_id,
+            probe_samples=probe_samples,
+            scores_csv=scores_csv,
+        )
+
+        genuine_scores, impostor_scores = load_best_scores_from_csv(
+            scores_csv=scores_csv,
+            enrolled_user_id=user_id,
+            probe_samples=set(probe_samples),
+            selected_user_ids=selections.keys(),
+        )
+
+        all_genuine.extend(genuine_scores)
+        all_impostor.extend(impostor_scores)
+
+    genuine = np.asarray(all_genuine, dtype=float)
+    impostor = np.asarray(all_impostor, dtype=float)
+
+    if genuine.size == 0:
+        raise ValueError("The pooled genuine distribution is empty.")
+    if impostor.size == 0:
+        raise ValueError("The pooled impostor distribution is empty.")
+
+    print()
+    print(f"[i] Total enrolled users: {len(selections)}")
+    print(f"[i] Total pooled genuine scores: {len(genuine)}")
+    print(f"[i] Total pooled impostor scores: {len(impostor)}")
+    print(
+        "[i] Mirrored selected-user comparisons were removed "
+        "(for example, 102 -> 101 is discarded when 101 -> 102 is kept)."
+    )
+
+    return genuine, impostor, selections
 
 
 # =========================
@@ -153,7 +388,7 @@ def plot_histograms(genuine_scores, impostor_scores):
         plt.hist(genuine_scores, bins=HIST_BINS, alpha=0.6, label="Genuine")
     plt.xlabel("Normalized similarity score (%)")
     plt.ylabel("Count")
-    plt.title(f"Score Histogram (user={USER_ID}, probe={sorted(USER_SAMPLES)})")
+    plt.title("Multi-user score histogram (three probes per user)")
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
@@ -492,9 +727,7 @@ def export_success_and_or(
 # Main
 # =========================
 if __name__ == "__main__":
-    run_sourceafis_batch()
-
-    genuine_raw, impostor_raw = load_scores_from_csv()
+    genuine_raw, impostor_raw, selections = collect_multiuser_scores()
 
     print(f"[i] Raw genuine scores:  n={len(genuine_raw)}  min={genuine_raw.min():.4f}  max={genuine_raw.max():.4f}  mean={genuine_raw.mean():.4f}")
     print(f"[i] Raw impostor scores: n={len(impostor_raw)} min={impostor_raw.min():.4f} max={impostor_raw.max():.4f} mean={impostor_raw.mean():.4f}")
@@ -536,8 +769,8 @@ if __name__ == "__main__":
         fars,
         frrs,
         eer_threshold=eer_threshold,
-        P_safe=0.7,
-        P_leak=0.15,
+        P_safe=0.75,
+        P_leak=0.1,
         P_loss=0.1,
         P_theft=0.05,
     )

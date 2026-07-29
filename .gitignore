@@ -13,7 +13,8 @@
 *.nav
 *.snm
 *.vrb
-
+*.pdf
+*.png
 # — Output files
 *.dvi
 *.ps
@@ -27,4 +28,5 @@
 *.png
 # — VS Code workspace settings
 .vscode/
+
 *venv
