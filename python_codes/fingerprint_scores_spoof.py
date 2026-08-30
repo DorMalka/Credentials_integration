@@ -1,5 +1,7 @@
+import argparse
 import csv
 import hashlib
+import re
 import shutil
 import subprocess
 import tempfile
@@ -8,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
+from scipy.optimize import differential_evolution, minimize
 from typing import Dict, List, Tuple
 
 # =========================
@@ -29,30 +32,48 @@ FAKE_MATERIALS = [
     "Latex",
 ]
 
-# User selection / probe selection
-# You can change these later for a different user
-PROBE_FILES = [
-    "002_0_0.png",
-    "002_0_1.png",
-    "002_0_2.png",
-    "002_0_3.png",
-    "002_0_4.png",
-    "002_0_5.png",
-]
+# Multi-user evaluation. Leave USER_IDS as None to evaluate every identity
+# discovered in the training-live directory. To run only a subset while
+# debugging, use values such as ["002_0", "003_0"].
+USER_IDS = None
+PROBES_PER_USER = 6
 
-# Which genuine files belong to the same identity
-GENUINE_GLOB = "002_0_*.png"
-FAKE_GLOB = "002_0_*.png"
+# A filename such as 002_0_5.png belongs to identity 002_0, sample 5.
+LIVDET_FILENAME_PATTERN = re.compile(
+    r"^(?P<identity>\d+_\d+)_(?P<sample>\d+)$"
+)
 
 OUTPUT_DIR = REPO_ROOT
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-SCORES_CSV = OUTPUT_DIR / "figs" / "fig_spoofed_users" /"sourceafis_livdet_scores_best_of_probes_raw.csv"
-AGGREGATED_SCORES_CSV = OUTPUT_DIR / "figs" / "fig_spoofed_users" /"sourceafis_livdet_scores_best_of_probes_aggregated.csv"
+SPOOF_OUTPUT_DIR = OUTPUT_DIR / "figs" / "fig_spoofed_users"
+SPOOF_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+SCORES_DIR = SPOOF_OUTPUT_DIR / "sourceafis_livdet_multiuser_raw_scores"
+SCORES_DIR.mkdir(parents=True, exist_ok=True)
+
+AGGREGATED_SCORES_CSV = (
+    SPOOF_OUTPUT_DIR / "sourceafis_livdet_scores_best_of_probes_aggregated.csv"
+)
 
 PDF_FINE_STEP = 0.1
 SMOOTH_SIGMA_POINTS = 3.0
 HIST_BINS = np.arange(0, 101, 2)
+
+# The full analysis writes these four sweep dependencies to this checkpoint:
+# thresholds, FARs, FRRs, and the EER threshold. Subsequent sweep-only runs
+# load the checkpoint instead of rerunning SourceAFIS and the biometric analysis.
+SWEEP_INPUTS_FILE = SPOOF_OUTPUT_DIR / "psafe_sweep_inputs.npz"
+SWEEP_RESULTS_CSV = SPOOF_OUTPUT_DIR / "psafe_sweep_results.csv"
+SWEEP_RESULTS_TEX = SPOOF_OUTPUT_DIR / "psafe_sweep_table.tex"
+ATTEMPTS_SUCCESS_DATA = (
+    SPOOF_OUTPUT_DIR / "livdet_attempts_success_function_data.txt"
+)
+
+# Atomic-credential families used by sweep_psafe_success. Change these values
+# here when testing a different family while reusing the saved biometric inputs.
+SWEEP_LEAK_CASE_BASE = (0.60, 0.30, 0.05, 0.05)
+SWEEP_LOSS_CASE_BASE = (0.60, 0.05, 0.30, 0.05)
 
 
 # =========================
@@ -104,22 +125,31 @@ def collect_matching_files(src_dir: Path, pattern: str):
     return sorted(f.resolve() for f in src_dir.glob(pattern) if f.is_file())
 
 
-def collect_probe_files(probe_dir: Path, probe_files):
-    found = []
-    for name in probe_files:
-        p = (probe_dir / name).resolve()
-        if not p.is_file():
-            raise FileNotFoundError(f"Probe file not found: {p}")
-        found.append(p)
-    return found
+def extract_livdet_identity(path: Path):
+    """Return the identity encoded in a filename such as 002_0_5.png."""
+    match = LIVDET_FILENAME_PATTERN.match(Path(path).stem)
+    if match is None:
+        return None
+    return match.group("identity")
 
 
-def collect_genuine_candidates(train_live_dir, test_live_dir, genuine_glob, probe_paths):
+def identity_sort_key(identity):
+    return tuple(int(part) for part in identity.split("_"))
+
+
+def sample_sort_key(path):
+    match = LIVDET_FILENAME_PATTERN.match(Path(path).stem)
+    if match is None:
+        return float("inf")
+    return int(match.group("sample"))
+
+
+def collect_genuine_candidates(train_live_dir, test_live_dir, identity_glob, probe_paths):
     probe_set = {p.resolve() for p in probe_paths}
 
     candidates = []
-    candidates.extend(collect_matching_files(train_live_dir, genuine_glob))
-    candidates.extend(collect_matching_files(test_live_dir, genuine_glob))
+    candidates.extend(collect_matching_files(train_live_dir, identity_glob))
+    candidates.extend(collect_matching_files(test_live_dir, identity_glob))
 
     # Exclude exact probe files
     candidates = [p for p in candidates if p.resolve() not in probe_set]
@@ -135,7 +165,7 @@ def collect_genuine_candidates(train_live_dir, test_live_dir, genuine_glob, prob
     return out
 
 
-def collect_fake_candidates(livdet_root: Path, materials, fake_glob):
+def collect_fake_candidates(livdet_root: Path, materials, identity_glob):
     """
     Collect fake candidates from BOTH Training/Fake/* and Testing/Fake/*,
     matching the same identity glob as the genuine user.
@@ -146,7 +176,7 @@ def collect_fake_candidates(livdet_root: Path, materials, fake_glob):
         for material in materials:
             fake_dir = livdet_root / split / "Digital_Persona" / "Fake" / material
             if fake_dir.is_dir():
-                candidates.extend(collect_matching_files(fake_dir, fake_glob))
+                candidates.extend(collect_matching_files(fake_dir, identity_glob))
 
     # Deduplicate while preserving order
     seen = set()
@@ -159,48 +189,117 @@ def collect_fake_candidates(livdet_root: Path, materials, fake_glob):
     return out
 
 
-# =========================
-# SourceAFIS batch scoring
-# =========================
-def run_sourceafis_batch_best_of_probes():
-    print("[i] TRAIN_LIVE_DIR =", TRAIN_LIVE_DIR)
-    print("[i] TEST_LIVE_DIR  =", TEST_LIVE_DIR)
-    print("[i] PROBE_FILES    =", PROBE_FILES)
-    print("[i] GENUINE_GLOB   =", GENUINE_GLOB)
-    print("[i] FAKE_MATERIALS =", FAKE_MATERIALS)
-    print("[i] FAKE_GLOB      =", FAKE_GLOB)
-    print("[i] RAW SCORES CSV =", SCORES_CSV)
-
+def select_users_and_files():
+    """
+    Discover all LivDet identities and select, for each identity:
+      - the first PROBES_PER_USER training-live images as enrollment probes;
+      - the remaining matching live images as genuine candidates;
+      - all matching fake images from the configured materials.
+    """
     if not TRAIN_LIVE_DIR.is_dir():
         raise FileNotFoundError(f"Training live directory not found: {TRAIN_LIVE_DIR}")
     if not TEST_LIVE_DIR.is_dir():
         raise FileNotFoundError(f"Testing live directory not found: {TEST_LIVE_DIR}")
 
-    probe_paths = collect_probe_files(TRAIN_LIVE_DIR, PROBE_FILES)
-    genuine_candidates = collect_genuine_candidates(
-        TRAIN_LIVE_DIR,
-        TEST_LIVE_DIR,
-        GENUINE_GLOB,
-        probe_paths,
-    )
-    fake_candidates = collect_fake_candidates(
-        LIVDET_ROOT,
-        FAKE_MATERIALS,
-        FAKE_GLOB,
-    )
+    training_files_by_identity = {}
 
-    if not probe_paths:
-        raise ValueError("No probe files were found.")
-    if not genuine_candidates:
-        raise ValueError("No genuine candidates were found.")
-    if not fake_candidates:
-        raise ValueError("No fake candidates were found.")
+    for path in collect_matching_files(TRAIN_LIVE_DIR, "*.png"):
+        identity = extract_livdet_identity(path)
+        if identity is None:
+            print(f"[!] Ignoring unrecognized LivDet filename: {path.name}")
+            continue
+        training_files_by_identity.setdefault(identity, []).append(path)
 
-    print(f"[i] Probe files count      : {len(probe_paths)}")
-    print(f"[i] Genuine candidates    : {len(genuine_candidates)}")
-    print(f"[i] Fake candidates       : {len(fake_candidates)}")
+    if not training_files_by_identity:
+        raise ValueError(
+            f"No LivDet images with names such as 002_0_5.png were found in "
+            f"{TRAIN_LIVE_DIR}"
+        )
 
-    with tempfile.TemporaryDirectory(prefix="livdet_best_probe_") as tmp:
+    if USER_IDS is None:
+        selected_identities = sorted(
+            training_files_by_identity,
+            key=identity_sort_key,
+        )
+    else:
+        selected_identities = list(dict.fromkeys(USER_IDS))
+
+    selections = {}
+
+    for identity in selected_identities:
+        if identity not in training_files_by_identity:
+            raise ValueError(
+                f"Identity {identity} was not found in {TRAIN_LIVE_DIR}"
+            )
+
+        training_live_files = sorted(
+            training_files_by_identity[identity],
+            key=sample_sort_key,
+        )
+
+        if len(training_live_files) < PROBES_PER_USER:
+            raise ValueError(
+                f"Identity {identity} has only {len(training_live_files)} "
+                f"training-live images; {PROBES_PER_USER} probes are required."
+            )
+
+        probe_paths = training_live_files[:PROBES_PER_USER]
+        identity_glob = f"{identity}_*.png"
+
+        genuine_candidates = collect_genuine_candidates(
+            TRAIN_LIVE_DIR,
+            TEST_LIVE_DIR,
+            identity_glob,
+            probe_paths,
+        )
+        fake_candidates = collect_fake_candidates(
+            LIVDET_ROOT,
+            FAKE_MATERIALS,
+            identity_glob,
+        )
+
+        if not fake_candidates:
+            print(
+                f"[!] Skipping identity {identity}: "
+                "no matching fake candidates were found."
+            )
+            continue
+        if not genuine_candidates:
+            raise ValueError(
+                f"No non-probe genuine candidates were found for identity {identity}."
+            )
+
+        selections[identity] = {
+            "probes": probe_paths,
+            "genuine": genuine_candidates,
+            "impostor": fake_candidates,
+        }
+
+    if not selections:
+        raise ValueError("No LivDet identities were selected.")
+
+    return selections
+
+
+# =========================
+# SourceAFIS batch scoring
+# =========================
+def run_sourceafis_batch_best_of_probes(
+    identity,
+    probe_paths,
+    genuine_candidates,
+    fake_candidates,
+    scores_csv,
+):
+    """Run the existing LivDetBatchScorer for one enrolled identity."""
+    print()
+    print(f"[i] Running SourceAFIS LivDet scorer for identity {identity}")
+    print(f"[i] Probe files count   : {len(probe_paths)}")
+    print(f"[i] Genuine candidates : {len(genuine_candidates)}")
+    print(f"[i] Fake candidates    : {len(fake_candidates)}")
+    print(f"[i] Raw scores CSV     : {scores_csv}")
+
+    with tempfile.TemporaryDirectory(prefix=f"livdet_{identity}_") as tmp:
         tmp_path = Path(tmp)
 
         staged_probe_dir, probe_map = stage_files(probe_paths, tmp_path / "probes")
@@ -217,7 +316,7 @@ def run_sourceafis_batch_best_of_probes():
             f'"*.png" '
             f'"{staged_genuine_dir}" '
             f'"{staged_fake_dir}" '
-            f'"{SCORES_CSV}"'
+            f'"{scores_csv}"'
         )
 
         cmd = [
@@ -255,7 +354,7 @@ def find_first_existing(row, candidates, required=True):
     return None
 
 
-def load_scores_from_csv_best_per_candidate():
+def load_scores_from_csv_best_per_candidate(scores_csv):
     """
     Each CSV row is one comparison:
         probe (stored template) vs target (candidate)
@@ -271,7 +370,7 @@ def load_scores_from_csv_best_per_candidate():
     genuine_best = {}
     impostor_best = {}
 
-    with open(SCORES_CSV, "r", newline="") as f:
+    with open(scores_csv, "r", newline="") as f:
         reader = csv.DictReader(f)
 
         expected = {"kind", "probe", "target", "score"}
@@ -299,7 +398,7 @@ def load_scores_from_csv_best_per_candidate():
                 raise ValueError(f"Unknown kind in CSV: {kind!r}")
 
     if rows_seen == 0:
-        raise ValueError(f"CSV is empty: {SCORES_CSV}")
+        raise ValueError(f"CSV is empty: {scores_csv}")
 
     genuine = np.array(list(genuine_best.values()), dtype=float)
     impostor = np.array(list(impostor_best.values()), dtype=float)
@@ -310,6 +409,67 @@ def load_scores_from_csv_best_per_candidate():
         raise ValueError("No impostor scores loaded after best-over-probes aggregation.")
 
     return genuine, impostor, genuine_best, impostor_best
+
+
+def collect_multiuser_scores():
+    """
+    Run the spoof experiment independently for every selected identity, then
+    pool the best-over-probes genuine and fake scores across all identities.
+    """
+    selections = select_users_and_files()
+
+    print(f"[i] Selected {len(selections)} LivDet identities:")
+    for identity, files in selections.items():
+        print(
+            f"    {identity}: {len(files['probes'])} probes, "
+            f"{len(files['genuine'])} genuine candidates, "
+            f"{len(files['impostor'])} fake candidates"
+        )
+
+    all_genuine = []
+    all_impostor = []
+    all_genuine_best = {}
+    all_impostor_best = {}
+
+    for identity, files in selections.items():
+        scores_csv = SCORES_DIR / f"sourceafis_livdet_scores_{identity}.csv"
+
+        run_sourceafis_batch_best_of_probes(
+            identity=identity,
+            probe_paths=files["probes"],
+            genuine_candidates=files["genuine"],
+            fake_candidates=files["impostor"],
+            scores_csv=scores_csv,
+        )
+
+        genuine, impostor, genuine_best, impostor_best = (
+            load_scores_from_csv_best_per_candidate(scores_csv)
+        )
+
+        all_genuine.extend(genuine)
+        all_impostor.extend(impostor)
+        all_genuine_best.update(genuine_best)
+        all_impostor_best.update(impostor_best)
+
+        print(
+            f"[i] Identity {identity}: pooled {len(genuine)} genuine and "
+            f"{len(impostor)} fake scores"
+        )
+
+    genuine = np.asarray(all_genuine, dtype=float)
+    impostor = np.asarray(all_impostor, dtype=float)
+
+    if genuine.size == 0:
+        raise ValueError("The pooled genuine distribution is empty.")
+    if impostor.size == 0:
+        raise ValueError("The pooled fake distribution is empty.")
+
+    print()
+    print(f"[i] Total enrolled identities: {len(selections)}")
+    print(f"[i] Total pooled genuine scores: {len(genuine)}")
+    print(f"[i] Total pooled fake scores: {len(impostor)}")
+
+    return genuine, impostor, all_genuine_best, all_impostor_best
 
 
 def save_aggregated_scores_csv(genuine_best, impostor_best):
@@ -695,7 +855,7 @@ def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
     plt.figure(figsize=(8, 6))
     plt.plot(thresholds, fars, label="FAR")
     plt.plot(thresholds, frrs, label="FRR")
-    plt.scatter(eer_threshold, eer, label=f"EER≈{eer:.4f} @ T≈{eer_threshold:.2f}", zorder=3)
+    plt.scatter(eer_threshold, eer, label=f"EERâ‰ˆ{eer:.4f} @ Tâ‰ˆ{eer_threshold:.2f}", zorder=3)
     plt.xlabel("Threshold (%)")
     plt.ylabel("Error Rate")
     plt.title("LivDet FAR / FRR vs Threshold (best score over probes)")
@@ -753,7 +913,7 @@ def plot_p_success(thresholds, p_success, eer_threshold, max_success, max_thresh
         eer_threshold,
         p_eer,
         zorder=3,
-        label=f"P_success@EER={p_eer:.4f} (T≈{eer_threshold:.2f})"
+        label=f"P_success@EER={p_eer:.4f} (Tâ‰ˆ{eer_threshold:.2f})"
     )
     plt.scatter(
         max_threshold,
@@ -1213,13 +1373,535 @@ def print_psafe_summary_simple(csv_path: Path):
     print(f"EER AND: {worst_row['eer_AND']:.6f}")
     print(f"EER OR: {worst_row['eer_OR']:.6f}")
 
+
+def save_sweep_inputs(
+    out_file: Path,
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    eer_threshold: float,
+) -> None:
+    """Save every biometric variable required by sweep_psafe_success."""
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        out_file,
+        thresholds=np.asarray(thresholds, dtype=float),
+        fars=np.asarray(fars, dtype=float),
+        frrs=np.asarray(frrs, dtype=float),
+        eer_threshold=np.asarray(float(eer_threshold)),
+    )
+    print(f"[i] Sweep inputs saved to: {out_file}")
+
+
+def load_sweep_inputs(in_file: Path):
+    """Load and validate the saved sweep dependencies."""
+    if not in_file.is_file():
+        raise FileNotFoundError(
+            f"Sweep input checkpoint not found: {in_file}\n"
+            "Run the script once without --sweep-only to create it."
+        )
+
+    with np.load(in_file, allow_pickle=False) as data:
+        required = {"thresholds", "fars", "frrs", "eer_threshold"}
+        missing = required.difference(data.files)
+        if missing:
+            raise ValueError(
+                f"Sweep checkpoint {in_file} is missing {sorted(missing)}."
+            )
+
+        thresholds = np.asarray(data["thresholds"], dtype=float)
+        fars = np.asarray(data["fars"], dtype=float)
+        frrs = np.asarray(data["frrs"], dtype=float)
+        eer_threshold = float(np.asarray(data["eer_threshold"]).item())
+
+    if thresholds.ndim != 1 or fars.ndim != 1 or frrs.ndim != 1:
+        raise ValueError("Saved thresholds, FARs, and FRRs must be one-dimensional.")
+    if not (len(thresholds) == len(fars) == len(frrs)):
+        raise ValueError("Saved thresholds, FARs, and FRRs have different lengths.")
+    if len(thresholds) == 0:
+        raise ValueError("Saved sweep inputs are empty.")
+    if not all(
+        np.all(np.isfinite(values))
+        for values in (thresholds, fars, frrs)
+    ) or not np.isfinite(eer_threshold):
+        raise ValueError("Saved sweep inputs contain non-finite values.")
+
+    print(f"[i] Sweep inputs loaded from: {in_file}")
+    return thresholds, fars, frrs, eer_threshold
+
+
+def run_psafe_sweep_from_inputs(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    eer_threshold: float,
+    *,
+    safe_start: float,
+    safe_end: float,
+    safe_step: float,
+) -> None:
+    """Run only sweep_psafe_success and its output/summary dependents."""
+    if safe_step <= 0:
+        raise ValueError("safe_step must be positive.")
+    if safe_end < safe_start:
+        raise ValueError("safe_end must be greater than or equal to safe_start.")
+
+    all_rows, family_best, overall_best = sweep_psafe_success(
+        thresholds,
+        fars,
+        frrs,
+        eer_threshold,
+        safe_start=safe_start,
+        safe_end=safe_end,
+        safe_step=safe_step,
+        leak_case_base=SWEEP_LEAK_CASE_BASE,
+        loss_case_base=SWEEP_LOSS_CASE_BASE,
+    )
+
+    print_psafe_sweep_summary(all_rows, family_best, overall_best)
+    save_psafe_sweep_csv(all_rows, SWEEP_RESULTS_CSV)
+    print(f"[i] Sweep CSV saved to: {SWEEP_RESULTS_CSV}")
+
+    generate_psafe_latex_table(
+        all_rows,
+        SWEEP_RESULTS_TEX,
+        n_rows=5,
+        caption=(
+            "Comparison between the success probabilities obtained at the "
+            "EER threshold and the maximal success probabilities obtained "
+            "using mechanism-aware thresholds. Bold EER values indicate the "
+            "worse composition, whereas bold maximal values indicate the "
+            "better composition."
+        ),
+        label="tab:psafe_sweep_improvement",
+    )
+    print_psafe_summary_simple(SWEEP_RESULTS_CSV)
+
+
+def attempt_biometric_success(
+    attempt_thresholds,
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+) -> float:
+    """
+    Compute the biometric-only success probability for k attempts:
+
+        (1 - product(FRR(t_j))) * product(1 - FAR(t_j)).
+    """
+    attempt_thresholds = np.asarray(attempt_thresholds, dtype=float)
+    if attempt_thresholds.ndim != 1 or attempt_thresholds.size < 1:
+        raise ValueError("At least one attempt threshold is required.")
+
+    attempt_fars = np.interp(attempt_thresholds, thresholds, fars)
+    attempt_frrs = np.interp(attempt_thresholds, thresholds, frrs)
+
+    p_user_accepted = 1.0 - np.prod(attempt_frrs)
+    p_attacker_rejected = np.prod(1.0 - attempt_fars)
+    return float(p_user_accepted * p_attacker_rejected)
+
+
+def equal_threshold_success_curve(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    attempt_count: int,
+) -> np.ndarray:
+    """P_success when the same threshold is used in all k attempts."""
+    if attempt_count < 1:
+        raise ValueError("attempt_count must be at least 1.")
+    return (
+        (1.0 - np.power(frrs, attempt_count))
+        * np.power(1.0 - fars, attempt_count)
+    )
+
+
+def optimize_attempt_thresholds(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    attempt_count: int,
+    *,
+    eer_threshold: float,
+    n_starts: int = 64,
+    seed: int = 20260827,
+):
+    """
+    Jointly optimize k bounded thresholds using a global/local hybrid.
+
+    Differential evolution first searches globally, including asymmetric
+    threshold vectors. L-BFGS-B then refines that result and also starts from
+    the best equal-threshold grid points, the one-attempt optimum, the EER
+    threshold, deterministic spread points, and reproducible random points.
+    The best feasible result across every run is returned. The equal-threshold
+    grid optimum is always retained as a baseline.
+    """
+    if attempt_count < 1:
+        raise ValueError("attempt_count must be at least 1.")
+    if n_starts < 1:
+        raise ValueError("n_starts must be at least 1.")
+
+    lower = float(thresholds[0])
+    upper = float(thresholds[-1])
+    bounds = [(lower, upper)] * attempt_count
+
+    def objective(candidate_thresholds):
+        return -attempt_biometric_success(
+            candidate_thresholds,
+            thresholds,
+            fars,
+            frrs,
+        )
+
+    equal_success = equal_threshold_success_curve(
+        thresholds,
+        fars,
+        frrs,
+        attempt_count,
+    )
+    equal_index = int(np.argmax(equal_success))
+    best_thresholds = np.full(
+        attempt_count,
+        float(thresholds[equal_index]),
+    )
+    best_success = float(equal_success[equal_index])
+
+    one_attempt_success = (1.0 - fars) * (1.0 - frrs)
+    one_attempt_threshold = float(
+        thresholds[int(np.argmax(one_attempt_success))]
+    )
+
+    global_result = differential_evolution(
+        objective,
+        bounds=bounds,
+        seed=seed + attempt_count,
+        popsize=20,
+        maxiter=500,
+        tol=1e-10,
+        polish=False,
+        workers=1,
+        updating="immediate",
+    )
+    global_candidate = np.clip(
+        np.asarray(global_result.x, dtype=float),
+        lower,
+        upper,
+    )
+    global_success = attempt_biometric_success(
+        global_candidate,
+        thresholds,
+        fars,
+        frrs,
+    )
+    if global_success > best_success:
+        best_thresholds = global_candidate
+        best_success = global_success
+
+    # The global result is the first local-refinement start.
+    starts = [global_candidate]
+
+    # Seed equal-threshold starts at the strongest grid candidates. Using
+    # several candidates matters when the empirical success curve has more
+    # than one local maximum.
+    top_count = min(12, len(thresholds))
+    for index in np.argsort(equal_success)[-top_count:][::-1]:
+        starts.append(
+            np.full(attempt_count, float(thresholds[index]))
+        )
+
+    starts.extend(
+        [
+            np.full(attempt_count, one_attempt_threshold),
+            np.full(attempt_count, float(eer_threshold)),
+            np.full(attempt_count, 0.5 * (lower + upper)),
+            np.linspace(lower, upper, attempt_count),
+            np.linspace(lower, upper, attempt_count)[::-1],
+        ]
+    )
+
+    rng = np.random.default_rng(seed + attempt_count)
+    while len(starts) < n_starts:
+        starts.append(rng.uniform(lower, upper, size=attempt_count))
+
+    # Honor a smaller requested number while ensuring that the best equal-grid
+    # initialization remains the first run.
+    starts = starts[:n_starts]
+    successful_runs = 0
+
+    for initial in starts:
+        result = minimize(
+            objective,
+            x0=np.clip(initial, lower, upper),
+            method="L-BFGS-B",
+            bounds=bounds,
+            options={
+                "maxiter": 2000,
+                "ftol": 1e-15,
+                "gtol": 1e-10,
+                "maxls": 50,
+            },
+        )
+        successful_runs += int(result.success)
+
+        candidate = np.clip(np.asarray(result.x, dtype=float), lower, upper)
+        candidate_success = attempt_biometric_success(
+            candidate,
+            thresholds,
+            fars,
+            frrs,
+        )
+        if candidate_success > best_success:
+            best_thresholds = candidate
+            best_success = candidate_success
+
+    # Sorting only standardizes display. It cannot change the objective,
+    # because every attempt enters the success formula symmetrically.
+    best_thresholds = np.sort(best_thresholds)
+
+    diagnostics = {
+        "method": "differential evolution + multi-start L-BFGS-B",
+        "starts": len(starts),
+        "successful_runs": successful_runs,
+        "global_run_converged": bool(global_result.success),
+        "equal_grid_threshold": float(thresholds[equal_index]),
+        "equal_grid_success": float(equal_success[equal_index]),
+    }
+    return best_thresholds, best_success, diagnostics
+
+
+def export_attempt_success_curves(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    attempt_counts,
+    out_file: Path = ATTEMPTS_SUCCESS_DATA,
+) -> None:
+    """
+    Export TikZ-ready equal-threshold success curves.
+
+    Each success_kN column evaluates the full k-attempt success formula with
+    t1 = ... = tk = threshold. Joint k-dimensional optima are printed by
+    run_attempt_comparisons; a k-dimensional surface cannot be represented by
+    one x column once k is greater than two.
+    """
+    attempt_counts = list(dict.fromkeys(int(k) for k in attempt_counts))
+    if not attempt_counts or any(k < 1 for k in attempt_counts):
+        raise ValueError("attempt_counts must contain positive integers.")
+
+    curves = {
+        k: equal_threshold_success_curve(
+            thresholds,
+            fars,
+            frrs,
+            k,
+        )
+        for k in attempt_counts
+    }
+
+    out_file = Path(out_file)
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    with out_file.open("w", newline="") as handle:
+        writer = csv.writer(handle, delimiter=" ", lineterminator="\n")
+        writer.writerow(
+            ["threshold"] + [f"success_k{k}" for k in attempt_counts]
+        )
+        for index, threshold in enumerate(thresholds):
+            writer.writerow(
+                [f"{float(threshold):.6f}"]
+                + [f"{float(curves[k][index]):.10f}" for k in attempt_counts]
+            )
+
+
+def run_attempt_comparisons(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    eer_threshold: float,
+    *,
+    attempt_counts=(2, 4, 6),
+    optimizer_starts: int = 64,
+    success_data_file: Path = ATTEMPTS_SUCCESS_DATA,
+):
+    """Optimize and print the biometric-only comparison for each requested k."""
+    attempt_counts = list(dict.fromkeys(int(k) for k in attempt_counts))
+    if not attempt_counts or any(k < 1 for k in attempt_counts):
+        raise ValueError("Every attempt count must be a positive integer.")
+
+    one_attempt_success = (1.0 - fars) * (1.0 - frrs)
+    one_attempt_index = int(np.argmax(one_attempt_success))
+    one_attempt_optimal_threshold = float(thresholds[one_attempt_index])
+    results = []
+
+    print("\n" + "=" * 80)
+    print("[PARAMETRIC BIOMETRIC-ONLY ATTEMPT COMPARISON]")
+    print("=" * 80)
+
+    for attempt_count in attempt_counts:
+        joint_thresholds, p_joint, diagnostics = optimize_attempt_thresholds(
+            thresholds,
+            fars,
+            frrs,
+            attempt_count,
+            eer_threshold=eer_threshold,
+            n_starts=optimizer_starts,
+        )
+
+        one_attempt_policy_thresholds = np.full(
+            attempt_count,
+            one_attempt_optimal_threshold,
+        )
+        p_one_attempt_threshold = attempt_biometric_success(
+            one_attempt_policy_thresholds,
+            thresholds,
+            fars,
+            frrs,
+        )
+
+        eer_policy_thresholds = np.full(
+            attempt_count,
+            float(eer_threshold),
+        )
+        p_eer_threshold = attempt_biometric_success(
+            eer_policy_thresholds,
+            thresholds,
+            fars,
+            frrs,
+        )
+
+        threshold_spread = float(np.ptp(joint_thresholds))
+        print(f"\n[k = {attempt_count} attempts]")
+        print(
+            "[i] Joint optimization: "
+            f"{diagnostics['method']}, "
+            f"{diagnostics['successful_runs']}/{diagnostics['starts']} "
+            "runs converged"
+        )
+        for index, threshold in enumerate(joint_thresholds, start=1):
+            print(f"    t{index} = {threshold:.6f}")
+        print(f"    threshold spread = {threshold_spread:.6e}")
+        print(f"    P_success = {p_joint:.10f}")
+
+        print("[i] One-attempt optimum reused for all attempts:")
+        print(f"    t = {one_attempt_optimal_threshold:.6f}")
+        print(f"    P_success = {p_one_attempt_threshold:.10f}")
+
+        print("[i] EER threshold reused for all attempts:")
+        print(f"    t = {eer_threshold:.6f}")
+        print(f"    P_success = {p_eer_threshold:.10f}")
+
+        results.append(
+            {
+                "attempt_count": attempt_count,
+                "joint_thresholds": joint_thresholds,
+                "joint_success": p_joint,
+                "threshold_spread": threshold_spread,
+                "one_attempt_threshold": one_attempt_optimal_threshold,
+                "one_attempt_policy_success": p_one_attempt_threshold,
+                "eer_threshold": float(eer_threshold),
+                "eer_policy_success": p_eer_threshold,
+                "optimizer_diagnostics": diagnostics,
+            }
+        )
+
+    export_attempt_success_curves(
+        thresholds,
+        fars,
+        frrs,
+        attempt_counts,
+        success_data_file,
+    )
+    print(f"\n[i] Attempts success-function data saved to: {success_data_file}")
+    return results
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description=(
+            "Run the full LivDet analysis or reuse saved biometric inputs "
+            "for the P_safe sweep or parametric attempt comparison."
+        )
+    )
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--sweep-only",
+        action="store_true",
+        help="Load psafe_sweep_inputs.npz and run only the P_safe sweep.",
+    )
+    mode.add_argument(
+        "--attempts-only",
+        action="store_true",
+        help=(
+            "Load psafe_sweep_inputs.npz and run only the k-attempt "
+            "biometric threshold comparison."
+        ),
+    )
+    parser.add_argument(
+        "--attempts",
+        type=int,
+        nargs="+",
+        default=[2, 4, 6],
+        metavar="K",
+        help=(
+            "Attempt counts to analyze with --attempts-only "
+            "(default: 2 4 6)."
+        ),
+    )
+    parser.add_argument(
+        "--optimizer-starts",
+        type=int,
+        default=64,
+        help="Number of L-BFGS-B initializations for each k (default: 64).",
+    )
+    parser.add_argument(
+        "--attempts-output",
+        type=Path,
+        default=ATTEMPTS_SUCCESS_DATA,
+        help="Output path for the TikZ-ready equal-threshold success curves.",
+    )
+    parser.add_argument("--safe-start", type=float, default=0.60)
+    parser.add_argument("--safe-end", type=float, default=0.90)
+    parser.add_argument("--safe-step", type=float, default=0.01)
+    return parser.parse_args()
+
 # =========================
 # Main
 # =========================
 if __name__ == "__main__":
-    run_sourceafis_batch_best_of_probes()
+    args = parse_arguments()
 
-    genuine_raw, impostor_raw, genuine_best, impostor_best = load_scores_from_csv_best_per_candidate()
+    if args.sweep_only:
+        thresholds, fars, frrs, eer_threshold = load_sweep_inputs(
+            SWEEP_INPUTS_FILE
+        )
+        run_psafe_sweep_from_inputs(
+            thresholds,
+            fars,
+            frrs,
+            eer_threshold,
+            safe_start=args.safe_start,
+            safe_end=args.safe_end,
+            safe_step=args.safe_step,
+        )
+        raise SystemExit(0)
+
+    if args.attempts_only:
+        thresholds, fars, frrs, eer_threshold = load_sweep_inputs(
+            SWEEP_INPUTS_FILE
+        )
+        run_attempt_comparisons(
+            thresholds,
+            fars,
+            frrs,
+            eer_threshold,
+            attempt_counts=args.attempts,
+            optimizer_starts=args.optimizer_starts,
+            success_data_file=args.attempts_output,
+        )
+        raise SystemExit(0)
+
+    genuine_raw, impostor_raw, genuine_best, impostor_best = (
+        collect_multiuser_scores()
+    )
     save_aggregated_scores_csv(genuine_best, impostor_best)
 
     print(f"[i] Aggregated genuine scores : n={len(genuine_raw)}  min={genuine_raw.min():.4f}  max={genuine_raw.max():.4f}  mean={genuine_raw.mean():.4f}")
@@ -1246,7 +1928,15 @@ if __name__ == "__main__":
     eer, eer_threshold = compute_eer_intersection(thresholds, fars, frrs)
 
     print(f"[i] EER = {eer:.6f}")
-    print(f"[i] EER threshold ≈ {eer_threshold:.4f}")
+    print(f"[i] EER threshold â‰ˆ {eer_threshold:.4f}")
+
+    save_sweep_inputs(
+        SWEEP_INPUTS_FILE,
+        thresholds,
+        fars,
+        frrs,
+        eer_threshold,
+    )
 
     plot_far_frr(thresholds, fars, frrs, eer, eer_threshold)
     export_far_frr(thresholds, fars, frrs, eer, eer_threshold)
@@ -1293,46 +1983,12 @@ if __name__ == "__main__":
         p_and_eer,
         p_or_eer,
     )
-        # =========================
-    # New sweep requested by user
-    # =========================
-    SWEEP_RESULTS_CSV = OUTPUT_DIR / "figs" / "fig_spoofed_users" / "psafe_sweep_results.csv"
-
-    all_rows, family_best, overall_best = sweep_psafe_success(
+    run_psafe_sweep_from_inputs(
         thresholds,
         fars,
         frrs,
         eer_threshold,
-        safe_start=0.55,
-        safe_end=0.90,
-        safe_step=0.01,
-        # Case 1: increasing P_safe comes from decreasing P_leak
-        leak_case_base=(0.55, 0.4, 0.04, 0.01),
-        # Case 2: increasing P_safe comes from decreasing P_loss
-        loss_case_base=(0.55, 0.04, 0.4, 0.01),
+        safe_start=args.safe_start,
+        safe_end=args.safe_end,
+        safe_step=args.safe_step,
     )
-
-    print_psafe_sweep_summary(all_rows, family_best, overall_best)
-    save_psafe_sweep_csv(all_rows, SWEEP_RESULTS_CSV)
-    print(f"[i] Sweep CSV saved to: {SWEEP_RESULTS_CSV}")   
-    SWEEP_RESULTS_TEX = (
-        OUTPUT_DIR
-        / "figs"
-        / "fig_spoofed_users"
-        / "psafe_sweep_table.tex"
-    )
-
-    generate_psafe_latex_table(
-        all_rows,
-        SWEEP_RESULTS_TEX,
-        n_rows=5,  # Change to 4 for four rows.
-        caption=(
-            "Comparison between the success probabilities obtained at the "
-            "EER threshold and the maximal success probabilities obtained "
-            "using mechanism-aware thresholds. Bold EER values indicate the "
-            "worse composition, whereas bold maximal values indicate the "
-            "better composition."
-        ),
-        label="tab:psafe_sweep_improvement",
-    )
-    print_psafe_summary_simple(SWEEP_RESULTS_CSV)

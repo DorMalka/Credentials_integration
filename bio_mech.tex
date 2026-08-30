@@ -244,7 +244,7 @@ A credential may correspond to secret data, such as a password or one time passw
 Passwords, OTPs and security keys are credential types evaluated according to a perfect match criterion, namely, atomic credentials.
 \begin{definition} (Atomic Credential)~For an atomic credential the allocation function~$\textit{allocate}_P(i)$ randomly draws the state probabilities of the credential, namely~$P_{\text{safe}}$, $P_{\text{loss}}$, $P_{\text{leak}}$ and~$P_{\text{stolen}}$.
 \end{definition}
-When a player~$P$ presents an atomic credential~$c_i$, the presentation function ouputs~1 with probability~$P_{\text{safe}} + P_{\text{leak}}$ when allocated to the user and~$P_{\text{leak}} + P_{\text{stolen}}$ when allocated to the attacker.
+When a player~$P$ presents an atomic credential~$c_i$, the presentation function ouputs~1 with probability~$P_{\text{safe}} + P_{\text{leak}}$ when allocated to the user and 0 with probability~$P_{\text{leak}} + P_{\text{stolen}}$ when allocated to the attacker.
 \subsubsection*{3.2.2}\label{sec:3.2.2}
 Alternatively, a credential may correspond to a biometric property, such as a fingerprint or face. The biometric sensor evaluates a measurement of the biometric property and produces a score~$s$. The user distribution~$f_U(s)$ denotes the score distribution of samples from the user, whereas the attacker distribution~$f_A(s)$ denotes the score distribution of samples from the attacker.
 \begin{definition} (Biometric Credential) For a biometric credential, the user score distribution~$f_U(s)$, the attacker score distribution~$f_A(s)$, and the match threshold~$t$ define the presentation function~$\textit{present}_P(i)$. For each player~${P\in\{U,A\}}$, the allocation function~$\textit{allocate}_P(i)$ draws a random score~$s$ from the distribution~$f_P(s)$. Thus
@@ -2050,11 +2050,13 @@ Before comparing different mechanisms, we validate that the algorithm's performa
 \begin{tikzpicture}
 \begin{axis}[
     ybar,
+    legend to name=histogramlegend,
     bar width=3pt,
     width=0.9\columnwidth,
     height=0.65\columnwidth,
     xlabel={Normalized similarity score (\%)},
-    ylabel={Count},
+    ylabel={Impostor count},
+    ylabel style={red},
     grid=major,
     xmin=0,
     xmax=100,
@@ -2063,21 +2065,46 @@ Before comparing different mechanisms, we validate that the algorithm's performa
     enlarge x limits=false,
     enlarge y limits=false,
     tick style={draw=none},
-    clip=true,
-    legend pos=north east,
-    legend style={draw=black, fill=white, font=\scriptsize}
+    clip=true
+]
+
+\addplot+[ybar, fill=red, draw=black]
+table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
+
+\end{axis}
+
+\begin{axis}[
+    ybar,
+    bar width=3pt,
+    legend to name=histogramlegend,
+    legend columns=2,
+    width=0.9\columnwidth,
+    height=0.65\columnwidth,
+    xlabel={Normalized similarity score (\%)},
+    yticklabel pos=right,
+    ylabel={Genuine count},
+    ylabel style={blue},
+    grid=none,
+    xmin=0,
+    xmax=100,
+    ymin=0,
+    ymax=10,
+    enlarge x limits=false,
+    enlarge y limits=false,
+    tick style={draw=none},
+    clip=true
 ]
 
 \addplot+[ybar, fill=blue, fill opacity=0.5]
 table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
 \addlegendentry{Genuine}
 
-\addplot+[ybar, fill=red, fill opacity=0.5]
-table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
+\addlegendimage{fill=red, mark=none}
 \addlegendentry{Impostor}
-
 \end{axis}
 \end{tikzpicture}
+\medskip
+\pgfplotslegendfromname{histogramlegend}
 \caption{Score histogram for genuine and impostor comparisons.}
 \label{fig:sourceafis_histogram}
 \end{figure}
@@ -2233,47 +2260,60 @@ However, the success probabilities of all evaluated mechanisms, when operated at
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}
+% Left axis: impostor counts
 \begin{axis}[
     ybar,
+    legend to name=livdethistogramlegend,
     bar width=2pt,
     width=0.9\columnwidth,
     height=0.5\columnwidth,
     xlabel={Normalized similarity score (\%)},
-    ylabel={Count},
+    ylabel={Impostor count},
+    ylabel style={red},
+    grid=major,
     xmin=0,
     xmax=100,
     ymin=0,
-    ymax=11,
+    ymax=800,
     enlarge x limits=false,
-    enlarge y limits=false,
     tick style={draw=none},
-    clip=true,
-    grid=major,
-    legend pos=north east,
-    legend style={draw=black, fill=white, font=\scriptsize},
+    clip=true
 ]
-
-\addplot[
+\addplot+[ybar,fill=red,draw=black]
+table[x=score,y=impostor] 
+{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+\end{axis}
+% Right axis: genuine counts
+\begin{axis}[
     ybar,
-    fill=blue,
-    fill opacity=0.5,
-    draw=blue
+    legend to name=livdethistogramlegend,
+    legend columns=2,
+    bar width=2pt,
+    width=0.9\columnwidth,
+    height=0.5\columnwidth,
+    xlabel={Normalized similarity score (\%)},
+    ylabel={Genuine count},
+    ylabel style={blue},
+    yticklabel pos=right,
+    grid=none,
+    xmin=0,
+    xmax=100,
+    ymin=0,
+    ymax=100,
+    enlarge x limits=false,
+    tick style={draw=none},
+    clip=true
 ]
-table [x=score, y=genuine] {figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+\addplot+[ybar,fill=blue,draw=blue,fill opacity=0.5]
+table[x=score,y=genuine] 
+{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
 \addlegendentry{Genuine}
-
-\addplot[
-    ybar,
-    fill=red,
-    fill opacity=0.5,
-    draw=red
-]
-table [x=score, y=impostor] {figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+\addlegendimage{fill=red,draw=black,mark=none}
 \addlegendentry{Impostor}
-
 \end{axis}
 \end{tikzpicture}
-% \Description{Histogram of normalized similarity scores for genuine and impostor comparisons using the best score over six probe templates.}
+\medskip
+\pgfplotslegendfromname{livdethistogramlegend}
 \caption{LivDet score histogram using the best score over probe templates.}
 \label{fig:livdet_sourceafis_histogram}
 \end{figure}
@@ -2312,7 +2352,7 @@ table [x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of
 \end{axis}
 \end{tikzpicture}
 % \Description{\FAR and \FRR curves as a function of threshold for LivDet SourceAFIS scores using the best score over six probe templates, with the \EER point marked.}
-\caption{\FAR and \FRR as a function of the threshold using the best score over probe templates. The Equal Error Rate (\EER) occurs at $\approx 17.8\%$.
+\caption{\FAR and \FRR as a function of the threshold using the best score over probe templates. The Equal Error Rate (\EER) occurs at $\approx 22.1\%$.
 }
 \label{fig:livdet_sourceafis_far_frr}
 \end{figure}
@@ -2404,8 +2444,8 @@ table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_an
 % \Description{Success probability as a function of threshold for the LivDet SourceAFIS scores using the best score over probe templates.}
 \caption{
 Success probability as a function of the decision threshold using the best score over probe templates.
-The AND mechanism achieves a maximal success probability of $0.896$, while the OR mechanism achieves $0.826$.
-At the \EER operating point, the success probabilities are $0.759$ and $0.684$ for the AND and OR mechanisms, respectively.
+The AND mechanism achieves a maximal success probability of $0.834$, while the OR mechanism achieves $0.816$.
+At the \EER operating point, the success probabilities are $0.713$ and $0.649$ for the AND and OR mechanisms, respectively.
 }
 \label{fig:livdet_sourceafis_success}
 \end{figure}
@@ -2413,7 +2453,7 @@ At the \EER operating point, the success probabilities are $0.759$ and $0.684$ f
 \subsection{Spoofing Attack Scenario}\label{sec:7.2}
 \noindent
 To support this claim, we use the LivDet2015 database \cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale live and spoof fingerprint samples. 
-We follow the same methodology as before and use the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As reference images, we randomly select six Digital Persona scanner images of user 002\_0, while the probe set of a user comprises the remaining real and fake images. The geniune comparisons are all comparisons between the reference and real images in the probe set.
+We follow the same methodology as before and use the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As reference images, we randomly select six Digital Persona scanner images of each user in the database, while the probe set of each user comprises the remaining real and fake images. The geniune comparisons are all comparisons between the reference and real images in the probe set.
 For each probe image, we define the similarity score as the maximum score among 6 reference images. 
 \begin{table*}[t]
     \centering
@@ -2423,20 +2463,60 @@ For each probe image, we define the similarity score as the maximum score among 
         \toprule
         $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\mathrm{theft}}$ & AND at EER & OR at EER & Max AND & Max OR & Improvement \\
         \midrule
-        \textbf{0.55} & 0.40 & 0.04 & 0.01 & \textbf{0.478} & 0.721 & 0.575 & \textbf{0.807} & 30.64\% \\
-        \textbf{0.63} & 0.04 & 0.32 & 0.01 & 0.733 & \textbf{0.544} & \textbf{0.836} & 0.655 & 38.79\% \\
-        \textbf{0.72} & 0.04 & 0.23 & 0.01 & 0.746 & \textbf{0.618} & \textbf{0.868} & 0.745 & 47.91\% \\
-        \textbf{0.81} & 0.14 & 0.04 & 0.01 & \textbf{0.692} & 0.760 & 0.835 & \textbf{0.899} & 58.25\% \\
-        \textbf{0.90} & 0.05 & 0.04 & 0.01 & \textbf{0.766} & 0.773 & 0.925 & \textbf{0.932} & 70.03\% \\
+        \textbf{0.60} & 0.05 & 0.30 & 0.05 & 0.64 & \textbf{0.49} & \textbf{0.71} & 0.62 & 18.03\% \\
+        \textbf{0.72} & 0.05 & 0.18 & 0.05 & 0.67 & \textbf{0.59} & \textbf{0.76} & 0.74 & 30.05\% \\
+        \textbf{0.71} & 0.19 & 0.05 & 0.05 & \textbf{0.58} & 0.66 & 0.71 & \textbf{0.79} & 38.60\% \\
+        \textbf{0.82} & 0.08 & 0.05 & 0.05 & \textbf{0.66} & 0.68 & 0.82 & \textbf{0.85} & 53.23\% \\
+        \textbf{0.90} & 0.05 & 0.00 & 0.05 & \textbf{0.70} & 0.73 & 0.89 & \textbf{0.92} & 70.59\% \\
         \bottomrule
     \end{tabular}
 \end{table*}
 
-We simulate a spoofing attack by using fake fingerprint images of the same user (002\_0) produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the reference images to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR curve to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}). As we expect, the~\EER increased significantly to 17.8\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 30\% to 70\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only. These results are summarized in Table~\ref   {tab:psafe_sweep_improvement}.
+We simulate a spoofing attack by using fake fingerprint images of each user produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the reference images to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR curve to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}). As we expect, the~\EER increased significantly to 22.1\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 18\% to 70\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only. These results are summarized in Table~\ref   {tab:psafe_sweep_improvement}.
+
+\subsection{Spoofing Attack With Multiple Attempts}
+\noindent
+We simulate a spoofing attack scenario in which an attacker has multiple attempts to authenticate, using either the same or different spoofed fingerprints. We use the same genuine and impostor distributions calculated in the previous section~\S\ref{sec:7.2} using the LivDet2015 database. 
+
+We follow the theoretical analysis in~\S\ref{sec:4.2}, and calculate the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eq:attempts_success}). Then, we simulate several authentication attempts, each one produces different success probability function. We comapre the mechanism success probability under three different thresholds selection: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optinization over all~$k$ attempts, as shown in Figure~\ref{fig:livdet_sourceafis_success_multiple_attempts}. 
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.9\columnwidth,
+    height=0.60\columnwidth,
+    xlabel={Normalized similarity threshold},
+    ylabel={Success probability},
+    xmin=0,
+    xmax=100,
+    ymin=0,
+    ymax=1,
+    grid=major,
+    enlarge x limits=false,
+    enlarge y limits=false,
+    tick style={draw=none},
+    legend pos=north east,
+    legend style={
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    }
+]
+\addplot[blue,thick,no markers]
+table[x=threshold,y=success_k4,col sep=space] 
+{figs/fig_spoofed_users/livdet_attempts_success_k4.txt};
+\addlegendentry{$k=4$ attempts}
+\end{axis}
+\end{tikzpicture}
+\caption{Biometric-only success probability over four authentication
+attempts when the same threshold is used in every attempt.}
+\label{fig:livdet_sourceafis_success_multiple_attempts}
+\end{figure}
 
 \section{Conclusion}\label{sec:8}
 \noindent
-We find that the optimal threshold of a biometric credential depends on the other credentials in the mechanism and differs from the heuristic threshold commonly used today. We characterize a condition on the biometric credential and prove that whenever this condition holds, a mechanism designer always benefits from adding a biometric credential over using atomic credentials alone. We quantify this theoretical result by simulating different scenarios using public biometric datasets, including spoofing attacks. Our results show that optimizing the threshold significantly reduces the failure probability under spoofing attacks by~30-70\%.
+We find that the optimal threshold of a biometric credential depends on the other credentials in the mechanism and differs from the heuristic threshold commonly used today. We characterize a condition on the biometric credential and prove that whenever this condition holds, a mechanism designer always benefits from adding a biometric credential over using atomic credentials alone. We quantify this theoretical result by simulating different scenarios using public biometric datasets, including spoofing attacks. Our results show that optimizing the threshold significantly reduces the failure probability under spoofing attacks by~18-70\%.
 
 % We introduce a formal model of authentication mechanisms with both biometric and atomic credentials. We find that the optimal threshold of a biometric credential depends on the other credentials in the mechanism and differs from the heuristic threshold commonly used today. We then prove that using an asymptotically separable biometric credential and~$k$ atomic credentials in a mechanism achieves greater success probability than a mechanism that uses the atomic credentials only. This result indicates that a mechanism designer will always benefit from adding an asymptotically separable biometric credential into a mechanism that uses atomic credentials only.
 
