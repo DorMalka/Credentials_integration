@@ -58,7 +58,13 @@ AGGREGATED_SCORES_CSV = (
 
 PDF_FINE_STEP = 0.1
 SMOOTH_SIGMA_POINTS = 3.0
-HIST_BINS = np.arange(0, 101, 2)
+HISTOGRAM_BIN_WIDTH = 2.5
+HIST_BINS = np.arange(
+    0.0,
+    100.0 + HISTOGRAM_BIN_WIDTH,
+    HISTOGRAM_BIN_WIDTH,
+)
+CDF_DATA_FILE = SPOOF_OUTPUT_DIR / "livdet_sourceafis_empirical_cdf_data.txt"
 
 # The full analysis writes these four sweep dependencies to this checkpoint:
 # thresholds, FARs, FRRs, and the EER threshold. Subsequent sweep-only runs
@@ -725,6 +731,82 @@ def export_histograms(genuine_scores, impostor_scores):
         f.write("score genuine impostor\n")
         for s, g, i in zip(centers, hist_genuine, hist_impostor):
             f.write(f"{s:.6f} {g:d} {i:d}\n")
+
+
+def empirical_cdf(samples, evaluation_scores):
+    """Evaluate the right-continuous empirical CDF P(S <= s)."""
+    samples = np.asarray(samples, dtype=float)
+    evaluation_scores = np.asarray(evaluation_scores, dtype=float)
+
+    if samples.ndim != 1 or samples.size == 0:
+        raise ValueError("CDF samples must be a non-empty one-dimensional array.")
+    if evaluation_scores.ndim != 1:
+        raise ValueError("CDF evaluation scores must be one-dimensional.")
+    if not np.all(np.isfinite(samples)):
+        raise ValueError("CDF samples contain non-finite values.")
+    if not np.all(np.isfinite(evaluation_scores)):
+        raise ValueError("CDF evaluation scores contain non-finite values.")
+
+    sorted_samples = np.sort(samples)
+    cumulative_counts = np.searchsorted(
+        sorted_samples,
+        evaluation_scores,
+        side="right",
+    )
+    return cumulative_counts.astype(float) / float(sorted_samples.size)
+
+
+def export_empirical_cdfs(
+    genuine_scores,
+    impostor_scores,
+    out_file: Path = CDF_DATA_FILE,
+):
+    """
+    Export exact empirical CDFs for TikZ and statistical fitting.
+
+    The common score grid contains every unique normalized observation from
+    both populations, plus the endpoints 0 and 100. Therefore, no histogram
+    approximation or smoothing is introduced into the exported CDF values.
+    """
+    genuine_scores = np.asarray(genuine_scores, dtype=float)
+    impostor_scores = np.asarray(impostor_scores, dtype=float)
+
+    if genuine_scores.ndim != 1 or genuine_scores.size == 0:
+        raise ValueError("Genuine CDF scores must be a non-empty array.")
+    if impostor_scores.ndim != 1 or impostor_scores.size == 0:
+        raise ValueError("Impostor CDF scores must be a non-empty array.")
+
+    score_grid = np.unique(
+        np.concatenate(
+            (
+                np.asarray([0.0, 100.0]),
+                genuine_scores,
+                impostor_scores,
+            )
+        )
+    )
+    genuine_cdf = empirical_cdf(genuine_scores, score_grid)
+    impostor_cdf = empirical_cdf(impostor_scores, score_grid)
+
+    out_file = Path(out_file)
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    with out_file.open("w", newline="") as handle:
+        writer = csv.writer(handle, delimiter=" ", lineterminator="\n")
+        writer.writerow(["score", "genuine_cdf", "impostor_cdf"])
+        for score, genuine_value, impostor_value in zip(
+            score_grid,
+            genuine_cdf,
+            impostor_cdf,
+        ):
+            writer.writerow(
+                [
+                    f"{float(score):.10f}",
+                    f"{float(genuine_value):.10f}",
+                    f"{float(impostor_value):.10f}",
+                ]
+            )
+
+    print(f"[i] Empirical CDF data saved to: {out_file}")
 
 def build_hist_pdf(scores, bins):
     counts, edges = np.histogram(scores, bins=bins)
@@ -1516,6 +1598,74 @@ def equal_threshold_success_curve(
     )
 
 
+def optimize_sequential_attempt_policy(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    attempt_count: int,
+):
+    """
+    Greedily build a chronological threshold policy.
+
+    First optimize t1 as a one-attempt mechanism. For every later attempt j,
+    keep t1, ..., t(j-1) fixed and optimize only tj for the cumulative
+    j-attempt success probability. The mechanism stops after an acceptance,
+    so attempt j is reached only if every preceding attempt was rejected.
+    """
+    if attempt_count < 1:
+        raise ValueError("attempt_count must be at least 1.")
+
+    policy = []
+    selected_thresholds = []
+    for attempt_number in range(1, attempt_count + 1):
+        if selected_thresholds:
+            selected_fars = np.interp(
+                selected_thresholds,
+                thresholds,
+                fars,
+            )
+            selected_frrs = np.interp(
+                selected_thresholds,
+                thresholds,
+                frrs,
+            )
+            prior_attacker_rejection = float(
+                np.prod(1.0 - selected_fars)
+            )
+            prior_user_rejection = float(np.prod(selected_frrs))
+        else:
+            prior_attacker_rejection = 1.0
+            prior_user_rejection = 1.0
+
+        cumulative_success_curve = (
+            (1.0 - prior_user_rejection * frrs)
+            * prior_attacker_rejection
+            * (1.0 - fars)
+        )
+        optimal_index = int(np.argmax(cumulative_success_curve))
+        optimal_threshold = float(thresholds[optimal_index])
+        selected_thresholds.append(optimal_threshold)
+        policy.append(
+            {
+                "attempt_number": attempt_number,
+                "threshold": optimal_threshold,
+                "far": float(fars[optimal_index]),
+                "frr": float(frrs[optimal_index]),
+                "cumulative_success": float(
+                    cumulative_success_curve[optimal_index]
+                ),
+            }
+        )
+
+    policy_success = attempt_biometric_success(
+        selected_thresholds,
+        thresholds,
+        fars,
+        frrs,
+    )
+    return policy, policy_success
+
+
 def optimize_attempt_thresholds(
     thresholds: np.ndarray,
     fars: np.ndarray,
@@ -1669,6 +1819,184 @@ def optimize_attempt_thresholds(
     return best_thresholds, best_success, diagnostics
 
 
+def optimize_remaining_thresholds_with_fixed_prefix(
+    fixed_thresholds,
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    remaining_count: int,
+    *,
+    eer_threshold: float,
+    n_starts: int = 64,
+    seed: int = 20260827,
+):
+    """Optimize unused thresholds in the full fixed-prefix mechanism."""
+    if remaining_count < 1:
+        raise ValueError("remaining_count must be at least 1.")
+    if n_starts < 1:
+        raise ValueError("n_starts must be at least 1.")
+
+    fixed_thresholds = np.asarray(fixed_thresholds, dtype=float)
+    if fixed_thresholds.ndim != 1:
+        raise ValueError("fixed_thresholds must be one-dimensional.")
+
+    lower = float(thresholds[0])
+    upper = float(thresholds[-1])
+    bounds = [(lower, upper)] * remaining_count
+
+    def success(candidate_thresholds):
+        full_thresholds = np.concatenate(
+            (fixed_thresholds, np.asarray(candidate_thresholds, dtype=float))
+        )
+        return attempt_biometric_success(
+            full_thresholds,
+            thresholds,
+            fars,
+            frrs,
+        )
+
+    def objective(candidate_thresholds):
+        return -success(candidate_thresholds)
+
+    # Keep the best equal-threshold remainder as a deterministic baseline.
+    equal_success = np.asarray(
+        [success(np.full(remaining_count, threshold)) for threshold in thresholds]
+    )
+    equal_index = int(np.argmax(equal_success))
+    best_thresholds = np.full(
+        remaining_count,
+        float(thresholds[equal_index]),
+    )
+    best_success = float(equal_success[equal_index])
+
+    global_result = differential_evolution(
+        objective,
+        bounds=bounds,
+        seed=seed + len(fixed_thresholds) + remaining_count,
+        popsize=20,
+        maxiter=500,
+        tol=1e-10,
+        polish=False,
+        workers=1,
+        updating="immediate",
+    )
+    global_candidate = np.clip(
+        np.asarray(global_result.x, dtype=float),
+        lower,
+        upper,
+    )
+    global_success = success(global_candidate)
+    if global_success > best_success:
+        best_thresholds = global_candidate
+        best_success = global_success
+
+    starts = [global_candidate]
+    top_count = min(12, len(thresholds))
+    for index in np.argsort(equal_success)[-top_count:][::-1]:
+        starts.append(
+            np.full(remaining_count, float(thresholds[index]))
+        )
+    starts.extend(
+        [
+            np.full(remaining_count, float(eer_threshold)),
+            np.full(remaining_count, 0.5 * (lower + upper)),
+            np.linspace(lower, upper, remaining_count),
+            np.linspace(lower, upper, remaining_count)[::-1],
+        ]
+    )
+
+    rng = np.random.default_rng(
+        seed + len(fixed_thresholds) + remaining_count
+    )
+    while len(starts) < n_starts:
+        starts.append(rng.uniform(lower, upper, size=remaining_count))
+
+    successful_runs = 0
+    for initial in starts[:n_starts]:
+        result = minimize(
+            objective,
+            x0=np.clip(initial, lower, upper),
+            method="L-BFGS-B",
+            bounds=bounds,
+            options={
+                "maxiter": 2000,
+                "ftol": 1e-15,
+                "gtol": 1e-10,
+                "maxls": 50,
+            },
+        )
+        successful_runs += int(result.success)
+        candidate = np.clip(np.asarray(result.x, dtype=float), lower, upper)
+        candidate_success = success(candidate)
+        if candidate_success > best_success:
+            best_thresholds = candidate
+            best_success = candidate_success
+
+    # The unused attempts are exchangeable. Sorting defines a deterministic
+    # order, and the lowest optimized threshold is applied next.
+    best_thresholds = np.sort(best_thresholds)
+    diagnostics = {
+        "method": "differential evolution + multi-start L-BFGS-B",
+        "starts": min(len(starts), n_starts),
+        "successful_runs": successful_runs,
+        "global_run_converged": bool(global_result.success),
+    }
+    return best_thresholds, best_success, diagnostics
+
+
+def optimize_fixed_prefix_attempt_policy(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    attempt_count: int,
+    *,
+    eer_threshold: float,
+    n_starts: int = 64,
+):
+    """Re-optimize the full k-attempt mechanism after each rejection."""
+    if attempt_count < 1:
+        raise ValueError("attempt_count must be at least 1.")
+
+    selected_thresholds = []
+    policy = []
+    for attempt_number in range(1, attempt_count + 1):
+        remaining_count = attempt_count - attempt_number + 1
+        optimized_remainder, full_success, diagnostics = (
+            optimize_remaining_thresholds_with_fixed_prefix(
+                selected_thresholds,
+                thresholds,
+                fars,
+                frrs,
+                remaining_count,
+                eer_threshold=eer_threshold,
+                n_starts=n_starts,
+            )
+        )
+        applied_threshold = float(optimized_remainder[0])
+        selected_thresholds.append(applied_threshold)
+        current_success = attempt_biometric_success(
+            selected_thresholds,
+            thresholds,
+            fars,
+            frrs,
+        )
+        policy.append(
+            {
+                "attempt_number": attempt_number,
+                "attempts_remaining": remaining_count,
+                "threshold": applied_threshold,
+                "far": float(np.interp(applied_threshold, thresholds, fars)),
+                "frr": float(np.interp(applied_threshold, thresholds, frrs)),
+                "optimized_remainder": optimized_remainder,
+                "full_horizon_success": full_success,
+                "current_success": current_success,
+                "optimizer_diagnostics": diagnostics,
+            }
+        )
+
+    return policy, float(policy[-1]["current_success"])
+
+
 def export_attempt_success_curves(
     thresholds: np.ndarray,
     fars: np.ndarray,
@@ -1814,6 +2142,111 @@ def run_attempt_comparisons(
     return results
 
 
+def run_sequential_attempt_comparisons(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    *,
+    attempt_counts=(2, 4, 6),
+):
+    """Print forward greedy threshold policies from saved biometric data."""
+    attempt_counts = list(dict.fromkeys(int(k) for k in attempt_counts))
+    if not attempt_counts or any(k < 1 for k in attempt_counts):
+        raise ValueError("Every attempt count must be a positive integer.")
+
+    results = []
+    print("\n" + "=" * 80)
+    print("[SEQUENTIAL GREEDY BIOMETRIC THRESHOLD POLICY]")
+    print("=" * 80)
+
+    for attempt_count in attempt_counts:
+        policy, policy_success = optimize_sequential_attempt_policy(
+            thresholds,
+            fars,
+            frrs,
+            attempt_count,
+        )
+
+        print(f"\n[k = {attempt_count} maximum attempts]")
+        for row in policy:
+            print(
+                f"[i] Attempt {row['attempt_number']}: "
+                f"threshold = {row['threshold']:.6f}, "
+                f"FAR = {row['far']:.10f}, "
+                f"FRR = {row['frr']:.10f}, "
+                f"cumulative P_success = "
+                f"{row['cumulative_success']:.10f}"
+            )
+        print(f"[i] Policy P_success = {policy_success:.10f}")
+
+        results.append(
+            {
+                "attempt_count": attempt_count,
+                "policy": policy,
+                "policy_success": policy_success,
+            }
+        )
+
+    return results
+
+
+def run_fixed_prefix_attempt_comparisons(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    eer_threshold: float,
+    *,
+    attempt_counts=(2, 4, 6),
+    optimizer_starts: int = 64,
+):
+    """Print full-horizon fixed-prefix policies from saved biometric data."""
+    attempt_counts = list(dict.fromkeys(int(k) for k in attempt_counts))
+    if not attempt_counts or any(k < 1 for k in attempt_counts):
+        raise ValueError("Every attempt count must be a positive integer.")
+
+    results = []
+    print("\n" + "=" * 80)
+    print("[FULL-HORIZON FIXED-PREFIX BIOMETRIC THRESHOLD POLICY]")
+    print("=" * 80)
+
+    for attempt_count in attempt_counts:
+        policy, policy_success = optimize_fixed_prefix_attempt_policy(
+            thresholds,
+            fars,
+            frrs,
+            attempt_count,
+            eer_threshold=eer_threshold,
+            n_starts=optimizer_starts,
+        )
+
+        print(f"\n[k = {attempt_count} maximum attempts]")
+        for row in policy:
+            remainder = ", ".join(
+                f"{threshold:.6f}"
+                for threshold in row["optimized_remainder"]
+            )
+            print(
+                f"[i] Attempt {row['attempt_number']}: "
+                f"optimized remainder = [{remainder}]"
+            )
+            print(
+                f"    applied threshold = {row['threshold']:.6f}, "
+                f"FAR = {row['far']:.10f}, "
+                f"FRR = {row['frr']:.10f}, "
+                f"current P_success = {row['current_success']:.10f}"
+            )
+
+        results.append(
+            {
+                "attempt_count": attempt_count,
+                "policy": policy,
+                "policy_success": policy_success,
+            }
+        )
+
+    return results
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description=(
@@ -1835,6 +2268,24 @@ def parse_arguments():
             "biometric threshold comparison."
         ),
     )
+    mode.add_argument(
+        "--sequential-attempts-only",
+        "--remaining-attempts-only",
+        dest="sequential_attempts_only",
+        action="store_true",
+        help=(
+            "Load psafe_sweep_inputs.npz and greedily optimize each new "
+            "attempt threshold while keeping earlier thresholds fixed."
+        ),
+    )
+    mode.add_argument(
+        "--fixed-prefix-attempts-only",
+        action="store_true",
+        help=(
+            "Load psafe_sweep_inputs.npz and re-optimize all unused "
+            "thresholds while keeping thresholds from prior attempts fixed."
+        ),
+    )
     parser.add_argument(
         "--attempts",
         type=int,
@@ -1842,7 +2293,8 @@ def parse_arguments():
         default=[2, 4, 6],
         metavar="K",
         help=(
-            "Attempt counts to analyze with --attempts-only "
+            "Attempt counts to analyze with --attempts-only or "
+            "a sequential fixed-threshold checkpoint-only mode "
             "(default: 2 4 6)."
         ),
     )
@@ -1899,6 +2351,32 @@ if __name__ == "__main__":
         )
         raise SystemExit(0)
 
+    if args.sequential_attempts_only:
+        thresholds, fars, frrs, _ = load_sweep_inputs(
+            SWEEP_INPUTS_FILE
+        )
+        run_sequential_attempt_comparisons(
+            thresholds,
+            fars,
+            frrs,
+            attempt_counts=args.attempts,
+        )
+        raise SystemExit(0)
+
+    if args.fixed_prefix_attempts_only:
+        thresholds, fars, frrs, eer_threshold = load_sweep_inputs(
+            SWEEP_INPUTS_FILE
+        )
+        run_fixed_prefix_attempt_comparisons(
+            thresholds,
+            fars,
+            frrs,
+            eer_threshold,
+            attempt_counts=args.attempts,
+            optimizer_starts=args.optimizer_starts,
+        )
+        raise SystemExit(0)
+
     genuine_raw, impostor_raw, genuine_best, impostor_best = (
         collect_multiuser_scores()
     )
@@ -1916,6 +2394,7 @@ if __name__ == "__main__":
 
     plot_histograms(genuine, impostor)
     export_histograms(genuine, impostor)
+    export_empirical_cdfs(genuine, impostor)
     plot_smoothed_pdfs(genuine, impostor, step=PDF_FINE_STEP, sigma_points=SMOOTH_SIGMA_POINTS)
 
     thresholds, fars, frrs = compute_far_frr_from_smoothed_pdf(

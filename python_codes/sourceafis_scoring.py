@@ -44,8 +44,12 @@ MAX_IMPOSTER_SCORES_PER_USER = 20000
 PDF_FINE_STEP = 0.1
 SMOOTH_SIGMA_POINTS = 3.0
 
-# Fixed normalized bins: 0..100
-HIST_BINS = np.arange(0, 101, 2)
+HISTOGRAM_BIN_WIDTH = 5.0
+HIST_BINS = np.arange(
+    0.0,
+    100.0 + HISTOGRAM_BIN_WIDTH,
+    HISTOGRAM_BIN_WIDTH,
+)
 
 # Matches filenames such as 101_1.png or 101-1.png.
 FILENAME_PATTERN = re.compile(r"^(?P<user>\d+)[_-](?P<sample>\d+)")

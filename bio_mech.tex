@@ -2318,6 +2318,43 @@ table[x=score,y=genuine]
 \label{fig:livdet_sourceafis_histogram}
 \end{figure}
 
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.9\columnwidth,
+    height=0.6\columnwidth,
+    xlabel={Normalized similarity score (\%)},
+    ylabel={Empirical CDF},
+    xmin=0,
+    xmax=100,
+    ymin=0,
+    ymax=1,
+    grid=major,
+    enlarge x limits=false,
+    enlarge y limits=false,
+    tick style={draw=none},
+    legend pos=south east,
+    legend style={
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    }
+]
+\addplot[blue, thick, const plot mark right, no marks]
+table[x=score, y=genuine_cdf, col sep=space] 
+{figs/fig_spoofed_users/livdet_sourceafis_empirical_cdf_data.txt};
+\addlegendentry{Genuine}
+\addplot[red, thick, const plot mark right, no marks]
+table[x=score, y=impostor_cdf, col sep=space] 
+{figs/fig_spoofed_users/livdet_sourceafis_empirical_cdf_data.txt};
+\addlegendentry{Impostor}
+\end{axis}
+\end{tikzpicture}
+\caption{Empirical cumulative distributions of the genuine and spoof-impostor similarity scores.}
+\label{fig:livdet_empirical_cdf}
+\end{figure}
+
 
 \begin{figure}[t]
 \centering
