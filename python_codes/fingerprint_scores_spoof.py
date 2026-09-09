@@ -75,6 +75,9 @@ SWEEP_RESULTS_TEX = SPOOF_OUTPUT_DIR / "psafe_sweep_table.tex"
 ATTEMPTS_SUCCESS_DATA = (
     SPOOF_OUTPUT_DIR / "livdet_attempts_success_function_data.txt"
 )
+FIXED_PREFIX_TIKZ_DATA = (
+    SPOOF_OUTPUT_DIR / "livdet_fixed_prefix_far_frr_success_by_k.txt"
+)
 
 # Atomic-credential families used by sweep_psafe_success. Change these values
 # here when testing a different family while reusing the saved biometric inputs.
@@ -2198,8 +2201,9 @@ def run_fixed_prefix_attempt_comparisons(
     *,
     attempt_counts=(2, 4, 6),
     optimizer_starts: int = 64,
+    tikz_data_file: Path = None,
 ):
-    """Print full-horizon fixed-prefix policies from saved biometric data."""
+    """Print fixed-prefix policies and optionally export their final rows."""
     attempt_counts = list(dict.fromkeys(int(k) for k in attempt_counts))
     if not attempt_counts or any(k < 1 for k in attempt_counts):
         raise ValueError("Every attempt count must be a positive integer.")
@@ -2244,7 +2248,115 @@ def run_fixed_prefix_attempt_comparisons(
             }
         )
 
+    if tikz_data_file is not None:
+        export_fixed_prefix_tikz_data(results, tikz_data_file)
+        print(f"\n[i] Fixed-prefix TikZ data saved to: {tikz_data_file}")
+
     return results
+
+
+def export_fixed_prefix_tikz_data(results, out_file: Path) -> None:
+    """
+    Export one TikZ-ready row per maximum attempt count k.
+
+    For each k, FAR and FRR are taken from the threshold applied on the last
+    attempt of that k-attempt policy. P_success_max is the cumulative success
+    probability after that last attempt. The export also contains
+    product_FRR = product_{j=1}^k FRR_j and product_1_minus_FAR =
+    product_{j=1}^k (1 - FAR_j). For example, the k=4 row uses the FAR, FRR,
+    and current_success values stored in policy[3], while both products use
+    all four policy rows.
+    """
+    if not results:
+        raise ValueError("No fixed-prefix results are available to export.")
+
+    output_rows = []
+    for result in results:
+        attempt_count = int(result["attempt_count"])
+        policy = result["policy"]
+        if not policy:
+            raise ValueError(
+                f"The fixed-prefix policy for k={attempt_count} is empty."
+            )
+
+        final_attempt = policy[-1]
+        if int(final_attempt["attempt_number"]) != attempt_count:
+            raise ValueError(
+                f"The final policy row for k={attempt_count} is attempt "
+                f"{final_attempt['attempt_number']}, not attempt {attempt_count}."
+            )
+
+        product_frr = float(
+            np.prod([float(attempt["frr"]) for attempt in policy])
+        )
+        product_one_minus_far = float(
+            np.prod(
+                [1.0 - float(attempt["far"]) for attempt in policy]
+            )
+        )
+        p_success_max = float(final_attempt["current_success"])
+        success_from_products = (
+            (1.0 - product_frr) * product_one_minus_far
+        )
+        if not np.isclose(
+            p_success_max,
+            success_from_products,
+            rtol=1e-9,
+            atol=1e-12,
+        ):
+            raise ValueError(
+                f"The exported products for k={attempt_count} imply "
+                f"P_success={success_from_products:.10f}, but the final "
+                f"policy row contains {p_success_max:.10f}."
+            )
+
+        output_rows.append(
+            (
+                attempt_count,
+                float(final_attempt["far"]),
+                float(final_attempt["frr"]),
+                p_success_max,
+                product_frr,
+                product_one_minus_far,
+            )
+        )
+
+    # Ascending k gives pgfplots a correctly ordered x-axis even if the user
+    # supplied --attempts in a different order.
+    output_rows.sort(key=lambda row: row[0])
+
+    out_file = Path(out_file)
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    with out_file.open("w", newline="") as handle:
+        writer = csv.writer(handle, delimiter=" ", lineterminator="\n")
+        writer.writerow(
+            [
+                "k",
+                "FAR",
+                "FRR",
+                "P_success_max",
+                "product_FRR",
+                "product_1_minus_FAR",
+            ]
+        )
+        for (
+            attempt_count,
+            far,
+            frr,
+            p_success_max,
+            product_frr,
+            product_one_minus_far,
+        ) in output_rows:
+            writer.writerow(
+                [
+                    attempt_count,
+                    f"{far:.10f}",
+                    f"{frr:.10f}",
+                    f"{p_success_max:.10f}",
+                    f"{product_frr:.10f}",
+                    f"{product_one_minus_far:.10f}",
+                ]
+            )
 
 
 def parse_arguments():
@@ -2310,10 +2422,33 @@ def parse_arguments():
         default=ATTEMPTS_SUCCESS_DATA,
         help="Output path for the TikZ-ready equal-threshold success curves.",
     )
+    parser.add_argument(
+        "--fixed-prefix-tikz-output",
+        type=Path,
+        nargs="?",
+        const=FIXED_PREFIX_TIKZ_DATA,
+        default=None,
+        metavar="FILE",
+        help=(
+            "With --fixed-prefix-attempts-only, export the final-attempt "
+            "FAR, FRR, P_success_max, cumulative FRR product, and cumulative "
+            "(1-FAR) product for every requested k. If FILE is omitted, "
+            "write to the default spoof-output directory."
+        ),
+    )
     parser.add_argument("--safe-start", type=float, default=0.60)
     parser.add_argument("--safe-end", type=float, default=0.90)
     parser.add_argument("--safe-step", type=float, default=0.01)
-    return parser.parse_args()
+    args = parser.parse_args()
+    if (
+        args.fixed_prefix_tikz_output is not None
+        and not args.fixed_prefix_attempts_only
+    ):
+        parser.error(
+            "--fixed-prefix-tikz-output requires "
+            "--fixed-prefix-attempts-only."
+        )
+    return args
 
 # =========================
 # Main
@@ -2374,6 +2509,7 @@ if __name__ == "__main__":
             eer_threshold,
             attempt_counts=args.attempts,
             optimizer_starts=args.optimizer_starts,
+            tikz_data_file=args.fixed_prefix_tikz_output,
         )
         raise SystemExit(0)
 

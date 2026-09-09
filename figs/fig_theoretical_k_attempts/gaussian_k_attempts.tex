@@ -1,0 +1,44 @@
+% Requires: \usepackage{pgfplots}
+%           \pgfplotsset{compat=1.18}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.95\columnwidth,
+    height=0.66\columnwidth,
+    xlabel={Number of attempts, $k$},
+    ylabel={Probability},
+    ymin=0,
+    ymax=1,
+    xtick=data,
+    grid=major,
+    line width=1pt,
+    mark size=2.4pt,
+    legend style={
+        at={(0.5,1.03)},
+        anchor=south,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    }
+]
+
+\addplot[green!55!black, mark=*]
+table[x=k, y=P_success_max] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\max}$}
+
+\addplot[blue, mark=triangle*]
+table[x=k, y=product_FRR] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+\addlegendentry{$\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+\addplot[red, mark=square*]
+table[x=k, y=product_1_minus_FAR] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+\addlegendentry{$\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Maximum success probability and its two cumulative factors for
+the Gaussian score distributions as functions of the number of attempts~$k$.}
+\label{fig:gaussian_k_attempt_curves}
+\end{figure}

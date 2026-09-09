@@ -2318,42 +2318,30 @@ table[x=score,y=genuine]
 \label{fig:livdet_sourceafis_histogram}
 \end{figure}
 
-\begin{figure}[t]
-\centering
 \begin{tikzpicture}
 \begin{axis}[
     width=0.9\columnwidth,
     height=0.6\columnwidth,
-    xlabel={Normalized similarity score (\%)},
-    ylabel={Empirical CDF},
+    xlabel={Similarity score},
+    ylabel={Probability density},
     xmin=0,
     xmax=100,
     ymin=0,
-    ymax=1,
     grid=major,
-    enlarge x limits=false,
-    enlarge y limits=false,
-    tick style={draw=none},
-    legend pos=south east,
-    legend style={
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    }
+    legend style={font=\small},
 ]
-\addplot[blue, thick, const plot mark right, no marks]
-table[x=score, y=genuine_cdf, col sep=space] 
-{figs/fig_spoofed_users/livdet_sourceafis_empirical_cdf_data.txt};
-\addlegendentry{Genuine}
-\addplot[red, thick, const plot mark right, no marks]
-table[x=score, y=impostor_cdf, col sep=space] 
-{figs/fig_spoofed_users/livdet_sourceafis_empirical_cdf_data.txt};
-\addlegendentry{Impostor}
+
+% Genuine: fitted Weibull PDF
+\addplot[blue, thick, domain=0.864333:100, samples=300]
+{(1.26817/29.1126) * ((x-0.864333)/29.1126)^0.26817 * exp(-((x-0.864333)/29.1126)^1.26817)};
+\addlegendentry{Genuine: Weibull}
+
+% Impostor: fitted logistic PDF
+\addplot[red, thick, domain=0:100, samples=300]
+{exp(-(x-4.23277)/2.67652) / (2.67652* (1+exp(-(x-4.23277)/2.67652))^2)};
+\addlegendentry{Impostor: logistic}
 \end{axis}
 \end{tikzpicture}
-\caption{Empirical cumulative distributions of the genuine and spoof-impostor similarity scores.}
-\label{fig:livdet_empirical_cdf}
-\end{figure}
 
 
 \begin{figure}[t]
@@ -2521,34 +2509,227 @@ We follow the theoretical analysis in~\S\ref{sec:4.2}, and calculate the success
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.9\columnwidth,
-    height=0.60\columnwidth,
-    xlabel={Normalized similarity threshold},
-    ylabel={Success probability},
-    xmin=0,
-    xmax=100,
+    width=0.95\columnwidth,
+    height=0.65\columnwidth,
+    xlabel={Number of attempts, $k$},
+    ylabel={Probability},
+    xmin=1,
     ymin=0,
     ymax=1,
+    xtick=data,
     grid=major,
-    enlarge x limits=false,
-    enlarge y limits=false,
-    tick style={draw=none},
-    legend pos=north east,
+    line width=1pt,
+    mark size=2.5pt,
     legend style={
+        at={(0.5,-0.25)},
+        anchor=north,
+        legend columns=3,
         draw=black,
         fill=white,
         font=\scriptsize
     }
 ]
-\addplot[blue,thick,no markers]
-table[x=threshold,y=success_k4,col sep=space] 
-{figs/fig_spoofed_users/livdet_attempts_success_k4.txt};
-\addlegendentry{$k=4$ attempts}
+
+% FAR at the final attempt
+% \addplot[red, mark=square*]
+% table[x=k, y=FAR] 
+% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+% \addlegendentry{FAR}
+% FRR at the final attempt
+% \addplot[blue, mark=triangle*]
+% table[x=k, y=FRR] 
+% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+% \addlegendentry{FRR}
+% Maximum cumulative success probability
+\addplot[green!60!black, mark=*]
+table[x=k, y=P_success_max] 
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\max}$}
+\addplot[orange, mark=diamond*]
+table[x=k, y=product_FRR] 
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$\prod_{j=1}^{k}\mathrm{FRR}_j$}
+\addplot[purple, mark=pentagon*]
+table[x=k, y=product_1_minus_FAR] 
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
 \end{axis}
 \end{tikzpicture}
-\caption{Biometric-only success probability over four authentication
-attempts when the same threshold is used in every attempt.}
-\label{fig:livdet_sourceafis_success_multiple_attempts}
+\caption{FAR, FRR, and the maximal cumulative success probability as a
+function of the number of authentication attempts~$k$. FAR and FRR correspond
+to the threshold applied at the final attempt of each fixed-prefix policy.}
+\label{fig:fixed_prefix_far_frr_success}
+\end{figure}
+
+% \begin{figure}[t]
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=0.98\columnwidth,
+%     height=0.75\columnwidth,
+%     xlabel={Number of attempts, $k$},
+%     ylabel={Probability},
+%     xmin=1,
+%     ymin=0,
+%     ymax=1,
+%     xtick=data,
+%     grid=major,
+%     line width=1pt,
+%     mark size=2.5pt,
+%     legend style={
+%         at={(0.5,-0.25)},
+%         anchor=north,
+%         legend columns=3,
+%         draw=black,
+%         fill=white,
+%         font=\scriptsize
+%     }
+% ]
+
+% % ==================================================
+% % Uniform distributions: solid lines
+% % ==================================================
+
+% \addplot[green!60!black, solid, mark=*] 
+% table[x=k, y=P_success_max] 
+% {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+% \addlegendentry{Uniform $P_{\mathrm{success}}^{\max}$}
+
+% \addplot[orange, solid, mark=*] 
+% table[x=k, y=product_FRR] 
+% {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+% \addlegendentry{Uniform $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+% \addplot[purple, solid, mark=*] 
+% table[x=k, y=product_1_minus_FAR] 
+% {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+% \addlegendentry{Uniform $\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+% % ==================================================
+% % Quadratic distributions: dashed lines
+% % ==================================================
+
+% % \addplot[green!60!black, dashed, mark=square*] 
+% % table[x=k, y=P_success_max] 
+% % {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+% % \addlegendentry{Quadratic $P_{\mathrm{success}}^{\max}$}
+
+% % \addplot[orange, dashed, mark=square*] 
+% % table[x=k, y=product_FRR] 
+% % {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+% % \addlegendentry{Quadratic $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+% % \addplot[purple, dashed, mark=square*] 
+% % table[x=k, y=product_1_minus_FAR] 
+% % {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+% % \addlegendentry{Quadratic $\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+% % ==================================================
+% % Gaussian distributions: dotted lines
+% % ==================================================
+
+% % \addplot[green!60!black, densely dotted, mark=triangle*] 
+% % table[x=k, y=P_success_max] 
+% % {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% % \addlegendentry{Gaussian $P_{\mathrm{success}}^{\max}$}
+
+% % \addplot[orange, densely dotted, mark=triangle*] 
+% % table[x=k, y=product_FRR] 
+% % {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% % \addlegendentry{Gaussian $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+% % \addplot[purple, densely dotted, mark=triangle*] 
+% % table[x=k, y=product_1_minus_FAR] 
+% % {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% % \addlegendentry{Gaussian $\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{The maximal success probability, the product of the false rejection
+% rates, and the product of the attacker rejection probabilities as functions
+% of the number of authentication attempts~$k$ for the uniform, quadratic, and
+% Gaussian score distributions.}
+% \label{fig:theoretical_k_attempts_comparison}
+% \end{figure}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.98\columnwidth,
+    height=0.75\columnwidth,
+    xlabel={Number of attempts, $k$},
+    ylabel={Probability},
+    xmin=1,
+    xmax=10,
+    ymin=0,
+    ymax=1,
+    xtick=data,
+    grid=major,
+    line width=1pt,
+    mark size=2.5pt,
+    legend style={
+        at={(0.5,-0.25)},
+        anchor=north,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    }
+]
+
+% ==================================================
+% Uniform distributions: solid lines
+% ==================================================
+
+\addplot[red, solid, mark=*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+\addlegendentry{Uniform $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+\addplot[orange, solid, mark=*] 
+table[x=k, y=product_FRR] 
+{figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+\addlegendentry{Uniform $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+\addplot[blue, solid, mark=*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+\addlegendentry{Uniform $P_{\mathrm{failure}}$}
+
+% ==================================================
+% Quadratic distributions: dashed lines
+% ==================================================
+
+\addplot[red, dashed, mark=square*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+\addlegendentry{Quadratic $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+\addplot[orange, dashed, mark=square*] 
+table[x=k, y=product_FRR] 
+{figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+\addlegendentry{Quadratic $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+\addplot[blue, dashed, mark=square*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+\addlegendentry{Quadratic $P_{\mathrm{failure}}$}
+
+% ==================================================
+% Gaussian distributions: dotted lines
+% ==================================================
+
+% \addplot[red, densely dotted, mark=triangle*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% \addlegendentry{Gaussian $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+% \addplot[orange, densely dotted, mark=triangle*] 
+% table[x=k, y=product_FRR] 
+% {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% \addlegendentry{Gaussian $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+% \addplot[blue, densely dotted, mark=triangle*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% \addlegendentry{Gaussian $P_{\mathrm{failure}}$}
+
+\end{axis}
+\end{tikzpicture}
+\caption{The probability that the attacker is accepted in at least one
+attempt and the mechanism failure probability as functions of the number of
+authentication attempts~$k$ for the uniform, quadratic, and Gaussian score
+distributions.}
+\label{fig:theoretical_k_attempts_failure_comparison}
 \end{figure}
 
 \section{Conclusion}\label{sec:8}
