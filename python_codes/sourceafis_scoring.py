@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.ndimage import gaussian_filter1d
+from scipy import stats
 
 
 # =========================
@@ -41,15 +41,24 @@ SCORES_DIR.mkdir(parents=True, exist_ok=True)
 # Set to None to use all comparisons.
 MAX_IMPOSTER_SCORES_PER_USER = 20000
 
-PDF_FINE_STEP = 0.1
-SMOOTH_SIGMA_POINTS = 3.0
-
 HISTOGRAM_BIN_WIDTH = 5.0
 HIST_BINS = np.arange(
     0.0,
     100.0 + HISTOGRAM_BIN_WIDTH,
     HISTOGRAM_BIN_WIDTH,
 )
+
+# Exact fitted parameters reported by ks_histogram_test.py for this dataset.
+# scipy.stats.uniform parameters are (loc, scale), with support
+# [loc, loc + scale].
+KS_UNIFORM_GENUINE = (2.5, 95.0)
+KS_UNIFORM_IMPOSTOR = (2.5, 10.0)
+
+# scipy.stats.rdist parameters are (shape, loc, scale).  Shape 4 is the
+# normalized parabolic/quadratic distribution, with support
+# [loc - scale, loc + scale].
+KS_QUADRATIC_GENUINE = (4.0, 45.6681, 53.7892)
+KS_QUADRATIC_IMPOSTOR = (4.0, 3.86298, 3.85285)
 
 # Matches filenames such as 101_1.png or 101-1.png.
 FILENAME_PATTERN = re.compile(r"^(?P<user>\d+)[_-](?P<sample>\d+)")
@@ -417,124 +426,74 @@ def export_histograms(genuine_scores, impostor_scores):
         for c, g, i in zip(centers, hist_g, hist_i):
             f.write(f"{c:.4f} {g} {i}\n")
 
-def build_hist_pdf(scores, bins):
-    counts, edges = np.histogram(scores, bins=bins)
-    bw = float(edges[1] - edges[0])
-    centers = (edges[:-1] + edges[1:]) / 2.0
-    pdf = counts / (len(scores) * bw)
-    return centers, pdf, bw
-
-
 # =========================
-# Peak-to-peak interpolation + smoothing
+# FAR/FRR from discrete histogram counts + theoretical models
 # =========================
-def interp_and_smooth_pdf(centers, pdf, step=0.1, sigma_points=3.0, eps=0.0):
-    centers = np.asarray(centers, dtype=float)
-    pdf = np.asarray(pdf, dtype=float)
+def compute_far_frr_from_histogram(genuine_scores, impostor_scores, bins=HIST_BINS):
+    """Compute empirical FAR/FRR only at the histogram-bin centers.
 
-    x_fine = np.arange(float(centers[0]), float(centers[-1]) + 1e-9, step)
-    y_fine = np.zeros_like(x_fine)
+    A score is accepted when score >= threshold.  Each histogram bin is
+    treated as a discrete mass located at its center.  Therefore, at threshold
+    t:
 
-    support_mask = pdf > eps
-    if np.count_nonzero(support_mask) < 2:
-        y_fine = np.interp(x_fine, centers, pdf)
-    else:
-        c_sup = centers[support_mask]
-        p_sup = pdf[support_mask]
+        FAR(t) = sum of impostor counts at centers >= t / N_impostor
+        FRR(t) = sum of genuine counts at centers <  t / N_genuine
 
-        x0 = float(c_sup[0])
-        x1 = float(c_sup[-1])
+    There is no interpolation, density estimation, or smoothing here.
+    """
+    genuine_counts, edges = np.histogram(genuine_scores, bins=bins)
+    impostor_counts, _ = np.histogram(impostor_scores, bins=bins)
 
-        inside = (x_fine >= x0) & (x_fine <= x1)
-        y_fine[inside] = np.interp(x_fine[inside], c_sup, p_sup)
+    if genuine_counts.sum() == 0 or impostor_counts.sum() == 0:
+        raise ValueError("Both genuine and impostor histograms must be non-empty.")
 
-    y_s = gaussian_filter1d(y_fine, sigma=sigma_points, mode="nearest")
+    thresholds = (edges[:-1] + edges[1:]) / 2.0
 
-    area = np.trapezoid(y_s, x_fine)
-    if area > 0:
-        y_s = y_s / area
+    # Counts strictly below each threshold; the current bin is accepted.
+    genuine_below = np.concatenate(([0], np.cumsum(genuine_counts)[:-1]))
 
-    return x_fine, y_s
+    # Counts at or above each threshold; the current bin is accepted.
+    impostor_at_or_above = np.cumsum(impostor_counts[::-1])[::-1]
 
+    frrs = genuine_below / genuine_counts.sum()
+    fars = impostor_at_or_above / impostor_counts.sum()
 
-def plot_smoothed_pdfs(genuine_scores, impostor_scores, step=0.1, sigma_points=3.0):
-    plt.figure(figsize=(8, 6))
-
-    cg, pg, _ = build_hist_pdf(genuine_scores, HIST_BINS)
-    ci, pi, _ = build_hist_pdf(impostor_scores, HIST_BINS)
-
-    xg, yg = interp_and_smooth_pdf(cg, pg, step=step, sigma_points=sigma_points)
-    xi, yi = interp_and_smooth_pdf(ci, pi, step=step, sigma_points=sigma_points)
-
-    plt.plot(xi, yi, linewidth=2, label="Impostor PDF (smoothed)")
-    plt.plot(xg, yg, linewidth=2, label="Genuine PDF (smoothed)")
-
-    plt.xlabel("Normalized similarity score (%)")
-    plt.ylabel("Probability Density")
-    plt.title("Smoothed PDFs (hist → peak-to-peak → gaussian smooth)")
-    plt.legend()
-    plt.grid(alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_smoothed_pdf.pdf", dpi=300, bbox_inches="tight")
-    plt.close()
+    return thresholds, fars.astype(float), frrs.astype(float)
 
 
-# =========================
-# FAR/FRR from smoothed PDFs + EER
-# =========================
-def compute_far_frr_from_smoothed_pdf(genuine_scores, impostor_scores, step=0.1, sigma_points=3.0):
-    cg, pg, _ = build_hist_pdf(genuine_scores, HIST_BINS)
-    ci, pi, _ = build_hist_pdf(impostor_scores, HIST_BINS)
+def compute_ks_theoretical_far_frr(thresholds):
+    """Evaluate the exact uniform and quadratic fits reported by the KS test.
 
-    xg, yg = interp_and_smooth_pdf(cg, pg, step=step, sigma_points=sigma_points)
-    xi, yi = interp_and_smooth_pdf(ci, pi, step=step, sigma_points=sigma_points)
+    The quadratic model is scipy.stats.rdist with shape fixed to 4, whose PDF is
 
-    if not np.allclose(xg, xi):
-        x_min = max(xg[0], xi[0])
-        x_max = min(xg[-1], xi[-1])
-        x = np.arange(x_min, x_max + 1e-9, step)
-        yg = np.interp(x, xg, yg)
-        yi = np.interp(x, xi, yi)
-    else:
-        x = xg
+        f(x) = 3/(4*scale) * (1 - ((x-loc)/scale)^2)
 
-    dx = float(step)
+    on [loc-scale, loc+scale].  Both models are evaluated at exactly the same
+    thresholds as the empirical histogram.
+    """
+    theoretical = {
+        "uniform": {
+            "far": stats.uniform.sf(thresholds, *KS_UNIFORM_IMPOSTOR),
+            "frr": stats.uniform.cdf(thresholds, *KS_UNIFORM_GENUINE),
+            "genuine_parameters": KS_UNIFORM_GENUINE,
+            "impostor_parameters": KS_UNIFORM_IMPOSTOR,
+        },
+        "quadratic": {
+            "far": stats.rdist.sf(thresholds, *KS_QUADRATIC_IMPOSTOR),
+            "frr": stats.rdist.cdf(thresholds, *KS_QUADRATIC_GENUINE),
+            "genuine_parameters": KS_QUADRATIC_GENUINE,
+            "impostor_parameters": KS_QUADRATIC_IMPOSTOR,
+        },
+    }
 
-    cdf_g = np.cumsum(yg) * dx
-    surv_i = np.flip(np.cumsum(np.flip(yi))) * dx
-
-    thresholds = x
-    frrs = np.clip(cdf_g, 0.0, 1.0)
-    fars = np.clip(surv_i, 0.0, 1.0)
-
-    return thresholds, fars, frrs
+    return theoretical
 
 
 def compute_eer_intersection(thresholds, fars, frrs):
-    d = fars - frrs
-
-    exact = np.where(d == 0)[0]
-    if len(exact) > 0:
-        i = int(exact[0])
-        return float(fars[i]), float(thresholds[i])
-
-    sc = np.where(np.sign(d[:-1]) * np.sign(d[1:]) < 0)[0]
-    if len(sc) == 0:
-        i = int(np.argmin(np.abs(d)))
-        return float(0.5 * (fars[i] + frrs[i])), float(thresholds[i])
-
-    i = int(sc[0])
-    t0, t1 = float(thresholds[i]), float(thresholds[i + 1])
-    d0, d1 = float(d[i]), float(d[i + 1])
-
-    alpha = d0 / (d0 - d1)
-    t_star = t0 + alpha * (t1 - t0)
-
-    far_star = float(fars[i] + alpha * (fars[i + 1] - fars[i]))
-    frr_star = float(frrs[i] + alpha * (frrs[i + 1] - frrs[i]))
-    eer = 0.5 * (far_star + frr_star)
-
-    return eer, t_star
+    """Return the closest discrete EER point without interpolation."""
+    i = int(np.argmin(np.abs(fars - frrs)))
+    eer = 0.5 * (float(fars[i]) + float(frrs[i]))
+    return eer, float(thresholds[i])
 
 
 def compute_p_success(thresholds, fars, frrs):
@@ -547,29 +506,93 @@ def compute_p_success(thresholds, fars, frrs):
     return p_success,eer_success, max_success, max_threshold
 
 
-def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
+def plot_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold):
     plt.figure(figsize=(8, 6))
-    plt.plot(thresholds, fars, label="FAR (smoothed-PDF integral)")
-    plt.plot(thresholds, frrs, label="FRR (smoothed-PDF integral)")
-    plt.scatter(eer_threshold, eer, label=f"EER≈{eer:.4f} @ T≈{eer_threshold:.2f}", zorder=3)
+
+    # Empirical results are discrete histogram integrals.  The step rendering
+    # and markers make it explicit that values exist only at these thresholds.
+    plt.step(
+        thresholds,
+        fars,
+        where="post",
+        color="tab:red",
+        marker="o",
+        label="Empirical FAR (histogram)",
+    )
+    plt.step(
+        thresholds,
+        frrs,
+        where="post",
+        color="tab:blue",
+        marker="o",
+        label="Empirical FRR (histogram)",
+    )
+
+    # Theoretical values are sampled at the same histogram thresholds.
+    plt.plot(
+        thresholds,
+        theoretical["uniform"]["far"],
+        "--s",
+        color="darkorange",
+        label="Uniform FAR",
+    )
+    plt.plot(
+        thresholds,
+        theoretical["uniform"]["frr"],
+        "--s",
+        color="teal",
+        label="Uniform FRR",
+    )
+    plt.plot(
+        thresholds,
+        theoretical["quadratic"]["far"],
+        ":^",
+        color="purple",
+        label="Quadratic FAR",
+    )
+    plt.plot(
+        thresholds,
+        theoretical["quadratic"]["frr"],
+        ":^",
+        color="green",
+        label="Quadratic FRR",
+    )
+
+    plt.scatter(
+        eer_threshold,
+        eer,
+        color="black",
+        label=f"Discrete EER≈{eer:.4f} @ T={eer_threshold:.2f}",
+        zorder=5,
+    )
     plt.xlabel("Threshold (%)")
     plt.ylabel("Error Rate")
-    plt.title("FAR / FRR vs Threshold")
-    plt.legend()
+    plt.title("Discrete empirical and theoretical FAR / FRR")
+    plt.legend(fontsize=8, ncol=2)
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_far_frr.pdf", dpi=300, bbox_inches="tight")
     plt.close()
 
-def export_far_frr(thresholds, fars, frrs, eer, eer_threshold):
+def export_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold):
     out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Curve data
+    # One row per histogram threshold.  FAR and FRR retain their old column
+    # names so existing TikZ plots continue to work.
     with open(out_dir / "sourceafis_far_frr_data.txt", "w") as f:
-        f.write("T FAR FRR\n")
-        for t, fa, fr in zip(thresholds, fars, frrs):
-            f.write(f"{t:.6f} {fa:.6f} {fr:.6f}\n")
+        f.write(
+            "T FAR FRR FAR_uniform FRR_uniform "
+            "FAR_quadratic FRR_quadratic\n"
+        )
+        for i, (t, fa, fr) in enumerate(zip(thresholds, fars, frrs)):
+            f.write(
+                f"{t:.6f} {fa:.6f} {fr:.6f} "
+                f"{theoretical['uniform']['far'][i]:.6f} "
+                f"{theoretical['uniform']['frr'][i]:.6f} "
+                f"{theoretical['quadratic']['far'][i]:.6f} "
+                f"{theoretical['quadratic']['frr'][i]:.6f}\n"
+            )
 
     # EER point
     with open(out_dir / "sourceafis_far_frr_points.txt", "w") as f:
@@ -744,22 +767,36 @@ if __name__ == "__main__":
 
     plot_histograms(genuine, impostor)
     export_histograms(genuine, impostor)
-    plot_smoothed_pdfs(genuine, impostor, step=PDF_FINE_STEP, sigma_points=SMOOTH_SIGMA_POINTS)
 
-    thresholds, fars, frrs = compute_far_frr_from_smoothed_pdf(
+    thresholds, fars, frrs = compute_far_frr_from_histogram(
         genuine,
         impostor,
-        step=PDF_FINE_STEP,
-        sigma_points=SMOOTH_SIGMA_POINTS
     )
+    theoretical = compute_ks_theoretical_far_frr(thresholds)
 
     eer, eer_threshold = compute_eer_intersection(thresholds, fars, frrs)
 
     print(f"[i] EER = {eer:.6f}")
-    print(f"[i] EER threshold ≈ {eer_threshold:.4f}")
+    print(f"[i] Discrete EER threshold = {eer_threshold:.4f}")
+    print(
+        "[i] Uniform genuine (loc, scale) = "
+        f"{theoretical['uniform']['genuine_parameters']}"
+    )
+    print(
+        "[i] Uniform impostor (loc, scale) = "
+        f"{theoretical['uniform']['impostor_parameters']}"
+    )
+    print(
+        "[i] Quadratic genuine (shape, loc, scale) = "
+        f"{theoretical['quadratic']['genuine_parameters']}"
+    )
+    print(
+        "[i] Quadratic impostor (shape, loc, scale) = "
+        f"{theoretical['quadratic']['impostor_parameters']}"
+    )
 
-    plot_far_frr(thresholds, fars, frrs, eer, eer_threshold)
-    export_far_frr(thresholds, fars, frrs, eer, eer_threshold)
+    plot_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold)
+    export_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold)
     p_success,eer_success, max_success, max_threshold = compute_p_success(thresholds, fars, frrs)
 
     print(f"[i] Max P_success = {max_success:.4f}")

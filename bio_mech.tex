@@ -2115,45 +2115,100 @@ table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogr
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.7\columnwidth,
-    height=0.5\columnwidth,
+    width=0.9\columnwidth,
+    height=0.65\columnwidth,
     xlabel={Threshold (\%)},
     ylabel={Error Rate},
-    ymin=0, ymax=1,
+    ymin=0,
+    ymax=1,
     grid=major,
     legend style={
-    at={(0.5,-0.25)},
-    anchor=north,
-    legend columns=3,
-    draw=black,
-    fill=white,
-    font=\scriptsize
-    },  
-    each nth point=2,
-    filter discard warning=false
+        at={(0.5,-0.30)},
+        anchor=north,
+        legend columns=2,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    }
 ]
 
-% FAR
-\addplot[thick, red]
-table [x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{FAR (smoothed-PDF integral)}
+% Empirical FAR: discrete step function
+\addplot[
+    thick,
+    red,
+    const plot mark left,
+    mark=*,
+    mark size=1.1pt
+]
+table[x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Empirical \FAR}
 
-% FRR
-\addplot[thick, blue]
-table [x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{FRR (smoothed-PDF integral)}
+% Empirical FRR: discrete step function
+\addplot[
+    thick,
+    blue,
+    const plot mark left,
+    mark=*,
+    mark size=1.1pt
+]
+table[x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Empirical \FRR}
 
-% EER point
-\addplot[only marks, mark=*, mark size=1.8pt, black]
-table [x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_points.txt};
+% Uniform FAR: continuous theoretical curve
+\addplot[
+    thick,
+    red,
+    dashed,
+    no marks
+]
+table[x=T, y=FAR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Uniform \FAR}
+
+% Uniform FRR: continuous theoretical curve
+\addplot[
+    thick,
+    blue,
+    dashed,
+    no marks
+]
+table[x=T, y=FRR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Uniform \FRR}
+
+% Quadratic FAR: continuous theoretical curve
+\addplot[
+    thick,
+    red,
+    densely dotted,
+    no marks
+]
+table[x=T, y=FAR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Quadratic \FAR}
+
+% Quadratic FRR: continuous theoretical curve
+\addplot[
+    thick,
+    blue,
+    densely dotted,
+    no marks
+]
+table[x=T, y=FRR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Quadratic \FRR}
+
+% Discrete EER point
+\addplot[
+    only marks,
+    mark=*,
+    mark size=1.1pt,
+    black
+]
+table[x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_points.txt};
 \addlegendentry{\EER}
 
 \end{axis}
 \end{tikzpicture}
-\caption{\FAR and \FRR as a function of the decision threshold, with the Equal Error Rate (\EER) point.}
+\caption{Empirical \FAR and \FRR as functions of the decision threshold, compared with the uniform and quadratic probabilistic distribution functions obtained from the KS fits.}
 \label{fig:sourceafis_far_frr}
 \end{figure}
-
 
 \begin{figure}[t]
 \centering
@@ -2353,32 +2408,97 @@ table[x=score,y=genuine]
     height=0.5\columnwidth,
     xlabel={Threshold (\%)},
     ylabel={Error Rate},
+    xmin=0,
+    xmax=100,
     ymin=0,
     ymax=1,
     grid=major,
-    legend pos=south east,
-    legend style={legend columns=3,draw=black, fill=white, font=\scriptsize},
-    each nth point=2,
-    filter discard warning=false
+    legend style={
+        at={(0.5,-0.30)},
+        anchor=north,
+        legend columns=2,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    }
 ]
 
-\addplot[thick, red, mark=none]
-table [x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{FAR}
+% Empirical FAR: discrete histogram integral
+\addplot[
+    thick,
+    red,
+    const plot mark left,
+    mark=*,
+    mark size=0.9pt
+]
+table[x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+\addlegendentry{Empirical \FAR}
 
-\addplot[thick, blue, mark=none]
-table [x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{FRR}
+% Empirical FRR: discrete histogram integral
+\addplot[
+    thick,
+    blue,
+    const plot mark left,
+    mark=*,
+    mark size=0.9pt
+]
+table[x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+\addlegendentry{Empirical \FRR}
 
-\addplot[only marks, mark=*, mark size=1.6pt, black]
-table [x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_points.txt};
+% Uniform FAR: continuous KS model
+\addplot[
+    thick,
+    red,
+    dashed,
+    mark=none
+]
+table[x=T, y=FAR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+\addlegendentry{Uniform \FAR}
+
+% Uniform FRR: continuous KS model
+\addplot[
+    thick,
+    blue,
+    dashed,
+    mark=none
+]
+table[x=T, y=FRR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+\addlegendentry{Uniform \FRR}
+
+% Quadratic FAR: continuous KS model
+\addplot[
+    thick,
+    red,
+    densely dotted,
+    mark=none
+]
+table[x=T, y=FAR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+\addlegendentry{Quadratic \FAR}
+
+% Quadratic FRR: continuous KS model
+\addplot[
+    thick,
+    blue,
+    densely dotted,
+    mark=none
+]
+table[x=T, y=FRR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+\addlegendentry{Quadratic \FRR}
+
+% Discrete empirical EER
+\addplot[
+    only marks,
+    mark=*,
+    mark size=1.6pt,
+    black
+]
+table[x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_points.txt};
 \addlegendentry{\EER}
 
 \end{axis}
 \end{tikzpicture}
-% \Description{\FAR and \FRR curves as a function of threshold for LivDet SourceAFIS scores using the best score over six probe templates, with the \EER point marked.}
-\caption{\FAR and \FRR as a function of the threshold using the best score over probe templates. The Equal Error Rate (\EER) occurs at $\approx 22.1\%$.
-}
+
+\caption{Empirical \FAR and \FRR as functions of the threshold, compared with the uniform and quadratic PDFs obtained from the KS fits. The empirical \EER point is marked and occurs at $\approx 22.1\%$.}
 \label{fig:livdet_sourceafis_far_frr}
 \end{figure}
 
@@ -2652,85 +2772,85 @@ to the threshold applied at the final attempt of each fixed-prefix policy.}
 % \label{fig:theoretical_k_attempts_comparison}
 % \end{figure}
 
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.98\columnwidth,
-    height=0.75\columnwidth,
-    xlabel={Number of attempts, $k$},
-    ylabel={Probability},
-    xmin=1,
-    xmax=10,
-    ymin=0,
-    ymax=1,
-    xtick=data,
-    grid=major,
-    line width=1pt,
-    mark size=2.5pt,
-    legend style={
-        at={(0.5,-0.25)},
-        anchor=north,
-        legend columns=3,
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    }
-]
+% \begin{figure}[t]
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=0.98\columnwidth,
+%     height=0.75\columnwidth,
+%     xlabel={Number of attempts, $k$},
+%     ylabel={Probability},
+%     xmin=1,
+%     xmax=10,
+%     ymin=0,
+%     ymax=1,
+%     xtick=data,
+%     grid=major,
+%     line width=1pt,
+%     mark size=2.5pt,
+%     legend style={
+%         at={(0.5,-0.25)},
+%         anchor=north,
+%         legend columns=3,
+%         draw=black,
+%         fill=white,
+%         font=\scriptsize
+%     }
+% ]
 
-% ==================================================
-% Uniform distributions: solid lines
-% ==================================================
+% % ==================================================
+% % Uniform distributions: solid lines
+% % ==================================================
 
-\addplot[red, solid, mark=*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-\addlegendentry{Uniform $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+% % \addplot[red, solid, mark=*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+% % \addlegendentry{Uniform $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
 
-\addplot[orange, solid, mark=*] 
-table[x=k, y=product_FRR] 
-{figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-\addlegendentry{Uniform $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+% % \addplot[orange, solid, mark=*] 
+% % table[x=k, y=product_FRR] 
+% % {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+% % \addlegendentry{Uniform $\prod_{j=1}^{k}\mathrm{FRR}_j$}
 
-\addplot[blue, solid, mark=*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-\addlegendentry{Uniform $P_{\mathrm{failure}}$}
+% % \addplot[blue, solid, mark=*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
+% % \addlegendentry{Uniform $P_{\mathrm{failure}}$}
 
-% ==================================================
-% Quadratic distributions: dashed lines
-% ==================================================
+% % ==================================================
+% % Quadratic distributions: dashed lines
+% % ==================================================
 
-\addplot[red, dashed, mark=square*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-\addlegendentry{Quadratic $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+% \addplot[red, dashed, mark=square*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+% \addlegendentry{Quadratic $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
 
-\addplot[orange, dashed, mark=square*] 
-table[x=k, y=product_FRR] 
-{figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-\addlegendentry{Quadratic $\prod_{j=1}^{k}\mathrm{FRR}_j$}
-
-\addplot[blue, dashed, mark=square*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-\addlegendentry{Quadratic $P_{\mathrm{failure}}$}
-
-% ==================================================
-% Gaussian distributions: dotted lines
-% ==================================================
-
-% \addplot[red, densely dotted, mark=triangle*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% \addlegendentry{Gaussian $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
-
-% \addplot[orange, densely dotted, mark=triangle*] 
+% \addplot[orange, dashed, mark=square*] 
 % table[x=k, y=product_FRR] 
-% {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% \addlegendentry{Gaussian $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+% {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+% \addlegendentry{Quadratic $\prod_{j=1}^{k}\mathrm{FRR}_j$}
 
-% \addplot[blue, densely dotted, mark=triangle*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% \addlegendentry{Gaussian $P_{\mathrm{failure}}$}
+% \addplot[blue, dashed, mark=square*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
+% \addlegendentry{Quadratic $P_{\mathrm{failure}}$}
 
-\end{axis}
-\end{tikzpicture}
-\caption{The probability that the attacker is accepted in at least one
-attempt and the mechanism failure probability as functions of the number of
-authentication attempts~$k$ for the uniform, quadratic, and Gaussian score
-distributions.}
-\label{fig:theoretical_k_attempts_failure_comparison}
-\end{figure}
+% % ==================================================
+% % Gaussian distributions: dotted lines
+% % ==================================================
+
+% % \addplot[red, densely dotted, mark=triangle*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% % \addlegendentry{Gaussian $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+% % \addplot[orange, densely dotted, mark=triangle*] 
+% % table[x=k, y=product_FRR] 
+% % {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% % \addlegendentry{Gaussian $\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+% % \addplot[blue, densely dotted, mark=triangle*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
+% % \addlegendentry{Gaussian $P_{\mathrm{failure}}$}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{The probability that the attacker is accepted in at least one
+% attempt and the mechanism failure probability as functions of the number of
+% authentication attempts~$k$ for the uniform, quadratic, and Gaussian score
+% distributions.}
+% \label{fig:theoretical_k_attempts_failure_comparison}
+% \end{figure}
 
 \section{Conclusion}\label{sec:8}
 \noindent

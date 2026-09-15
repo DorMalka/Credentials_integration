@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
 from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import differential_evolution, minimize
 from typing import Dict, List, Tuple
@@ -64,6 +65,19 @@ HIST_BINS = np.arange(
     100.0 + HISTOGRAM_BIN_WIDTH,
     HISTOGRAM_BIN_WIDTH,
 )
+THEORETICAL_CURVE_STEP = 0.1
+
+# Exact uniform and quadratic parameters reported by ks_histogram_test.py for
+# the LivDet histogram used by this script.
+# Uniform parameters are (loc, scale), with support [loc, loc + scale].
+KS_UNIFORM_GENUINE = (1.25, 97.5)
+KS_UNIFORM_IMPOSTOR = (1.25, 27.5)
+
+# Quadratic parameters are scipy.stats.rdist (shape, loc, scale). Shape 4 is
+# the normalized parabolic distribution, with support
+# [loc - scale, loc + scale].
+KS_QUADRATIC_GENUINE = (4.0, 39.9822, 59.0002)
+KS_QUADRATIC_IMPOSTOR = (4.0, 6.56119, 10.2985)
 CDF_DATA_FILE = SPOOF_OUTPUT_DIR / "livdet_sourceafis_empirical_cdf_data.txt"
 
 # The full analysis writes these four sweep dependencies to this checkpoint:
@@ -901,6 +915,68 @@ def compute_far_frr_from_smoothed_pdf(genuine_scores, impostor_scores, step=0.1,
     return thresholds, fars, frrs
 
 
+def compute_far_frr_from_histogram(
+    genuine_scores,
+    impostor_scores,
+    bins=HIST_BINS,
+):
+    """Compute display FAR/FRR directly from discrete histogram counts.
+
+    Every bin is treated as a probability mass at its center. For an
+    acceptance rule score >= threshold:
+
+        FAR(t) = sum of impostor counts at centers >= t / N_impostor
+        FRR(t) = sum of genuine counts at centers <  t / N_genuine
+
+    No interpolation or smoothing is used.
+    """
+    genuine_counts, edges = np.histogram(genuine_scores, bins=bins)
+    impostor_counts, _ = np.histogram(impostor_scores, bins=bins)
+
+    if genuine_counts.sum() == 0 or impostor_counts.sum() == 0:
+        raise ValueError("Both genuine and impostor histograms must be non-empty.")
+
+    centers = (edges[:-1] + edges[1:]) / 2.0
+    genuine_below = np.concatenate(([0], np.cumsum(genuine_counts)[:-1]))
+    impostor_at_or_above = np.cumsum(impostor_counts[::-1])[::-1]
+
+    center_frrs = genuine_below / genuine_counts.sum()
+    center_fars = impostor_at_or_above / impostor_counts.sum()
+
+    # Complete the discrete histogram curve at the normalized score endpoints.
+    thresholds = np.concatenate(([edges[0]], centers, [edges[-1]]))
+    frrs = np.concatenate(([0.0], center_frrs, [1.0]))
+    fars = np.concatenate(([1.0], center_fars, [0.0]))
+
+    return thresholds, fars.astype(float), frrs.astype(float)
+
+
+def compute_ks_theoretical_far_frr(thresholds):
+    """Evaluate the exact uniform/quadratic fits reported by the KS test."""
+    thresholds = np.asarray(thresholds, dtype=float)
+    return {
+        "uniform": {
+            "far": stats.uniform.sf(thresholds, *KS_UNIFORM_IMPOSTOR),
+            "frr": stats.uniform.cdf(thresholds, *KS_UNIFORM_GENUINE),
+            "genuine_parameters": KS_UNIFORM_GENUINE,
+            "impostor_parameters": KS_UNIFORM_IMPOSTOR,
+        },
+        "quadratic": {
+            "far": stats.rdist.sf(thresholds, *KS_QUADRATIC_IMPOSTOR),
+            "frr": stats.rdist.cdf(thresholds, *KS_QUADRATIC_GENUINE),
+            "genuine_parameters": KS_QUADRATIC_GENUINE,
+            "impostor_parameters": KS_QUADRATIC_IMPOSTOR,
+        },
+    }
+
+
+def compute_discrete_eer(thresholds, fars, frrs):
+    """Return the closest available histogram EER point."""
+    index = int(np.argmin(np.abs(fars - frrs)))
+    eer = 0.5 * (float(fars[index]) + float(frrs[index]))
+    return eer, float(thresholds[index])
+
+
 def compute_eer_intersection(thresholds, fars, frrs):
     d = fars - frrs
 
@@ -936,21 +1012,15 @@ def compute_p_success(thresholds, fars, frrs):
     return p_success, max_success, max_threshold
 
 
-def plot_far_frr(thresholds, fars, frrs, eer, eer_threshold):
-    plt.figure(figsize=(8, 6))
-    plt.plot(thresholds, fars, label="FAR")
-    plt.plot(thresholds, frrs, label="FRR")
-    plt.scatter(eer_threshold, eer, label=f"EERâ‰ˆ{eer:.4f} @ Tâ‰ˆ{eer_threshold:.2f}", zorder=3)
-    plt.xlabel("Threshold (%)")
-    plt.ylabel("Error Rate")
-    plt.title("LivDet FAR / FRR vs Threshold (best score over probes)")
-    plt.legend()
-    plt.grid(alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / "figs" / "fig_spoofed_users" /"livdet_sourceafis_far_frr_best_of_probes.pdf", dpi=300, bbox_inches="tight")
-    plt.close()
-
-def export_far_frr(thresholds, fars, frrs, eer, eer_threshold):
+def export_far_frr(
+    thresholds,
+    fars,
+    frrs,
+    theoretical_thresholds,
+    theoretical,
+    eer,
+    eer_threshold,
+):
     out_dir = OUTPUT_DIR / "figs" / "fig_spoofed_users"
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -958,6 +1028,20 @@ def export_far_frr(thresholds, fars, frrs, eer, eer_threshold):
         f.write("T FAR FRR\n")
         for t, fa, fr in zip(thresholds, fars, frrs):
             f.write(f"{t:.6f} {fa:.6f} {fr:.6f}\n")
+
+    with open(
+        out_dir / "livdet_sourceafis_far_frr_theoretical_data.txt",
+        "w",
+    ) as f:
+        f.write("T FAR_uniform FRR_uniform FAR_quadratic FRR_quadratic\n")
+        for index, t in enumerate(theoretical_thresholds):
+            f.write(
+                f"{t:.6f} "
+                f"{theoretical['uniform']['far'][index]:.6f} "
+                f"{theoretical['uniform']['frr'][index]:.6f} "
+                f"{theoretical['quadratic']['far'][index]:.6f} "
+                f"{theoretical['quadratic']['frr'][index]:.6f}\n"
+            )
 
     with open(out_dir / "livdet_sourceafis_far_frr_best_of_probes_points.txt", "w") as f:
         f.write("T_eer EER\n")
@@ -2553,8 +2637,43 @@ if __name__ == "__main__":
         eer_threshold,
     )
 
-    plot_far_frr(thresholds, fars, frrs, eer, eer_threshold)
-    export_far_frr(thresholds, fars, frrs, eer, eer_threshold)
+    # The FAR/FRR figure and its TikZ files use the unsmoothed histogram
+    # integrals.  The existing analysis arrays above are retained for the
+    # remaining optimization and sweep calculations.
+    display_thresholds, display_fars, display_frrs = (
+        compute_far_frr_from_histogram(genuine, impostor)
+    )
+    display_eer, display_eer_threshold = compute_discrete_eer(
+        display_thresholds,
+        display_fars,
+        display_frrs,
+    )
+    theoretical_thresholds = np.arange(
+        HIST_BINS[0],
+        HIST_BINS[-1] + 0.5 * THEORETICAL_CURVE_STEP,
+        THEORETICAL_CURVE_STEP,
+    )
+    theoretical = compute_ks_theoretical_far_frr(theoretical_thresholds)
+
+    print(f"[i] Discrete histogram EER = {display_eer:.6f}")
+    print(
+        "[i] Discrete histogram EER threshold = "
+        f"{display_eer_threshold:.4f}"
+    )
+    print(f"[i] KS uniform genuine parameters = {KS_UNIFORM_GENUINE}")
+    print(f"[i] KS uniform impostor parameters = {KS_UNIFORM_IMPOSTOR}")
+    print(f"[i] KS quadratic genuine parameters = {KS_QUADRATIC_GENUINE}")
+    print(f"[i] KS quadratic impostor parameters = {KS_QUADRATIC_IMPOSTOR}")
+
+    export_far_frr(
+        display_thresholds,
+        display_fars,
+        display_frrs,
+        theoretical_thresholds,
+        theoretical,
+        display_eer,
+        display_eer_threshold,
+    )
     p_success, max_success, max_threshold = compute_p_success(thresholds, fars, frrs)
 
     print(f"[i] Max P_success = {max_success:.4f}")
