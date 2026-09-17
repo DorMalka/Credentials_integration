@@ -2041,19 +2041,22 @@ We now empirically evaluate different mechanisms that use an atomic credential a
 \noindent
 To simulate a biometric credential, we use the public real-world~\textit{FVC2004} dataset of fingerprints, developed for the third international Fingerprint Verification Competition to compare fingerprint verification algorithms~\cite{fvc2004}. This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors. We divide each user's scans in the dataset into a reference set, simulating the reference scans stored in advance, and a probe set, simulating the scans obtained by the sensor. To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images. We evaluate all~10 users who appear in~$\textit{FVC2004}$ dataset whose fingerprints obtained by the same sensor. For each user, we randomly select three fingerprint scan images for the reference set, while the probe set comprises the remaining images in the dataset. We compute a similarity score for each probe scan by running the algorithm against each of the three reference images, and choose the maximum score as the probe's final score~\cite{hong1998,Cappelli2006,max_score2009}. The genuine comparisons are all comparisons between the user's probe images and the user's reference images. By contrast, the imposter comparisons are all comparisons between the users' reference images and the scans of the other users in the database.
 
-Calculating the mechanism's success probability requires the biometric credential's fault probabilities, which are functions of the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of the genuine and imposter comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we convert the histograms into smoothed probability density functions and calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:sourceafis_far_frr}.
+Calculating the mechanism's success probability requires the biometric credential's fault probabilities, which are functions of the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of the genuine and imposter comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:sourceafis_far_frr}.
 
 Before comparing different mechanisms, we validate that the algorithm's performance is representative of the state-of-the-art fingerprint verification algorithms. The algorithm we use achieves an~\EER of approximately~2\%, similar to the best results reported in the~\textit{FVC2004} competition~\cite{fvc2004}, and to those achieved by fingerprint systems used in industry and academia when evaluating different users~\cite{Maio2002,Cappelli2006}. We calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. 
 
-\begin{figure}[t]
+\newcommand{\sourceafisplotspanel}{%
+\begin{figure*}[!t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
     ybar,
     legend to name=histogramlegend,
     bar width=3pt,
-    width=0.9\columnwidth,
-    height=0.65\columnwidth,
+    width=0.86\linewidth,
+    height=0.40\linewidth,
     xlabel={Normalized similarity score (\%)},
     ylabel={Impostor count},
     ylabel style={red},
@@ -2078,8 +2081,8 @@ table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histog
     bar width=3pt,
     legend to name=histogramlegend,
     legend columns=2,
-    width=0.9\columnwidth,
-    height=0.65\columnwidth,
+    width=0.86\linewidth,
+    height=0.40\linewidth,
     xlabel={Normalized similarity score (\%)},
     yticklabel pos=right,
     ylabel={Genuine count},
@@ -2107,16 +2110,15 @@ table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogr
 \pgfplotslegendfromname{histogramlegend}
 \caption{Score histogram for genuine and impostor comparisons.}
 \label{fig:sourceafis_histogram}
-\end{figure}
-
-
-\begin{figure}[t]
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.9\columnwidth,
-    height=0.65\columnwidth,
+    width=0.86\linewidth,
+    height=0.40\linewidth,
     xlabel={Threshold (\%)},
     ylabel={Error Rate},
     ymin=0,
@@ -2208,23 +2210,22 @@ table[x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_po
 \end{tikzpicture}
 \caption{Empirical \FAR and \FRR as functions of the decision threshold, compared with the uniform and quadratic probabilistic distribution functions obtained from the KS fits.}
 \label{fig:sourceafis_far_frr}
-\end{figure}
+\end{subfigure}
 
-\begin{figure}[t]
-\centering
+\par\medskip
 
 \pgfplotsset{
     sourceafissuccess/.style={
         scale only axis,
-        width=0.8\columnwidth,
-        height=0.50\columnwidth,
+        width=0.82\linewidth,
+        height=0.36\linewidth,
         xlabel={Threshold (\%)},
         ylabel={Success Probability},
         ymin=0,
         ymax=1,
         grid=major,
         legend style={
-            at={(0.5,-0.25)},
+            at={(0.5,-0.3)},
             anchor=north,
             legend columns=3,
             draw=black,
@@ -2236,7 +2237,7 @@ table[x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_po
     }
 }
 
-\begin{subfigure}{\columnwidth}
+\begin{subfigure}[t]{0.48\textwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
@@ -2260,8 +2261,8 @@ table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_succe
 \caption{Single biometric credential mechanism's success.}
 \label{fig:bio_only_sourceafis_reg_scoring}
 \end{subfigure}
-
-\begin{subfigure}{\columnwidth}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
@@ -2306,11 +2307,20 @@ $0.82$ and $0.82$ at the \EER point, and
 $0.83$ and $0.84$ at their respective optimal operating points.
 }
 \label{fig:sourceafis_success}
-\end{figure}
+\end{figure*}
+}
 
 We next evaluate mechanisms that use an atomic credential and a biometric credential. We simulate an atomic credential with arbitrary fault probabilities~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. Then, we calculate the success probability of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and that of the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate the success probability functions of mechanisms, that use an atomic credential and a biometric credential as functions of~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each of the mechanisms differs from the~\EER point. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of the atomic credential only mechanism, demonstrating the benefit of using the biometric credential in addition, as observed in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. 
 
 However, the success probabilities of all evaluated mechanisms, when operated at their optimal thresholds, are not significantly greater than those of the corresponding mechanisms operating at the~\EER point. This can be explained by the fact that the~\EER of the biometric credential is already very low, indicating high separability between a user and an attacker and thus, leaving small room for improvement. In this scenario, we tested different users against each other. However, our main objective is to increase the mechanism's success probability in scenarios where an imposter attempts to spoof the user's templates, and authenticate to the user's account. Hence, we expect the imposter to use spoofing tools, producing samples whose score distribution is much more similar to the genuine distribution, which might lead to an increased~\EER point. 
+
+\begingroup
+\makeatletter
+\setlength{\@dblfptop}{0.5in}
+\makeatother
+\sourceafisplotspanel
+\clearpage
+\endgroup
 
 \begin{figure}[t]
 \centering
@@ -2373,6 +2383,8 @@ table[x=score,y=genuine]
 \label{fig:livdet_sourceafis_histogram}
 \end{figure}
 
+\begin{figure}[t]
+\centering
 \begin{tikzpicture}
 \begin{axis}[
     width=0.9\columnwidth,
@@ -2397,7 +2409,8 @@ table[x=score,y=genuine]
 \addlegendentry{Impostor: logistic}
 \end{axis}
 \end{tikzpicture}
-
+\label{fig:livdet_ks_estimation}
+\end{figure}
 
 \begin{figure}[t]
 \centering
@@ -2518,7 +2531,7 @@ table[x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_
         legend pos=north east,
         legend style={
             legend columns=3,
-            at={(0.5,-0.25)},
+            at={(0.5,-0.3)},
             anchor=north,
             draw=black, 
             fill=white, 
