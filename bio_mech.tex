@@ -3,6 +3,7 @@
 \usepackage{xspace}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{cuted}
 \usepackage{subcaption}
 \usepackage{pgfplots}
 \usepackage{amsthm}
@@ -2322,7 +2323,14 @@ However, the success probabilities of all evaluated mechanisms, when operated at
 \clearpage
 \endgroup
 
-\begin{figure}[t]
+\newcommand{\livdetplotblock}{%
+\begin{strip}
+\vspace{-0.6\baselineskip}
+\centering
+\begin{minipage}{\textwidth}
+\captionsetup{type=figure}
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
 \centering
 \begin{tikzpicture}
 % Left axis: impostor counts
@@ -2330,8 +2338,8 @@ However, the success probabilities of all evaluated mechanisms, when operated at
     ybar,
     legend to name=livdethistogramlegend,
     bar width=2pt,
-    width=0.9\columnwidth,
-    height=0.5\columnwidth,
+    width=0.86\linewidth,
+    height=0.45\linewidth,
     xlabel={Normalized similarity score (\%)},
     ylabel={Impostor count},
     ylabel style={red},
@@ -2354,8 +2362,8 @@ table[x=score,y=impostor]
     legend to name=livdethistogramlegend,
     legend columns=2,
     bar width=2pt,
-    width=0.9\columnwidth,
-    height=0.5\columnwidth,
+    width=0.86\linewidth,
+    height=0.45\linewidth,
     xlabel={Normalized similarity score (\%)},
     ylabel={Genuine count},
     ylabel style={blue},
@@ -2377,18 +2385,17 @@ table[x=score,y=genuine]
 \addlegendentry{Impostor}
 \end{axis}
 \end{tikzpicture}
-\medskip
+\smallskip
 \pgfplotslegendfromname{livdethistogramlegend}
 \caption{LivDet score histogram using the best score over probe templates.}
 \label{fig:livdet_sourceafis_histogram}
-\end{figure}
-
-\begin{figure}[t]
+\end{subfigure}\hfill%
+\begin{subfigure}[t]{0.48\textwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.9\columnwidth,
-    height=0.6\columnwidth,
+    width=0.86\linewidth,
+    height=0.45\linewidth,
     xlabel={Similarity score},
     ylabel={Probability density},
     xmin=0,
@@ -2409,16 +2416,19 @@ table[x=score,y=genuine]
 \addlegendentry{Impostor: logistic}
 \end{axis}
 \end{tikzpicture}
+\caption{Probability-density functions selected by the KS estimation.}
 \label{fig:livdet_ks_estimation}
-\end{figure}
+\end{subfigure}
 
-\begin{figure}[t]
+
+
+\begin{subfigure}[t]{0.48\textwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.8\columnwidth,
-    height=0.5\columnwidth,
+    width=0.86\linewidth,
+    height=0.4\linewidth,
     xlabel={Threshold (\%)},
     ylabel={Error Rate},
     xmin=0,
@@ -2427,7 +2437,7 @@ table[x=score,y=genuine]
     ymax=1,
     grid=major,
     legend style={
-        at={(0.5,-0.30)},
+        at={(0.5,-0.45)},
         anchor=north,
         legend columns=2,
         draw=black,
@@ -2513,16 +2523,15 @@ table[x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_
 
 \caption{Empirical \FAR and \FRR as functions of the threshold, compared with the uniform and quadratic PDFs obtained from the KS fits. The empirical \EER point is marked and occurs at $\approx 22.1\%$.}
 \label{fig:livdet_sourceafis_far_frr}
-\end{figure}
-
-\begin{figure}[t]
+\end{subfigure}\hfill%
+\begin{subfigure}[t]{0.48\textwidth}
 \centering
 
 \pgfplotsset{
     livdetsuccess/.style={
         scale only axis,
-        width=0.8\columnwidth,
-        height=0.50\columnwidth,
+        width=0.82\linewidth,
+        height=0.20\linewidth,
         xlabel={Threshold (\%)},
         ylabel={Success Probability},
         ymin=0,
@@ -2531,7 +2540,7 @@ table[x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_
         legend pos=north east,
         legend style={
             legend columns=3,
-            at={(0.5,-0.3)},
+            at={(0.5,-0.45)},
             anchor=north,
             draw=black, 
             fill=white, 
@@ -2541,10 +2550,8 @@ table[x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_
     }
 }
 
-\begin{subfigure}{\columnwidth}
-\centering
 \begin{tikzpicture}
-\begin{axis}[livdetsuccess]
+\begin{axis}[livdetsuccess, xlabel={}]
 
 \addplot[thick, blue, mark=none]
 table [x=T, y=P_success] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_data.txt};
@@ -2560,13 +2567,10 @@ table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_bes
 
 \end{axis}
 \end{tikzpicture}
-\caption{Single biometric credential.}
-\end{subfigure}
+\par\scriptsize Single biometric credential.\par
 
-\medskip
+\smallskip
 
-\begin{subfigure}{\columnwidth}
-\centering
 \begin{tikzpicture}
 \begin{axis}[livdetsuccess]
 
@@ -2596,8 +2600,7 @@ table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_an
 
 \end{axis}
 \end{tikzpicture}
-\caption{AND and OR mechanisms.}
-\end{subfigure}
+\par\scriptsize AND and OR mechanisms.\par
 
 % \Description{Success probability as a function of threshold for the LivDet SourceAFIS scores using the best score over probe templates.}
 \caption{
@@ -2606,14 +2609,33 @@ The AND mechanism achieves a maximal success probability of $0.834$, while the O
 At the \EER operating point, the success probabilities are $0.713$ and $0.649$ for the AND and OR mechanisms, respectively.
 }
 \label{fig:livdet_sourceafis_success}
-\end{figure}
+\end{subfigure}
+\caption{LivDet spoofing-attack evaluation using the best score over probe templates.}
+\label{fig:livdet_evaluation_panel}
+\end{minipage}
+\end{strip}
+}
 
-\subsection{Spoofing Attack Scenario}\label{sec:7.2}
+\raggedbottom
+\refstepcounter{subsection}
+\subsection*{\thesubsection.\quad Spoofing Attack Scenario}
+\makeatletter
+\immediate\write\@auxout{\string\newlabel{sec:7.2}{{\thesubsection}{\thepage}{Spoofing Attack Scenario}{\@currentHref}{}}}
+\immediate\write\@auxout{\string\@writefile{toc}{\string\contentsline {subsection}{\string\numberline {\thesubsection}Spoofing Attack Scenario}{\thepage}{\@currentHref}\string\protected@file@percent}}
+\makeatother
 \noindent
 To support this claim, we use the LivDet2015 database \cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale live and spoof fingerprint samples. 
 We follow the same methodology as before and use the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As reference images, we randomly select six Digital Persona scanner images of each user in the database, while the probe set of each user comprises the remaining real and fake images. The geniune comparisons are all comparisons between the reference and real images in the probe set.
 For each probe image, we define the similarity score as the maximum score among 6 reference images. 
-\begin{table*}[t]
+We simulate a spoofing attack by using fake fingerprint images of each user produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the reference images to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR curve to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}). As we expect, the~\EER increased significantly to 22.1\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 18\% to 70\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only. These results are summarized in Table~\ref   {tab:psafe_sweep_improvement}.
+
+\livdetplotblock
+\clearpage
+
+\begin{strip}
+\centering
+\begin{minipage}{\textwidth}
+\captionsetup{type=table}
     \centering
     \caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities. Bold EER values indicate the worse composition, whereas bold maximal values indicate the best composition. The bold safe column indicating the success probability of a mechanism uses an atomic credential only. The improvement column shows the percentage of improvement between the failure probability at the optimal mechanism success and the failure probability at the maximal mechanism success at EER threshold.}
     \label{tab:psafe_sweep_improvement}
@@ -2628,17 +2650,23 @@ For each probe image, we define the similarity score as the maximum score among 
         \textbf{0.90} & 0.05 & 0.00 & 0.05 & \textbf{0.70} & 0.73 & 0.89 & \textbf{0.92} & 70.59\% \\
         \bottomrule
     \end{tabular}
-\end{table*}
-
-We simulate a spoofing attack by using fake fingerprint images of each user produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the reference images to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR curve to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}). As we expect, the~\EER increased significantly to 22.1\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 18\% to 70\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only. These results are summarized in Table~\ref   {tab:psafe_sweep_improvement}.
+\end{minipage}
+\end{strip}
+\flushbottom
 
 \subsection{Spoofing Attack With Multiple Attempts}
 \noindent
-We simulate a spoofing attack scenario in which an attacker has multiple attempts to authenticate, using either the same or different spoofed fingerprints. We use the same genuine and impostor distributions calculated in the previous section~\S\ref{sec:7.2} using the LivDet2015 database. 
+We simulate a spoofing attack scenario in which a player has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the previous section~\S\ref{sec:7.2} using the LivDet2015 database. 
 
-We follow the theoretical analysis in~\S\ref{sec:4.2}, and calculate the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eq:attempts_success}). Then, we simulate several authentication attempts, each one produces different success probability function. We comapre the mechanism success probability under three different thresholds selection: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optinization over all~$k$ attempts, as shown in Figure~\ref{fig:livdet_sourceafis_success_multiple_attempts}. 
+We follow the theoretical analysis in~\S\ref{sec:4.2}, and calculate the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). Then, we simulate several authentication attempts of a player~$P$. For each number of attempts~$k$, we calculate the probability of a successful authentication as the probability that the user is accepted at least once, while the attacker is rejected over all~$k$ attempts. As the success probability becomes dependant on the number of attempts~$k$, we compare the mechanism success probability under three baselines of threshold selection: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}.
 
-\begin{figure}[t]
+We find that the success probability of a mechanism that uses a biometric credential only, increases with the number of attempts~$k$, when optimizing the threshold overl all~$k$ attempts. Futhermore, we can see that the success probability when reusing the~\EER threshold for all~$k$ attempts, is reducing with the number of attempts~$k$, indicating that the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
+
+We next consider a different policy where the user is allowed~$k_u$ authentication attempts and the attacker is allowed~$k_a$ spoofing attempts. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~\S\ref{sec:7.2}, and find the optimal number of attempts for a user to successfully authenticate, and the maximal number of allowed attempts for an attacker to successfully spoof the biometric credential. We then calculate the success probability of a mechanism that uses a biometric credential only, when the user has~$k_u$ attempts and the attacker has~$k_a$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k_user_attacker}. Our findings show that 
+
+We next consider a different policy where we fix the number of attempts for the attacker to~$k_a=10$ and the number of attempts for the user to~$k_u=3$. These selections simulate a real-world scenario that represents the typical number of attempts for a user authentication versus the maximal allowed attempts forced by the mechanism~\cite{typical_aut_attempts}. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~\S\ref{sec:7.2} and examine how the threshold selection affects the success probability of a mechanism that uses a biometric credential only. Under this policy, we present the success probability as function of the number of attempts in three baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:fixed_user_attacker_success_by_k}. We find that for the first three attempts, the optimal threshold doesn't change and is optimized repectively for~$k_u$. That means different user attempts lead to different optimal thresholds over~$k_u$. However, as the attempt index increases over~$k_u$, the threshold increases to reduce the probability of a successful spoofing attack. We also find that the success probability of a mechanism that uses a biometric credential only, is significantly higher when using the optimal threshold selection over~$k_u$ attempts, compared to reusing the~\EER threshold for all~$k_u$ attempts. 
+
+\begin{figure}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
@@ -2647,9 +2675,67 @@ We follow the theoretical analysis in~\S\ref{sec:4.2}, and calculate the success
     xlabel={Number of attempts, $k$},
     ylabel={Probability},
     xmin=1,
+    xmax=10,
     ymin=0,
     ymax=1,
     xtick=data,
+    grid=major,
+    line width=1pt,
+    mark size=2.5pt,
+    legend style={
+        at={(0.5,-0.28)},
+        anchor=north,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    }
+]
+
+% Maximum cumulative success probability
+\addplot[green!60!black, solid, mark=*,mark size=1.6pt]
+table[x=k, y=P_success_max] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\max}$}
+
+% EER threshold reused for all k attempts
+\addplot[blue, dashed, mark=square*,mark size=1.6pt]
+table[x=k, y=P_success_EER] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{EER}})$}
+
+% Single-attempt optimal threshold reused for all k attempts
+\addplot[red, densely dotted, mark=triangle*,mark size=1.6pt]
+table[x=k, y=P_success_single_attempt_optimum] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{opt}}^{(1)})$}
+
+% Product of the false-rejection rates
+\addplot[orange, solid, mark=diamond*,mark size=1.6pt]
+table[x=k, y=product_FRR] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+% Product of the attacker-rejection probabilities
+\addplot[purple, solid, mark=pentagon*,mark size=1.6pt]
+table[x=k, y=product_1_minus_FAR] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+\end{axis}
+\end{tikzpicture}
+\caption{The maximal cumulative success probability as a function of the number of authentication attempts~$k$, compared with reusing the \EER threshold and the single-attempt optimal threshold for all attempts. The products of the false-rejection rates and attacker-rejection probabilities of the optimized policy are also shown.}
+\label{fig:Success_probability_by_k}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.95\columnwidth,
+    height=0.65\columnwidth,
+    xlabel={Attempt number, $k$},
+    ylabel={Success probability},
+    xmin=1,
+    xmax=10,
+    ymin=0,
+    ymax=1,
+    xtick={1,2,...,10},
     grid=major,
     line width=1pt,
     mark size=2.5pt,
@@ -2663,207 +2749,23 @@ We follow the theoretical analysis in~\S\ref{sec:4.2}, and calculate the success
     }
 ]
 
-% FAR at the final attempt
-% \addplot[red, mark=square*]
-% table[x=k, y=FAR] 
-% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-% \addlegendentry{FAR}
-% FRR at the final attempt
-% \addplot[blue, mark=triangle*]
-% table[x=k, y=FRR] 
-% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-% \addlegendentry{FRR}
-% Maximum cumulative success probability
-\addplot[green!60!black, mark=*]
-table[x=k, y=P_success_max] 
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\max}$}
-\addplot[orange, mark=diamond*]
-table[x=k, y=product_FRR] 
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-\addlegendentry{$\prod_{j=1}^{k}\mathrm{FRR}_j$}
-\addplot[purple, mark=pentagon*]
-table[x=k, y=product_1_minus_FAR] 
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-\addlegendentry{$\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+\addplot[green!60!black, solid, mark=*]
+table[x=k, y=P_success_optimized] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
+\addlegendentry{Optimized thresholds}
+
+\addplot[blue, dashed, mark=square*]
+table[x=k, y=P_success_EER] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
+\addlegendentry{EER threshold}
+
+\addplot[red, densely dotted, mark=triangle*]
+table[x=k, y=P_success_single_attempt_optimum] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
+\addlegendentry{Single-attempt optimum}
+
 \end{axis}
 \end{tikzpicture}
-\caption{FAR, FRR, and the maximal cumulative success probability as a
-function of the number of authentication attempts~$k$. FAR and FRR correspond
-to the threshold applied at the final attempt of each fixed-prefix policy.}
-\label{fig:fixed_prefix_far_frr_success}
+\caption{The cumulative success probability through attempt~$k$ for the fixed attempt limits $k_u=3$ and $k_a=10$. The optimized policy uses independently optimized per-attempt thresholds. The two baselines reuse either the EER threshold or the single-attempt-optimal threshold at every active attempt. After $k=3$, the legitimate user's success term remains fixed while additional attacker attempts continue to affect the attacker-rejection term.}
+\label{fig:fixed_user_attacker_success_by_k}
 \end{figure}
-
-% \begin{figure}[t]
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     width=0.98\columnwidth,
-%     height=0.75\columnwidth,
-%     xlabel={Number of attempts, $k$},
-%     ylabel={Probability},
-%     xmin=1,
-%     ymin=0,
-%     ymax=1,
-%     xtick=data,
-%     grid=major,
-%     line width=1pt,
-%     mark size=2.5pt,
-%     legend style={
-%         at={(0.5,-0.25)},
-%         anchor=north,
-%         legend columns=3,
-%         draw=black,
-%         fill=white,
-%         font=\scriptsize
-%     }
-% ]
-
-% % ==================================================
-% % Uniform distributions: solid lines
-% % ==================================================
-
-% \addplot[green!60!black, solid, mark=*] 
-% table[x=k, y=P_success_max] 
-% {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-% \addlegendentry{Uniform $P_{\mathrm{success}}^{\max}$}
-
-% \addplot[orange, solid, mark=*] 
-% table[x=k, y=product_FRR] 
-% {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-% \addlegendentry{Uniform $\prod_{j=1}^{k}\mathrm{FRR}_j$}
-
-% \addplot[purple, solid, mark=*] 
-% table[x=k, y=product_1_minus_FAR] 
-% {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-% \addlegendentry{Uniform $\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
-
-% % ==================================================
-% % Quadratic distributions: dashed lines
-% % ==================================================
-
-% % \addplot[green!60!black, dashed, mark=square*] 
-% % table[x=k, y=P_success_max] 
-% % {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-% % \addlegendentry{Quadratic $P_{\mathrm{success}}^{\max}$}
-
-% % \addplot[orange, dashed, mark=square*] 
-% % table[x=k, y=product_FRR] 
-% % {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-% % \addlegendentry{Quadratic $\prod_{j=1}^{k}\mathrm{FRR}_j$}
-
-% % \addplot[purple, dashed, mark=square*] 
-% % table[x=k, y=product_1_minus_FAR] 
-% % {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-% % \addlegendentry{Quadratic $\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
-
-% % ==================================================
-% % Gaussian distributions: dotted lines
-% % ==================================================
-
-% % \addplot[green!60!black, densely dotted, mark=triangle*] 
-% % table[x=k, y=P_success_max] 
-% % {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% % \addlegendentry{Gaussian $P_{\mathrm{success}}^{\max}$}
-
-% % \addplot[orange, densely dotted, mark=triangle*] 
-% % table[x=k, y=product_FRR] 
-% % {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% % \addlegendentry{Gaussian $\prod_{j=1}^{k}\mathrm{FRR}_j$}
-
-% % \addplot[purple, densely dotted, mark=triangle*] 
-% % table[x=k, y=product_1_minus_FAR] 
-% % {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% % \addlegendentry{Gaussian $\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
-
-% \end{axis}
-% \end{tikzpicture}
-% \caption{The maximal success probability, the product of the false rejection
-% rates, and the product of the attacker rejection probabilities as functions
-% of the number of authentication attempts~$k$ for the uniform, quadratic, and
-% Gaussian score distributions.}
-% \label{fig:theoretical_k_attempts_comparison}
-% \end{figure}
-
-% \begin{figure}[t]
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     width=0.98\columnwidth,
-%     height=0.75\columnwidth,
-%     xlabel={Number of attempts, $k$},
-%     ylabel={Probability},
-%     xmin=1,
-%     xmax=10,
-%     ymin=0,
-%     ymax=1,
-%     xtick=data,
-%     grid=major,
-%     line width=1pt,
-%     mark size=2.5pt,
-%     legend style={
-%         at={(0.5,-0.25)},
-%         anchor=north,
-%         legend columns=3,
-%         draw=black,
-%         fill=white,
-%         font=\scriptsize
-%     }
-% ]
-
-% % ==================================================
-% % Uniform distributions: solid lines
-% % ==================================================
-
-% % \addplot[red, solid, mark=*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-% % \addlegendentry{Uniform $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
-
-% % \addplot[orange, solid, mark=*] 
-% % table[x=k, y=product_FRR] 
-% % {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-% % \addlegendentry{Uniform $\prod_{j=1}^{k}\mathrm{FRR}_j$}
-
-% % \addplot[blue, solid, mark=*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/uniform_k_attempts.txt};
-% % \addlegendentry{Uniform $P_{\mathrm{failure}}$}
-
-% % ==================================================
-% % Quadratic distributions: dashed lines
-% % ==================================================
-
-% \addplot[red, dashed, mark=square*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-% \addlegendentry{Quadratic $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
-
-% \addplot[orange, dashed, mark=square*] 
-% table[x=k, y=product_FRR] 
-% {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-% \addlegendentry{Quadratic $\prod_{j=1}^{k}\mathrm{FRR}_j$}
-
-% \addplot[blue, dashed, mark=square*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/quadratic_k_attempts.txt};
-% \addlegendentry{Quadratic $P_{\mathrm{failure}}$}
-
-% % ==================================================
-% % Gaussian distributions: dotted lines
-% % ==================================================
-
-% % \addplot[red, densely dotted, mark=triangle*] table[x=k, y=P_attacker] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% % \addlegendentry{Gaussian $1-\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
-
-% % \addplot[orange, densely dotted, mark=triangle*] 
-% % table[x=k, y=product_FRR] 
-% % {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% % \addlegendentry{Gaussian $\prod_{j=1}^{k}\mathrm{FRR}_j$}
-
-% % \addplot[blue, densely dotted, mark=triangle*] table[x=k, y=P_failure] {figs/fig_theoretical_k_attempts/gaussian_k_attempts.txt};
-% % \addlegendentry{Gaussian $P_{\mathrm{failure}}$}
-
-% \end{axis}
-% \end{tikzpicture}
-% \caption{The probability that the attacker is accepted in at least one
-% attempt and the mechanism failure probability as functions of the number of
-% authentication attempts~$k$ for the uniform, quadratic, and Gaussian score
-% distributions.}
-% \label{fig:theoretical_k_attempts_failure_comparison}
-% \end{figure}
 
 \section{Conclusion}\label{sec:8}
 \noindent
