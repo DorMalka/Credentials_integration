@@ -2037,7 +2037,8 @@ Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,
 
 \section{Empirical Evaluation}\label{sec:7}
 \noindent
-We now empirically evaluate different mechanisms that use an atomic credential and a biometric credential under two attack scenarios. In each scenario, we compare the mechanism's success probability when the threshold is set to the~\EER and when it is optimized. We first simulate a baseline attack in which an attacker attempts to authenticate using their own fingerprints~$(\S\ref{sec:7.1})$. We show that although optimizing the threshold increases the mechanism's success probability, the improvement is limited. We then present a more sophisticated attack in which an attacker creates a fake fingerprint using spoofing techniques~$(\S\ref{sec:7.2})$ and show that the improvement becomes substantially larger.
+We now empirically evaluate different mechanisms that use an atomic credential and a biometric credential under two attack scenarios. In each scenario, we compare the mechanism's success probability when the threshold is set to the~\EER and when it is optimized. We first simulate a baseline attack in which an attacker attempts to authenticate using their own fingerprints~$(\S\ref{sec:7.1})$. We show that although optimizing the threshold increases the mechanism's success probability, the improvement is limited. We then present a more sophisticated attack in which an attacker creates a fake fingerprint using spoofing techniques~$(\S\ref{sec:7.2})$ and show that the improvement becomes substantially larger. To reflect real-world authentication systems, we evaluate spoofing attack when multiple attempts are allowed~$(\S\ref{sec:7.3})$. We show that in such cases, the threshold should be optimized with respect to the maximum number of allowed attempts for siginificant improvement in the mechanism's success probability.
+
 \subsection{Baseline Attack Scenario}\label{sec:7.1}
 \noindent
 To simulate a biometric credential, we use the public real-world~\textit{FVC2004} dataset of fingerprints, developed for the third international Fingerprint Verification Competition to compare fingerprint verification algorithms~\cite{fvc2004}. This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors. We divide each user's scans in the dataset into a reference set, simulating the reference scans stored in advance, and a probe set, simulating the scans obtained by the sensor. To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images. We evaluate all~10 users who appear in~$\textit{FVC2004}$ dataset whose fingerprints obtained by the same sensor. For each user, we randomly select three fingerprint scan images for the reference set, while the probe set comprises the remaining images in the dataset. We compute a similarity score for each probe scan by running the algorithm against each of the three reference images, and choose the maximum score as the probe's final score~\cite{hong1998,Cappelli2006,max_score2009}. The genuine comparisons are all comparisons between the user's probe images and the user's reference images. By contrast, the imposter comparisons are all comparisons between the users' reference images and the scans of the other users in the database.
@@ -2222,6 +2223,8 @@ table[x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_po
         height=0.36\linewidth,
         xlabel={Threshold (\%)},
         ylabel={Success Probability},
+        xmin=0,
+        xmax=100,
         ymin=0,
         ymax=1,
         grid=major,
@@ -2294,6 +2297,14 @@ table [x=T_eer, y=P_and_eer] {figs/fig_different_users_sourceafsi/sourceafis_suc
 table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
 \addlegendentry{OR at \EER}
 
+\addplot[
+    thick,
+    black,
+    dashed,
+    domain=0:100,
+] {0.75};
+\addlegendentry{Atomic credential only}
+
 \end{axis}
 \end{tikzpicture}
 \caption{biometric credential integrated with an atomic credential into AND and OR mechanisms.}
@@ -2311,7 +2322,7 @@ $0.83$ and $0.84$ at their respective optimal operating points.
 \end{figure*}
 }
 
-We next evaluate mechanisms that use an atomic credential and a biometric credential. We simulate an atomic credential with arbitrary fault probabilities~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. Then, we calculate the success probability of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and that of the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate the success probability functions of mechanisms, that use an atomic credential and a biometric credential as functions of~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each of the mechanisms differs from the~\EER point. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of the atomic credential only mechanism, demonstrating the benefit of using the biometric credential in addition, as observed in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. 
+We next evaluate mechanisms that use an atomic credential and a biometric credential. We simulate an atomic credential with arbitrary fault probabilities~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. Then, we calculate the success probability of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and that of the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate the success probability functions of mechanisms, that use an atomic credential and a biometric credential as functions of~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each of the mechanisms differs from the~\EER point. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of the atomic credential only mechanism, demonstrating the benefit of using the biometric credential in addition. 
 
 However, the success probabilities of all evaluated mechanisms, when operated at their optimal thresholds, are not significantly greater than those of the corresponding mechanisms operating at the~\EER point. This can be explained by the fact that the~\EER of the biometric credential is already very low, indicating high separability between a user and an attacker and thus, leaving small room for improvement. In this scenario, we tested different users against each other. However, our main objective is to increase the mechanism's success probability in scenarios where an imposter attempts to spoof the user's templates, and authenticate to the user's account. Hence, we expect the imposter to use spoofing tools, producing samples whose score distribution is much more similar to the genuine distribution, which might lead to an increased~\EER point. 
 
@@ -2526,14 +2537,19 @@ table[x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_
 \end{subfigure}\hfill%
 \begin{subfigure}[t]{0.48\textwidth}
 \centering
+\raisebox{7\baselineskip}[0pt][0pt]{%
+\begin{minipage}[t]{\linewidth}
+\centering
 
 \pgfplotsset{
     livdetsuccess/.style={
         scale only axis,
         width=0.82\linewidth,
-        height=0.20\linewidth,
+        height=0.25\linewidth,
         xlabel={Threshold (\%)},
         ylabel={Success Probability},
+        xmin=0,
+        xmax=100,
         ymin=0,
         ymax=1,
         grid=major,
@@ -2598,6 +2614,14 @@ table [x=T_eer, y=P_and_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_a
 table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
 \addlegendentry{OR at \EER}
 
+\addplot[
+    thick,
+    black,
+    dashed,
+    domain=0:100,
+] {0.8};
+\addlegendentry{Atomic credential only}
+
 \end{axis}
 \end{tikzpicture}
 \par\scriptsize AND and OR mechanisms.\par
@@ -2609,7 +2633,10 @@ The AND mechanism achieves a maximal success probability of $0.834$, while the O
 At the \EER operating point, the success probabilities are $0.713$ and $0.649$ for the AND and OR mechanisms, respectively.
 }
 \label{fig:livdet_sourceafis_success}
+\end{minipage}%
+}%
 \end{subfigure}
+\par\vspace{9\baselineskip}% Reserve space for the raised right-hand panel and its caption.
 \caption{LivDet spoofing-attack evaluation using the best score over probe templates.}
 \label{fig:livdet_evaluation_panel}
 \end{minipage}
@@ -2627,7 +2654,7 @@ At the \EER operating point, the success probabilities are $0.713$ and $0.649$ f
 To support this claim, we use the LivDet2015 database \cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale live and spoof fingerprint samples. 
 We follow the same methodology as before and use the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As reference images, we randomly select six Digital Persona scanner images of each user in the database, while the probe set of each user comprises the remaining real and fake images. The geniune comparisons are all comparisons between the reference and real images in the probe set.
 For each probe image, we define the similarity score as the maximum score among 6 reference images. 
-We simulate a spoofing attack by using fake fingerprint images of each user produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the reference images to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR curve to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}). As we expect, the~\EER increased significantly to 22.1\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 18\% to 70\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only. These results are summarized in Table~\ref   {tab:psafe_sweep_improvement}.
+We simulate a spoofing attack by using fake fingerprint images of each user produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the reference images to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR error rates to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}). As we expect, the~\EER increased significantly to 22.1\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 18\% to 70\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only. These results demonstrating that non-optimizing the threshold of the biometric credential, when using multiple credentials in a mechanism, might drawback the mechanism's success probability. These results are summarized in Table~\ref   {tab:psafe_sweep_improvement}.
 
 \livdetplotblock
 \clearpage
@@ -2654,17 +2681,15 @@ We simulate a spoofing attack by using fake fingerprint images of each user prod
 \end{strip}
 \flushbottom
 
-\subsection{Spoofing Attack With Multiple Attempts}
+\subsection{Spoofing Attack With Multiple Attempts}\label{sec:7.3}
 \noindent
-We simulate a spoofing attack scenario in which a player has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the previous section~\S\ref{sec:7.2} using the LivDet2015 database. 
+We simulate a spoofing attack scenario in which a player has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the previous section~$(\S\ref{sec:7.2})$ using the LivDet2015 database. 
 
-We follow the theoretical analysis in~\S\ref{sec:4.2}, and calculate the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). Then, we simulate several authentication attempts of a player~$P$. For each number of attempts~$k$, we calculate the probability of a successful authentication as the probability that the user is accepted at least once, while the attacker is rejected over all~$k$ attempts. As the success probability becomes dependant on the number of attempts~$k$, we compare the mechanism success probability under three baselines of threshold selection: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}.
+We follow the theoretical analysis in~$(\S\ref{sec:4.2})$, and calculate the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). Then, we simulate several authentication attempts of a player~$P$. For each number of attempts~$k$, we calculate the probability of a successful authentication as the probability that the user is accepted at least once, while the attacker is rejected over all~$k$ attempts. As the success probability becomes dependant on the number of attempts~$k$, we compare the mechanism success probability under three baselines of threshold selections: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}.
 
 We find that the success probability of a mechanism that uses a biometric credential only, increases with the number of attempts~$k$, when optimizing the threshold overl all~$k$ attempts. Futhermore, we can see that the success probability when reusing the~\EER threshold for all~$k$ attempts, is reducing with the number of attempts~$k$, indicating that the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
 
-We next consider a different policy where the user is allowed~$k_u$ authentication attempts and the attacker is allowed~$k_a$ spoofing attempts. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~\S\ref{sec:7.2}, and find the optimal number of attempts for a user to successfully authenticate, and the maximal number of allowed attempts for an attacker to successfully spoof the biometric credential. We then calculate the success probability of a mechanism that uses a biometric credential only, when the user has~$k_u$ attempts and the attacker has~$k_a$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k_user_attacker}. Our findings show that 
-
-We next consider a different policy where we fix the number of attempts for the attacker to~$k_a=10$ and the number of attempts for the user to~$k_u=3$. These selections simulate a real-world scenario that represents the typical number of attempts for a user authentication versus the maximal allowed attempts forced by the mechanism~\cite{typical_aut_attempts}. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~\S\ref{sec:7.2} and examine how the threshold selection affects the success probability of a mechanism that uses a biometric credential only. Under this policy, we present the success probability as function of the number of attempts in three baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:fixed_user_attacker_success_by_k}. We find that for the first three attempts, the optimal threshold doesn't change and is optimized repectively for~$k_u$. That means different user attempts lead to different optimal thresholds over~$k_u$. However, as the attempt index increases over~$k_u$, the threshold increases to reduce the probability of a successful spoofing attack. We also find that the success probability of a mechanism that uses a biometric credential only, is significantly higher when using the optimal threshold selection over~$k_u$ attempts, compared to reusing the~\EER threshold for all~$k_u$ attempts. 
+We next consider a different policy where the user is allowed~$k_u$ authentication attempts and the attacker is allowed~$k_a$ spoofing attempts. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~$(\S\ref{sec:7.2})$ and fix the number of attempts for the attacker to~$k_a=10$ and the number of attempts for the user to~$k_u=3$. These selections simulate a real-world scenario that represents the typical number of attempts for a user authentication versus the maximal allowed attempts forced by the mechanism~\cite{typical_aut_attempts}. We examine how the threshold selection affects the success probability of a mechanism that uses a biometric credential only. Under this policy, we present the success probability as function of the number of attempts in three baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:fixed_user_attacker_success_by_k}. We find that for the first three attempts, the optimal threshold doesn't change and is optimized repectively for~$k_u$. That means different user attempts lead to different optimal thresholds over~$k_u$. However, as the attempt index increases above~$k_u$, the threshold increases to reduce the probability of a successful spoofing attack. We also find that the success probability of a mechanism that uses a biometric credential only, is significantly higher when using the optimal threshold selection over~$k_u$ attempts, compared to reusing the~\EER threshold for all~$k_u$ attempts. 
 
 \begin{figure}
 \centering
