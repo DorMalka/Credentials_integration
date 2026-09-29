@@ -21,11 +21,16 @@ REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
 SOURCEAFIS_DIR = REPO_ROOT / "sourceafis-demo"
 LIVDET_ROOT = SOURCEAFIS_DIR / "livdet_preproc_png"
 
-# Main source dirs
+# Each LivDet partition is an independent population. Identical numeric IDs in
+# Training and Testing must never be treated as the same fingerprint.
 TRAIN_LIVE_DIR = LIVDET_ROOT / "Training" / "Digital_Persona" / "Live"
 TEST_LIVE_DIR = LIVDET_ROOT / "Testing" / "Digital_Persona" / "Live"
+LIVE_DIRS_BY_SPLIT = {
+    "Training": TRAIN_LIVE_DIR,
+    "Testing": TEST_LIVE_DIR,
+}
 
-# Fake material names to include from BOTH training and testing
+# Fake material names to include independently within each partition.
 FAKE_MATERIALS = [
     "Gelatine",
     "Woodglue",
@@ -33,11 +38,11 @@ FAKE_MATERIALS = [
     "Latex",
 ]
 
-# Multi-user evaluation. Leave USER_IDS as None to evaluate every identity
-# discovered in the training-live directory. To run only a subset while
-# debugging, use values such as ["002_0", "003_0"].
+# Multi-user evaluation. Leave USER_IDS as None to evaluate every identity in
+# each partition. To run only a subset while debugging, use values such as
+# ["002_0", "003_0"]; matching IDs are evaluated separately per partition.
 USER_IDS = None
-PROBES_PER_USER = 6
+PROBES_PER_USER = 4
 
 # A filename such as 002_0_5.png belongs to identity 002_0, sample 5.
 LIVDET_FILENAME_PATTERN = re.compile(
@@ -67,17 +72,21 @@ HIST_BINS = np.arange(
 )
 THEORETICAL_CURVE_STEP = 0.1
 
-# Exact uniform and quadratic parameters reported by ks_histogram_test.py for
-# the LivDet histogram used by this script.
+# Distribution parameters reported by ks_histogram_test.py for the LivDet
+# histogram used by this script.
 # Uniform parameters are (loc, scale), with support [loc, loc + scale].
 KS_UNIFORM_GENUINE = (1.25, 97.5)
-KS_UNIFORM_IMPOSTOR = (1.25, 27.5)
+KS_UNIFORM_IMPOSTOR = (1.25, 77.5)
 
 # Quadratic parameters are scipy.stats.rdist (shape, loc, scale). Shape 4 is
 # the normalized parabolic distribution, with support
 # [loc - scale, loc + scale].
-KS_QUADRATIC_GENUINE = (4.0, 39.9822, 59.0002)
-KS_QUADRATIC_IMPOSTOR = (4.0, 6.56119, 10.2985)
+KS_QUADRATIC_GENUINE = (4.0, 44.3902, 54.6395)
+KS_QUADRATIC_IMPOSTOR = (4.0, 26.4433, 52.3973)
+
+# Normal parameters are (loc, scale) = (mean, standard deviation).
+KS_NORMAL_GENUINE = (35.6369, 19.855)
+KS_NORMAL_IMPOSTOR = (12.6193, 13.7593)
 CDF_DATA_FILE = SPOOF_OUTPUT_DIR / "livdet_sourceafis_empirical_cdf_data.txt"
 
 # The full analysis writes these four sweep dependencies to this checkpoint:
@@ -170,12 +179,12 @@ def sample_sort_key(path):
     return int(match.group("sample"))
 
 
-def collect_genuine_candidates(train_live_dir, test_live_dir, identity_glob, probe_paths):
+def collect_genuine_candidates(live_dir, identity_glob, probe_paths):
+    """Collect non-probe live samples from the enrollment partition only."""
     probe_set = {p.resolve() for p in probe_paths}
 
     candidates = []
-    candidates.extend(collect_matching_files(train_live_dir, identity_glob))
-    candidates.extend(collect_matching_files(test_live_dir, identity_glob))
+    candidates.extend(collect_matching_files(live_dir, identity_glob))
 
     # Exclude exact probe files
     candidates = [p for p in candidates if p.resolve() not in probe_set]
@@ -191,18 +200,27 @@ def collect_genuine_candidates(train_live_dir, test_live_dir, identity_glob, pro
     return out
 
 
-def collect_fake_candidates(livdet_root: Path, materials, identity_glob):
+def collect_fake_candidates(
+    livdet_root: Path,
+    split: str,
+    materials,
+    identity_glob,
+):
     """
-    Collect fake candidates from BOTH Training/Fake/* and Testing/Fake/*,
-    matching the same identity glob as the genuine user.
+    Collect targeted fakes from the same partition as the enrollment images.
     """
     candidates = []
 
-    for split in ["Training", "Testing"]:
-        for material in materials:
-            fake_dir = livdet_root / split / "Digital_Persona" / "Fake" / material
-            if fake_dir.is_dir():
-                candidates.extend(collect_matching_files(fake_dir, identity_glob))
+    for material in materials:
+        fake_dir = (
+            livdet_root
+            / split
+            / "Digital_Persona"
+            / "Fake"
+            / material
+        )
+        if fake_dir.is_dir():
+            candidates.extend(collect_matching_files(fake_dir, identity_glob))
 
     # Deduplicate while preserving order
     seen = set()
@@ -217,89 +235,96 @@ def collect_fake_candidates(livdet_root: Path, materials, identity_glob):
 
 def select_users_and_files():
     """
-    Discover all LivDet identities and select, for each identity:
-      - the first PROBES_PER_USER training-live images as enrollment probes;
-      - the remaining matching live images as genuine candidates;
-      - all matching fake images from the configured materials.
+    Build independent enrollment experiments inside Training and Testing.
+
+    For every (partition, identity) pair:
+      - the first PROBES_PER_USER live images are enrollment probes;
+      - the remaining live images in that partition are genuine candidates;
+      - matching fake images from that same partition are spoof candidates.
+
+    Results from both partitions are pooled only after their within-partition
+    comparisons have been scored.
     """
-    if not TRAIN_LIVE_DIR.is_dir():
-        raise FileNotFoundError(f"Training live directory not found: {TRAIN_LIVE_DIR}")
-    if not TEST_LIVE_DIR.is_dir():
-        raise FileNotFoundError(f"Testing live directory not found: {TEST_LIVE_DIR}")
-
-    training_files_by_identity = {}
-
-    for path in collect_matching_files(TRAIN_LIVE_DIR, "*.png"):
-        identity = extract_livdet_identity(path)
-        if identity is None:
-            print(f"[!] Ignoring unrecognized LivDet filename: {path.name}")
-            continue
-        training_files_by_identity.setdefault(identity, []).append(path)
-
-    if not training_files_by_identity:
-        raise ValueError(
-            f"No LivDet images with names such as 002_0_5.png were found in "
-            f"{TRAIN_LIVE_DIR}"
-        )
-
-    if USER_IDS is None:
-        selected_identities = sorted(
-            training_files_by_identity,
-            key=identity_sort_key,
-        )
-    else:
-        selected_identities = list(dict.fromkeys(USER_IDS))
-
     selections = {}
 
-    for identity in selected_identities:
-        if identity not in training_files_by_identity:
+    for split, live_dir in LIVE_DIRS_BY_SPLIT.items():
+        if not live_dir.is_dir():
+            raise FileNotFoundError(
+                f"{split} live directory not found: {live_dir}"
+            )
+
+        files_by_identity = {}
+        for path in collect_matching_files(live_dir, "*.png"):
+            identity = extract_livdet_identity(path)
+            if identity is None:
+                print(
+                    f"[!] Ignoring unrecognized LivDet filename: {path.name}"
+                )
+                continue
+            files_by_identity.setdefault(identity, []).append(path)
+
+        if not files_by_identity:
             raise ValueError(
-                f"Identity {identity} was not found in {TRAIN_LIVE_DIR}"
+                f"No LivDet images with names such as 002_0_5.png were "
+                f"found in {live_dir}"
             )
 
-        training_live_files = sorted(
-            training_files_by_identity[identity],
-            key=sample_sort_key,
-        )
+        if USER_IDS is None:
+            selected_identities = sorted(
+                files_by_identity,
+                key=identity_sort_key,
+            )
+        else:
+            selected_identities = [
+                identity
+                for identity in dict.fromkeys(USER_IDS)
+                if identity in files_by_identity
+            ]
 
-        if len(training_live_files) < PROBES_PER_USER:
-            raise ValueError(
-                f"Identity {identity} has only {len(training_live_files)} "
-                f"training-live images; {PROBES_PER_USER} probes are required."
+        for identity in selected_identities:
+            live_files = sorted(
+                files_by_identity[identity],
+                key=sample_sort_key,
             )
 
-        probe_paths = training_live_files[:PROBES_PER_USER]
-        identity_glob = f"{identity}_*.png"
+            if len(live_files) <= PROBES_PER_USER:
+                print(
+                    f"[!] Skipping {split}/{identity}: only "
+                    f"{len(live_files)} live images are available; "
+                    f"{PROBES_PER_USER} probes plus at least one genuine "
+                    "candidate are required."
+                )
+                continue
 
-        genuine_candidates = collect_genuine_candidates(
-            TRAIN_LIVE_DIR,
-            TEST_LIVE_DIR,
-            identity_glob,
-            probe_paths,
-        )
-        fake_candidates = collect_fake_candidates(
-            LIVDET_ROOT,
-            FAKE_MATERIALS,
-            identity_glob,
-        )
-
-        if not fake_candidates:
-            print(
-                f"[!] Skipping identity {identity}: "
-                "no matching fake candidates were found."
+            probe_paths = live_files[:PROBES_PER_USER]
+            identity_glob = f"{identity}_*.png"
+            genuine_candidates = collect_genuine_candidates(
+                live_dir,
+                identity_glob,
+                probe_paths,
             )
-            continue
-        if not genuine_candidates:
-            raise ValueError(
-                f"No non-probe genuine candidates were found for identity {identity}."
+            fake_candidates = collect_fake_candidates(
+                LIVDET_ROOT,
+                split,
+                FAKE_MATERIALS,
+                identity_glob,
             )
 
-        selections[identity] = {
-            "probes": probe_paths,
-            "genuine": genuine_candidates,
-            "impostor": fake_candidates,
-        }
+            if not fake_candidates:
+                print(
+                    f"[!] Skipping {split}/{identity}: no matching fake "
+                    "candidates were found in the same partition."
+                )
+                continue
+
+            cohort_key = f"{split.lower()}__{identity}"
+            selections[cohort_key] = {
+                "split": split,
+                "identity": identity,
+                "probes": probe_paths,
+                "genuine": genuine_candidates,
+                "impostor": fake_candidates,
+            }
 
     if not selections:
         raise ValueError("No LivDet identities were selected.")
@@ -439,15 +464,16 @@ def load_scores_from_csv_best_per_candidate(scores_csv):
 
 def collect_multiuser_scores():
     """
-    Run the spoof experiment independently for every selected identity, then
-    pool the best-over-probes genuine and fake scores across all identities.
+    Run the spoof experiment independently for every selected
+    (partition, identity) cohort, then pool the valid within-partition scores.
     """
     selections = select_users_and_files()
 
-    print(f"[i] Selected {len(selections)} LivDet identities:")
-    for identity, files in selections.items():
+    print(f"[i] Selected {len(selections)} LivDet partition/identity cohorts:")
+    for cohort_key, files in selections.items():
         print(
-            f"    {identity}: {len(files['probes'])} probes, "
+            f"    {files['split']}/{files['identity']}: "
+            f"{len(files['probes'])} probes, "
             f"{len(files['genuine'])} genuine candidates, "
             f"{len(files['impostor'])} fake candidates"
         )
@@ -457,11 +483,13 @@ def collect_multiuser_scores():
     all_genuine_best = {}
     all_impostor_best = {}
 
-    for identity, files in selections.items():
-        scores_csv = SCORES_DIR / f"sourceafis_livdet_scores_{identity}.csv"
+    for cohort_key, files in selections.items():
+        scores_csv = (
+            SCORES_DIR / f"sourceafis_livdet_scores_{cohort_key}.csv"
+        )
 
         run_sourceafis_batch_best_of_probes(
-            identity=identity,
+            identity=cohort_key,
             probe_paths=files["probes"],
             genuine_candidates=files["genuine"],
             fake_candidates=files["impostor"],
@@ -478,8 +506,8 @@ def collect_multiuser_scores():
         all_impostor_best.update(impostor_best)
 
         print(
-            f"[i] Identity {identity}: pooled {len(genuine)} genuine and "
-            f"{len(impostor)} fake scores"
+            f"[i] {files['split']}/{files['identity']}: pooled "
+            f"{len(genuine)} genuine and {len(impostor)} fake scores"
         )
 
     genuine = np.asarray(all_genuine, dtype=float)
@@ -491,7 +519,10 @@ def collect_multiuser_scores():
         raise ValueError("The pooled fake distribution is empty.")
 
     print()
-    print(f"[i] Total enrolled identities: {len(selections)}")
+    print(
+        "[i] Total enrolled partition/identity cohorts: "
+        f"{len(selections)}"
+    )
     print(f"[i] Total pooled genuine scores: {len(genuine)}")
     print(f"[i] Total pooled fake scores: {len(impostor)}")
 
@@ -955,7 +986,7 @@ def compute_far_frr_from_histogram(
 
 
 def compute_ks_theoretical_far_frr(thresholds):
-    """Evaluate the exact uniform/quadratic fits reported by the KS test."""
+    """Evaluate the uniform, quadratic, and normal KS distribution fits."""
     thresholds = np.asarray(thresholds, dtype=float)
     return {
         "uniform": {
@@ -969,6 +1000,12 @@ def compute_ks_theoretical_far_frr(thresholds):
             "frr": stats.rdist.cdf(thresholds, *KS_QUADRATIC_GENUINE),
             "genuine_parameters": KS_QUADRATIC_GENUINE,
             "impostor_parameters": KS_QUADRATIC_IMPOSTOR,
+        },
+        "normal": {
+            "far": stats.norm.sf(thresholds, *KS_NORMAL_IMPOSTOR),
+            "frr": stats.norm.cdf(thresholds, *KS_NORMAL_GENUINE),
+            "genuine_parameters": KS_NORMAL_GENUINE,
+            "impostor_parameters": KS_NORMAL_IMPOSTOR,
         },
     }
 
@@ -1036,14 +1073,20 @@ def export_far_frr(
         out_dir / "livdet_sourceafis_far_frr_theoretical_data.txt",
         "w",
     ) as f:
-        f.write("T FAR_uniform FRR_uniform FAR_quadratic FRR_quadratic\n")
+        f.write(
+            "T FAR_uniform FRR_uniform "
+            "FAR_quadratic FRR_quadratic "
+            "FAR_normal FRR_normal\n"
+        )
         for index, t in enumerate(theoretical_thresholds):
             f.write(
                 f"{t:.6f} "
                 f"{theoretical['uniform']['far'][index]:.6f} "
                 f"{theoretical['uniform']['frr'][index]:.6f} "
                 f"{theoretical['quadratic']['far'][index]:.6f} "
-                f"{theoretical['quadratic']['frr'][index]:.6f}\n"
+                f"{theoretical['quadratic']['frr'][index]:.6f} "
+                f"{theoretical['normal']['far'][index]:.6f} "
+                f"{theoretical['normal']['frr'][index]:.6f}\n"
             )
 
     with open(out_dir / "livdet_sourceafis_far_frr_best_of_probes_points.txt", "w") as f:
@@ -1730,6 +1773,224 @@ def user_attacker_policy_success(
     return float(p_user_success * p_attacker_rejected)
 
 
+def user_attacker_policy_probabilities(
+    attempt_thresholds,
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    user_attempts: int,
+    attacker_attempts: int,
+):
+    """Return the user-success and attacker-rejection probabilities."""
+    attempt_thresholds = np.asarray(attempt_thresholds, dtype=float)
+    required_count = max(user_attempts, attacker_attempts)
+    if user_attempts < 1 or attacker_attempts < 1:
+        raise ValueError("User and attacker attempt counts must be at least 1.")
+    if attempt_thresholds.ndim != 1 or attempt_thresholds.size != required_count:
+        raise ValueError(
+            f"Exactly {required_count} per-attempt thresholds are required."
+        )
+
+    attempt_fars = np.interp(attempt_thresholds, thresholds, fars)
+    attempt_frrs = np.interp(attempt_thresholds, thresholds, frrs)
+    p_user_success = float(
+        1.0 - np.prod(attempt_frrs[:user_attempts])
+    )
+    p_attacker_rejected = float(
+        np.prod(1.0 - attempt_fars[:attacker_attempts])
+    )
+    return p_user_success, p_attacker_rejected
+
+
+def conditional_user_mean_attempts(
+    attempt_thresholds,
+    thresholds: np.ndarray,
+    frrs: np.ndarray,
+    user_attempts: int,
+) -> float:
+    """Mean first-success attempt, conditioned on success by k_u."""
+    attempt_thresholds = np.asarray(attempt_thresholds, dtype=float)
+    if user_attempts < 1:
+        raise ValueError("user_attempts must be at least 1.")
+    if attempt_thresholds.ndim != 1 or attempt_thresholds.size < user_attempts:
+        raise ValueError(
+            f"At least {user_attempts} per-attempt thresholds are required."
+        )
+
+    attempt_frrs = np.interp(
+        attempt_thresholds[:user_attempts],
+        thresholds,
+        frrs,
+    )
+    rejection_before_attempt = np.concatenate(
+        ([1.0], np.cumprod(attempt_frrs[:-1]))
+    )
+    first_success_probabilities = (
+        rejection_before_attempt * (1.0 - attempt_frrs)
+    )
+    p_user_success = float(np.sum(first_success_probabilities))
+    if p_user_success <= np.finfo(float).eps:
+        return float("inf")
+
+    attempt_numbers = np.arange(1, user_attempts + 1, dtype=float)
+    return float(
+        np.dot(attempt_numbers, first_success_probabilities)
+        / p_user_success
+    )
+
+
+def run_minimum_mean_user_attempt_policy(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    *,
+    user_attempts: int,
+    attacker_attempts: int,
+    minimum_success_probability: float,
+    eer_threshold: float,
+    minimum_user_success_probability=None,
+    minimum_attacker_rejection_probability=None,
+    optimizer_starts: int = 64,
+):
+    """Minimize the conditional mean under joint or separate constraints."""
+    use_separate_constraints = (
+        minimum_user_success_probability is not None
+        or minimum_attacker_rejection_probability is not None
+    )
+    if use_separate_constraints:
+        if (
+            minimum_user_success_probability is None
+            or minimum_attacker_rejection_probability is None
+        ):
+            raise ValueError(
+                "Both separate probability constraints must be provided."
+            )
+        optimal_thresholds, mean_attempts, diagnostics = (
+            optimize_user_mean_attempts_with_separate_constraints(
+                thresholds,
+                fars,
+                frrs,
+                user_attempts,
+                attacker_attempts,
+                minimum_user_success_probability=(
+                    minimum_user_success_probability
+                ),
+                minimum_attacker_rejection_probability=(
+                    minimum_attacker_rejection_probability
+                ),
+                eer_threshold=eer_threshold,
+                n_starts=optimizer_starts,
+            )
+        )
+    else:
+        optimal_thresholds, mean_attempts, diagnostics = (
+            optimize_user_mean_attempts_with_success_constraint(
+                thresholds,
+                fars,
+                frrs,
+                user_attempts,
+                attacker_attempts,
+                minimum_success_probability=minimum_success_probability,
+                eer_threshold=eer_threshold,
+                n_starts=optimizer_starts,
+            )
+        )
+
+    attempt_fars = np.interp(optimal_thresholds, thresholds, fars)
+    attempt_frrs = np.interp(optimal_thresholds, thresholds, frrs)
+    user_frrs = attempt_frrs[:user_attempts]
+    rejection_before_attempt = np.concatenate(
+        ([1.0], np.cumprod(user_frrs[:-1]))
+    )
+    first_success_probabilities = (
+        rejection_before_attempt * (1.0 - user_frrs)
+    )
+    p_user_success = float(np.sum(first_success_probabilities))
+    conditional_first_success = (
+        first_success_probabilities / p_user_success
+    )
+    p_attacker_rejected = float(
+        np.prod(1.0 - attempt_fars[:attacker_attempts])
+    )
+    p_success = float(p_user_success * p_attacker_rejected)
+
+    print("\n" + "=" * 80)
+    print("[MINIMUM CONDITIONAL MEAN USER ATTEMPT POLICY]")
+    print("=" * 80)
+    print(f"Predetermined k_u:              {user_attempts}")
+    print(f"Predetermined k_a:              {attacker_attempts}")
+    if use_separate_constraints:
+        print(
+            "Required user success:          "
+            f">= {minimum_user_success_probability:.10f}"
+        )
+        print(
+            "Required attacker rejection:    "
+            f">= {minimum_attacker_rejection_probability:.10f}"
+        )
+    else:
+        print(
+            "Required P_success:             "
+            f">= {minimum_success_probability:.10f}"
+        )
+    print(f"Optimizer:                      {diagnostics['method']}")
+    for index, threshold in enumerate(optimal_thresholds, start=1):
+        user_detail = ""
+        if index <= user_attempts:
+            user_detail = (
+                f", P(N_U={index})={first_success_probabilities[index - 1]:.10f}"
+                f", P(N_U={index} | success)="
+                f"{conditional_first_success[index - 1]:.10f}"
+            )
+        print(
+            f"Attempt {index:2d}: t={threshold:.6f}, "
+            f"FAR={attempt_fars[index - 1]:.10f}, "
+            f"FRR={attempt_frrs[index - 1]:.10f}"
+            f"{user_detail}"
+        )
+
+    print(f"User success probability:       {p_user_success:.10f}")
+    print(f"Attacker rejection probability: {p_attacker_rejected:.10f}")
+    print(f"P_success:                      {p_success:.10f}")
+    if use_separate_constraints:
+        print(
+            "User-success constraint slack:  "
+            f"{p_user_success - minimum_user_success_probability:.10e}"
+        )
+        print(
+            "Attacker-rejection slack:       "
+            f"{p_attacker_rejected - minimum_attacker_rejection_probability:.10e}"
+        )
+    else:
+        print(
+            "Constraint slack:               "
+            f"{p_success - minimum_success_probability:.10e}"
+        )
+    print(f"Conditional mean user attempts: {mean_attempts:.10f}")
+
+    return {
+        "k_user": user_attempts,
+        "k_attacker": attacker_attempts,
+        "minimum_success_probability": minimum_success_probability,
+        "minimum_user_success_probability": (
+            minimum_user_success_probability
+        ),
+        "minimum_attacker_rejection_probability": (
+            minimum_attacker_rejection_probability
+        ),
+        "thresholds": optimal_thresholds,
+        "fars": attempt_fars,
+        "frrs": attempt_frrs,
+        "first_success_probabilities": first_success_probabilities,
+        "conditional_first_success_probabilities": conditional_first_success,
+        "p_user_success": p_user_success,
+        "p_attacker_rejected": p_attacker_rejected,
+        "p_success": p_success,
+        "conditional_mean_user_attempts": mean_attempts,
+        "optimizer_diagnostics": diagnostics,
+    }
+
+
 def run_fixed_user_attacker_policy(
     thresholds: np.ndarray,
     fars: np.ndarray,
@@ -2287,6 +2548,441 @@ def optimize_user_attacker_thresholds(
         "equal_grid_success": float(equal_success[equal_index]),
     }
     return best_thresholds, best_success, diagnostics
+
+
+def optimize_user_mean_attempts_with_success_constraint(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    user_attempts: int,
+    attacker_attempts: int,
+    *,
+    minimum_success_probability: float,
+    eer_threshold: float,
+    n_starts: int = 64,
+    seed: int = 20260929,
+):
+    """Minimize E[N_U | N_U <= k_u] subject to P_success >= P'."""
+    if user_attempts < 1 or attacker_attempts < 1:
+        raise ValueError("User and attacker attempt counts must be at least 1.")
+    if not 0.0 < minimum_success_probability <= 1.0:
+        raise ValueError(
+            "minimum_success_probability must be in the interval (0, 1]."
+        )
+    if n_starts < 1:
+        raise ValueError("n_starts must be at least 1.")
+
+    threshold_count = max(user_attempts, attacker_attempts)
+    lower = float(thresholds[0])
+    upper = float(thresholds[-1])
+    bounds = [(lower, upper)] * threshold_count
+
+    def bounded(candidate_thresholds):
+        return np.clip(
+            np.asarray(candidate_thresholds, dtype=float),
+            lower,
+            upper,
+        )
+
+    def policy_success(candidate_thresholds):
+        return user_attacker_policy_success(
+            bounded(candidate_thresholds),
+            thresholds,
+            fars,
+            frrs,
+            user_attempts,
+            attacker_attempts,
+        )
+
+    def objective(candidate_thresholds):
+        return conditional_user_mean_attempts(
+            bounded(candidate_thresholds),
+            thresholds,
+            frrs,
+            user_attempts,
+        )
+
+    def success_constraint(candidate_thresholds):
+        return policy_success(candidate_thresholds) - minimum_success_probability
+
+    # First maximize P_success. This both checks whether the requested P' is
+    # feasible and supplies a guaranteed feasible starting policy.
+    maximum_thresholds, maximum_success, maximum_diagnostics = (
+        optimize_user_attacker_thresholds(
+            thresholds,
+            fars,
+            frrs,
+            user_attempts,
+            attacker_attempts,
+            eer_threshold=eer_threshold,
+            n_starts=n_starts,
+            seed=seed,
+        )
+    )
+    feasibility_tolerance = 1e-9
+    if maximum_success < minimum_success_probability - feasibility_tolerance:
+        raise ValueError(
+            "The requested success-probability constraint is infeasible: "
+            f"P'={minimum_success_probability:.10f}, but the largest found "
+            f"P_success is {maximum_success:.10f}."
+        )
+
+    best_thresholds = bounded(maximum_thresholds)
+    best_mean = objective(best_thresholds)
+    best_success = policy_success(best_thresholds)
+
+    # A penalized global search supplies another useful starting point. The
+    # final constrained SLSQP runs below enforce the actual inequality.
+    penalty_weight = 1e5
+
+    def penalized_objective(candidate_thresholds):
+        deficit = max(0.0, -success_constraint(candidate_thresholds))
+        return objective(candidate_thresholds) + penalty_weight * deficit
+
+    global_result = differential_evolution(
+        penalized_objective,
+        bounds=bounds,
+        seed=seed + 7919 * user_attempts + 104729 * attacker_attempts,
+        popsize=20,
+        maxiter=500,
+        tol=1e-10,
+        polish=False,
+        workers=1,
+        updating="immediate",
+    )
+    global_candidate = bounded(global_result.x)
+
+    starts = [best_thresholds, global_candidate]
+
+    # Add feasible common-threshold policies, ordered by their conditional
+    # user mean, followed by the EER threshold and randomized starts.
+    equal_success = user_attacker_success_curve(
+        fars,
+        frrs,
+        user_attempts,
+        attacker_attempts,
+    )
+    feasible_equal_indices = np.flatnonzero(
+        equal_success >= minimum_success_probability
+    )
+    feasible_equal_indices = sorted(
+        feasible_equal_indices,
+        key=lambda index: conditional_user_mean_attempts(
+            np.full(threshold_count, float(thresholds[index])),
+            thresholds,
+            frrs,
+            user_attempts,
+        ),
+    )
+    for index in feasible_equal_indices[:12]:
+        starts.append(
+            np.full(threshold_count, float(thresholds[index]))
+        )
+    starts.append(np.full(threshold_count, float(eer_threshold)))
+
+    rng = np.random.default_rng(seed)
+    threshold_span = upper - lower
+    while len(starts) < n_starts:
+        if len(starts) % 2 == 0:
+            candidate = best_thresholds + rng.normal(
+                0.0,
+                0.08 * threshold_span,
+                size=threshold_count,
+            )
+        else:
+            candidate = rng.uniform(lower, upper, size=threshold_count)
+        starts.append(bounded(candidate))
+    starts = starts[:n_starts]
+
+    successful_runs = 0
+    feasible_runs = 0
+    constraint = {"type": "ineq", "fun": success_constraint}
+    for initial in starts:
+        result = minimize(
+            objective,
+            x0=bounded(initial),
+            method="SLSQP",
+            bounds=bounds,
+            constraints=[constraint],
+            options={
+                "maxiter": 4000,
+                "ftol": 1e-12,
+                "disp": False,
+            },
+        )
+        successful_runs += int(result.success)
+        candidate = bounded(result.x)
+        candidate_success = policy_success(candidate)
+        candidate_mean = objective(candidate)
+        is_feasible = (
+            candidate_success
+            >= minimum_success_probability - feasibility_tolerance
+        )
+        feasible_runs += int(is_feasible)
+        if is_feasible and candidate_mean < best_mean:
+            best_thresholds = candidate
+            best_mean = candidate_mean
+            best_success = candidate_success
+
+    diagnostics = {
+        "method": "penalized differential evolution + multi-start SLSQP",
+        "starts": len(starts),
+        "successful_runs": successful_runs,
+        "feasible_runs": feasible_runs,
+        "global_run_converged": bool(global_result.success),
+        "maximum_success": float(maximum_success),
+        "maximum_success_optimizer": maximum_diagnostics["method"],
+        "constraint_value": float(minimum_success_probability),
+        "constraint_slack": float(
+            best_success - minimum_success_probability
+        ),
+    }
+    return best_thresholds, best_mean, diagnostics
+
+
+def optimize_user_mean_attempts_with_separate_constraints(
+    thresholds: np.ndarray,
+    fars: np.ndarray,
+    frrs: np.ndarray,
+    user_attempts: int,
+    attacker_attempts: int,
+    *,
+    minimum_user_success_probability: float,
+    minimum_attacker_rejection_probability: float,
+    eer_threshold: float,
+    n_starts: int = 64,
+    seed: int = 20260929,
+):
+    """Minimize E[N_U | success] subject to two separate probabilities."""
+    if user_attempts < 1 or attacker_attempts < 1:
+        raise ValueError("User and attacker attempt counts must be at least 1.")
+    if not 0.0 < minimum_user_success_probability <= 1.0:
+        raise ValueError(
+            "minimum_user_success_probability must be in (0, 1]."
+        )
+    if not 0.0 < minimum_attacker_rejection_probability <= 1.0:
+        raise ValueError(
+            "minimum_attacker_rejection_probability must be in (0, 1]."
+        )
+    if n_starts < 1:
+        raise ValueError("n_starts must be at least 1.")
+
+    threshold_count = max(user_attempts, attacker_attempts)
+    lower = float(thresholds[0])
+    upper = float(thresholds[-1])
+    bounds = [(lower, upper)] * threshold_count
+    feasibility_tolerance = 1e-9
+
+    def bounded(candidate_thresholds):
+        return np.clip(
+            np.asarray(candidate_thresholds, dtype=float),
+            lower,
+            upper,
+        )
+
+    def probabilities(candidate_thresholds):
+        return user_attacker_policy_probabilities(
+            bounded(candidate_thresholds),
+            thresholds,
+            fars,
+            frrs,
+            user_attempts,
+            attacker_attempts,
+        )
+
+    def objective(candidate_thresholds):
+        value = conditional_user_mean_attempts(
+            bounded(candidate_thresholds),
+            thresholds,
+            frrs,
+            user_attempts,
+        )
+        return value if np.isfinite(value) else 1e12
+
+    def user_constraint(candidate_thresholds):
+        p_user_success, _ = probabilities(candidate_thresholds)
+        return p_user_success - minimum_user_success_probability
+
+    def attacker_constraint(candidate_thresholds):
+        _, p_attacker_rejected = probabilities(candidate_thresholds)
+        return (
+            p_attacker_rejected
+            - minimum_attacker_rejection_probability
+        )
+
+    def constraint_violation(candidate_thresholds):
+        user_deficit = max(0.0, -user_constraint(candidate_thresholds))
+        attacker_deficit = max(
+            0.0,
+            -attacker_constraint(candidate_thresholds),
+        )
+        return user_deficit**2 + attacker_deficit**2
+
+    pair_seed = seed + 7919 * user_attempts + 104729 * attacker_attempts
+
+    # Search globally for a policy satisfying both constraints. This is also
+    # the feasibility check and the first constrained-optimizer start.
+    feasibility_result = differential_evolution(
+        constraint_violation,
+        bounds=bounds,
+        seed=pair_seed,
+        popsize=20,
+        maxiter=500,
+        tol=1e-12,
+        polish=True,
+        workers=1,
+        updating="immediate",
+    )
+    feasibility_candidate = bounded(feasibility_result.x)
+
+    penalty_weight = 1e6
+
+    def penalized_objective(candidate_thresholds):
+        return (
+            objective(candidate_thresholds)
+            + penalty_weight * constraint_violation(candidate_thresholds)
+        )
+
+    global_result = differential_evolution(
+        penalized_objective,
+        bounds=bounds,
+        seed=pair_seed + 1,
+        popsize=20,
+        maxiter=500,
+        tol=1e-10,
+        polish=False,
+        workers=1,
+        updating="immediate",
+    )
+    starts = [feasibility_candidate, bounded(global_result.x)]
+
+    equal_user_success = 1.0 - np.power(frrs, user_attempts)
+    equal_attacker_rejection = np.power(
+        1.0 - fars,
+        attacker_attempts,
+    )
+    feasible_equal_indices = np.flatnonzero(
+        (equal_user_success >= minimum_user_success_probability)
+        & (
+            equal_attacker_rejection
+            >= minimum_attacker_rejection_probability
+        )
+    )
+    feasible_equal_indices = sorted(
+        feasible_equal_indices,
+        key=lambda index: objective(
+            np.full(threshold_count, float(thresholds[index]))
+        ),
+    )
+    for index in feasible_equal_indices[:12]:
+        starts.append(
+            np.full(threshold_count, float(thresholds[index]))
+        )
+
+    starts.extend(
+        [
+            np.full(threshold_count, float(eer_threshold)),
+            np.full(threshold_count, lower),
+            np.full(threshold_count, upper),
+            np.linspace(lower, upper, threshold_count),
+            np.linspace(lower, upper, threshold_count)[::-1],
+        ]
+    )
+
+    rng = np.random.default_rng(seed)
+    threshold_span = upper - lower
+    while len(starts) < n_starts:
+        if len(starts) % 2 == 0:
+            candidate = feasibility_candidate + rng.normal(
+                0.0,
+                0.08 * threshold_span,
+                size=threshold_count,
+            )
+        else:
+            candidate = rng.uniform(lower, upper, size=threshold_count)
+        starts.append(bounded(candidate))
+    starts = starts[:n_starts]
+
+    constraints = [
+        {"type": "ineq", "fun": user_constraint},
+        {"type": "ineq", "fun": attacker_constraint},
+    ]
+    best_thresholds = None
+    best_mean = float("inf")
+    best_probabilities = None
+    successful_runs = 0
+    feasible_runs = 0
+
+    for initial in starts:
+        result = minimize(
+            objective,
+            x0=bounded(initial),
+            method="SLSQP",
+            bounds=bounds,
+            constraints=constraints,
+            options={
+                "maxiter": 4000,
+                "ftol": 1e-12,
+                "disp": False,
+            },
+        )
+        successful_runs += int(result.success)
+        candidate = bounded(result.x)
+        p_user_success, p_attacker_rejected = probabilities(candidate)
+        candidate_mean = objective(candidate)
+        is_feasible = (
+            p_user_success
+            >= minimum_user_success_probability - feasibility_tolerance
+            and p_attacker_rejected
+            >= minimum_attacker_rejection_probability
+            - feasibility_tolerance
+        )
+        feasible_runs += int(is_feasible)
+        if is_feasible and candidate_mean < best_mean:
+            best_thresholds = candidate
+            best_mean = candidate_mean
+            best_probabilities = (
+                p_user_success,
+                p_attacker_rejected,
+            )
+
+    if best_thresholds is None:
+        p_user_found, p_attacker_found = probabilities(
+            feasibility_candidate
+        )
+        raise ValueError(
+            "The separate probability constraints appear infeasible: "
+            f"required user success >= "
+            f"{minimum_user_success_probability:.10f} and attacker "
+            f"rejection >= {minimum_attacker_rejection_probability:.10f}; "
+            f"the closest global feasibility candidate found user success "
+            f"{p_user_found:.10f} and attacker rejection "
+            f"{p_attacker_found:.10f}."
+        )
+
+    p_user_success, p_attacker_rejected = best_probabilities
+    diagnostics = {
+        "method": "feasibility search + penalized differential evolution + multi-start SLSQP",
+        "starts": len(starts),
+        "successful_runs": successful_runs,
+        "feasible_runs": feasible_runs,
+        "feasibility_run_converged": bool(feasibility_result.success),
+        "global_run_converged": bool(global_result.success),
+        "minimum_user_success_probability": float(
+            minimum_user_success_probability
+        ),
+        "minimum_attacker_rejection_probability": float(
+            minimum_attacker_rejection_probability
+        ),
+        "user_success_constraint_slack": float(
+            p_user_success - minimum_user_success_probability
+        ),
+        "attacker_rejection_constraint_slack": float(
+            p_attacker_rejected
+            - minimum_attacker_rejection_probability
+        ),
+    }
+    return best_thresholds, best_mean, diagnostics
 
 
 def optimize_remaining_thresholds_with_fixed_prefix(
@@ -2909,6 +3605,17 @@ def parse_arguments():
             "predetermined (k_u, k_a) policy."
         ),
     )
+    mode.add_argument(
+        "--minimize-user-attempts-only",
+        action="store_true",
+        help=(
+            "Load psafe_sweep_inputs.npz and minimize the legitimate "
+            "user's conditional mean authentication-attempt number, using "
+            "distinct per-attempt thresholds. The constraint can be either "
+            "P_success >= P' or separate lower bounds on user success and "
+            "attacker rejection."
+        ),
+    )
     parser.add_argument(
         "--attempts",
         type=int,
@@ -2926,8 +3633,8 @@ def parse_arguments():
         type=int,
         default=64,
         help=(
-            "Number of L-BFGS-B initializations for each k or asymmetric "
-            "attempt pair (default: 64)."
+            "Number of local-optimizer initializations for each k or "
+            "asymmetric attempt pair (default: 64)."
         ),
     )
     parser.add_argument(
@@ -2967,6 +3674,45 @@ def parse_arguments():
         ),
     )
     parser.add_argument(
+        "--minimum-success-probability",
+        "--p-success-min",
+        dest="minimum_success_probability",
+        type=float,
+        default=0.85,
+        metavar="P_PRIME",
+        help=(
+            "Required lower bound P' for P_success in "
+            "--minimize-user-attempts-only mode (default: 0.85)."
+        ),
+    )
+    parser.add_argument(
+        "--minimum-user-success-probability",
+        "--p-user-success-min",
+        dest="minimum_user_success_probability",
+        type=float,
+        default=None,
+        metavar="P_USER_MIN",
+        help=(
+            "Alternative separate lower bound for the legitimate user's "
+            "success probability. Must be used together with "
+            "--minimum-attacker-rejection-probability. When supplied, the "
+            "separate constraints replace --minimum-success-probability."
+        ),
+    )
+    parser.add_argument(
+        "--minimum-attacker-rejection-probability",
+        "--p-attacker-rejection-min",
+        dest="minimum_attacker_rejection_probability",
+        type=float,
+        default=None,
+        metavar="P_ATTACKER_REJECTION_MIN",
+        help=(
+            "Alternative separate lower bound for the probability that all "
+            "attacker attempts are rejected. Must be used together with "
+            "--minimum-user-success-probability."
+        ),
+    )
+    parser.add_argument(
         "--fixed-user-attacker-tikz-output",
         type=Path,
         default=FIXED_USER_ATTACKER_TIKZ_DATA,
@@ -2983,6 +3729,21 @@ def parse_arguments():
         parser.error(
             "--fixed-prefix-tikz-output requires "
             "--fixed-prefix-attempts-only."
+        )
+    separate_constraints = (
+        args.minimum_user_success_probability is not None,
+        args.minimum_attacker_rejection_probability is not None,
+    )
+    if any(separate_constraints) and not all(separate_constraints):
+        parser.error(
+            "--minimum-user-success-probability and "
+            "--minimum-attacker-rejection-probability must be supplied "
+            "together."
+        )
+    if any(separate_constraints) and not args.minimize_user_attempts_only:
+        parser.error(
+            "The separate probability constraints require "
+            "--minimize-user-attempts-only."
         )
     return args
 
@@ -3065,6 +3826,30 @@ if __name__ == "__main__":
         )
         raise SystemExit(0)
 
+    if args.minimize_user_attempts_only:
+        thresholds, fars, frrs, eer_threshold = load_sweep_inputs(
+            SWEEP_INPUTS_FILE
+        )
+        run_minimum_mean_user_attempt_policy(
+            thresholds,
+            fars,
+            frrs,
+            user_attempts=args.k_user,
+            attacker_attempts=args.k_attacker,
+            minimum_success_probability=(
+                args.minimum_success_probability
+            ),
+            eer_threshold=eer_threshold,
+            minimum_user_success_probability=(
+                args.minimum_user_success_probability
+            ),
+            minimum_attacker_rejection_probability=(
+                args.minimum_attacker_rejection_probability
+            ),
+            optimizer_starts=args.optimizer_starts,
+        )
+        raise SystemExit(0)
+
     genuine_raw, impostor_raw, genuine_best, impostor_best = (
         collect_multiuser_scores()
     )
@@ -3132,6 +3917,8 @@ if __name__ == "__main__":
     print(f"[i] KS uniform impostor parameters = {KS_UNIFORM_IMPOSTOR}")
     print(f"[i] KS quadratic genuine parameters = {KS_QUADRATIC_GENUINE}")
     print(f"[i] KS quadratic impostor parameters = {KS_QUADRATIC_IMPOSTOR}")
+    print(f"[i] KS normal genuine parameters = {KS_NORMAL_GENUINE}")
+    print(f"[i] KS normal impostor parameters = {KS_NORMAL_IMPOSTOR}")
 
     export_far_frr(
         display_thresholds,

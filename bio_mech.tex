@@ -1874,6 +1874,529 @@ table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_
 \label{fig:biometric_atomic_success}
 \end{figure}
 
+\section{Authentication with Multiple Attempts}
+\label{sec:multiple_authentication_attempts}
+
+We consider a biometric authentication mechanism that accepts a submitted biometric sample when its similarity score is greater than or equal to a decision threshold. The threshold used at attempt~$j$ is denoted by~$t_j$. Consequently, the legitimate user is rejected at attempt~$j$ with probability~$\FRR(t_j)$ and accepted with probability~$1-\FRR(t_j)$. Similarly, the attacker is accepted at attempt~$j$ with probability~$\FAR(t_j)$ and rejected with probability~$1-\FAR(t_j)$.
+
+Throughout this section, we assume that the outcomes of different authentication attempts are independent, conditioned on whether the claimant is the legitimate user or the attacker. We also assume that the legitimate-user and attacker authentication sessions are independent. These assumptions allow the corresponding per-attempt probabilities to be multiplied.
+
+\subsection{Equal Numbers of User and Attacker Attempts}
+
+We first consider a policy in which both the legitimate user and the attacker are allowed at most~$k$ authentication attempts. The policy may use a different threshold~$t_j$ at every attempt~$j$.
+
+The legitimate user fails to authenticate only if rejected in all~$k$ attempts. Under the independence assumption, the probability of this event is
+
+\begin{equation*}
+\Pr[\text{user is rejected in all }k\text{ attempts}]
+=
+\prod_{j=1}^{k}\FRR(t_j).
+\end{equation*}
+
+Therefore, the probability that the user is accepted at least once is
+
+\begin{equation*}
+P_U^{(k)}(\mathbf{t})
+=
+1-
+\prod_{j=1}^{k}\FRR(t_j),
+\end{equation*}
+
+where
+
+\begin{equation*}
+\mathbf{t}
+=
+(t_1,\ldots,t_k)
+\end{equation*}
+
+is the vector of per-attempt thresholds.
+
+For the attacker, the desired event is rejection at every attempt. Since the attacker is rejected at attempt~$j$ with probability~$1-\FAR(t_j)$, the probability that all~$k$ attacker attempts are rejected is
+
+\begin{equation*}
+P_A^{\mathrm{reject},(k)}(\mathbf{t})
+=
+\prod_{j=1}^{k}
+\left(1-\FAR(t_j)\right).
+\end{equation*}
+
+The authentication mechanism succeeds when the legitimate user is accepted at least once and the attacker is rejected in every attempt. Therefore, the overall success probability is
+
+\begin{equation*}
+P_{\mathrm{success}}^{(k)}(\mathbf{t})
+=
+P_U^{(k)}(\mathbf{t})
+P_A^{\mathrm{reject},(k)}(\mathbf{t}).
+\end{equation*}
+
+Substituting the two probabilities gives
+
+\begin{equation*}
+P_{\mathrm{success}}^{(k)}(\mathbf{t})
+=
+\left(
+1-
+\prod_{j=1}^{k}\FRR(t_j)
+\right)
+\prod_{j=1}^{k}
+\left(1-\FAR(t_j)\right).
+\end{equation*}
+
+Allowing additional attempts benefits the legitimate user because the user has more opportunities to be accepted. However, additional attempts also benefit the attacker because the attacker has more opportunities to be falsely accepted. The thresholds must therefore balance these two effects.
+
+\subsection{Different Numbers of User and Attacker Attempts}
+
+We next allow the legitimate user and attacker to have different attempt limits. Let~$k_u$ denote the maximum number of legitimate-user attempts and let~$k_a$ denote the maximum number of attacker attempts.
+
+The number of thresholds required to describe the complete policy is
+
+\begin{equation*}
+m
+=
+\max\{k_u,k_a\}.
+\end{equation*}
+
+We therefore define the threshold vector as
+
+\begin{equation*}
+\mathbf{t}
+=
+(t_1,\ldots,t_m).
+\end{equation*}
+
+The legitimate user can use only the first~$k_u$ attempts. Therefore, the probability that the user is rejected in every permitted attempt is
+
+\begin{equation*}
+\Pr[\text{user is rejected in all }k_u\text{ attempts}]
+=
+\prod_{j=1}^{k_u}\FRR(t_j).
+\end{equation*}
+
+The probability that the user is accepted at least once within the permitted attempts is consequently
+
+\begin{equation*}
+P_U(\mathbf{t})
+=
+1-
+\prod_{j=1}^{k_u}\FRR(t_j).
+\end{equation*}
+
+The attacker can use the first~$k_a$ attempts. The probability that the attacker is rejected in all permitted attempts is
+
+\begin{equation*}
+P_A^{\mathrm{reject}}(\mathbf{t})
+=
+\prod_{j=1}^{k_a}
+\left(1-\FAR(t_j)\right).
+\end{equation*}
+
+The success probability of the authentication mechanism is therefore
+
+\begin{equation*}
+P_{\mathrm{success}}(\mathbf{t})
+=
+P_U(\mathbf{t})
+P_A^{\mathrm{reject}}(\mathbf{t}),
+\end{equation*}
+
+or, explicitly,
+
+\begin{equation*}
+P_{\mathrm{success}}(\mathbf{t})
+=
+\left(
+1-
+\prod_{j=1}^{k_u}\FRR(t_j)
+\right)
+\prod_{j=1}^{k_a}
+\left(1-\FAR(t_j)\right).
+\end{equation*}
+
+For example, when~$k_u=4$ and~$k_a=10$, the legitimate-user success probability depends only on thresholds~$t_1,\ldots,t_4$, whereas the attacker-rejection probability depends on thresholds~$t_1,\ldots,t_{10}$. Hence, thresholds~$t_5,\ldots,t_{10}$ affect only the attacker-rejection probability.
+
+\subsection{Attempt of the First Successful User Authentication}
+
+We are interested not only in whether the legitimate user eventually authenticates, but also in how many attempts are required.
+
+Let~$N_U$ denote the attempt number at which the legitimate user is accepted for the first time. Formally, if the user is accepted within the permitted attempts, then
+
+\begin{equation*}
+N_U
+=
+\min
+\left\{
+j\in\{1,\ldots,k_u\}
+:
+\text{the user is accepted at attempt }j
+\right\}.
+\end{equation*}
+
+If the user is rejected in all~$k_u$ attempts, we define
+
+\begin{equation*}
+N_U=\infty.
+\end{equation*}
+
+The event~$\{N_U=j\}$ means that the user is rejected in attempts~$1,\ldots,j-1$ and is then accepted at attempt~$j$. Thus,
+
+\begin{equation*}
+\{N_U=j\}
+=
+\{
+\text{rejected at attempts }1,\ldots,j-1
+\}
+\cap
+\{
+\text{accepted at attempt }j
+\}.
+\end{equation*}
+
+Under the independence assumption, the probability of this event is
+
+\begin{equation*}
+\Pr[N_U=j]
+=
+\left(
+\prod_{i=1}^{j-1}\FRR(t_i)
+\right)
+\left(1-\FRR(t_j)\right),
+\qquad
+j\in\{1,\ldots,k_u\}.
+\end{equation*}
+
+This quantity is the \emph{first-success probability} at attempt~$j$: it is the probability that the user successfully authenticates specifically at attempt~$j$, having failed every preceding attempt.
+
+For~$j=1$, there are no preceding attempts. By convention, the empty product equals one, and therefore
+
+\begin{equation*}
+\Pr[N_U=1]
+=
+1-\FRR(t_1).
+\end{equation*}
+
+For~$j=2$, the user must be rejected at the first attempt and accepted at the second attempt. Hence,
+
+\begin{equation*}
+\Pr[N_U=2]
+=
+\FRR(t_1)
+\left(1-\FRR(t_2)\right).
+\end{equation*}
+
+Similarly, for~$j=3$,
+
+\begin{equation*}
+\Pr[N_U=3]
+=
+\FRR(t_1)
+\FRR(t_2)
+\left(1-\FRR(t_3)\right).
+\end{equation*}
+
+Summing the first-success probabilities over all permitted attempts gives the probability that the user successfully authenticates within~$k_u$ attempts:
+
+\begin{equation*}
+\Pr[N_U\leq k_u]
+=
+\sum_{j=1}^{k_u}\Pr[N_U=j].
+\end{equation*}
+
+Substituting the first-success probabilities yields
+
+\begin{equation*}
+\Pr[N_U\leq k_u]
+=
+\sum_{j=1}^{k_u}
+\left(
+\prod_{i=1}^{j-1}\FRR(t_i)
+\right)
+\left(1-\FRR(t_j)\right).
+\end{equation*}
+
+This sum telescopes to
+
+\begin{equation*}
+\Pr[N_U\leq k_u]
+=
+1-
+\prod_{j=1}^{k_u}\FRR(t_j).
+\end{equation*}
+
+Therefore,
+
+\begin{equation*}
+\Pr[N_U\leq k_u]
+=
+P_U(\mathbf{t}).
+\end{equation*}
+
+\subsection{Conditional Distribution of the Successful Attempt}
+
+We now consider the attempt number under the condition that the user successfully authenticates within the permitted~$k_u$ attempts.
+
+By the definition of conditional probability,
+
+\begin{equation*}
+\Pr[N_U=j\mid N_U\leq k_u]
+=
+\frac{
+\Pr[
+\{N_U=j\}
+\cap
+\{N_U\leq k_u\}
+]
+}{
+\Pr[N_U\leq k_u]
+}.
+\end{equation*}
+
+For every~$j\in\{1,\ldots,k_u\}$, the event~$\{N_U=j\}$ implies that the user succeeds within~$k_u$ attempts. In set notation,
+
+\begin{equation*}
+\{N_U=j\}
+\subseteq
+\{N_U\leq k_u\}.
+\end{equation*}
+
+Consequently, their intersection is simply
+
+\begin{equation*}
+\{N_U=j\}
+\cap
+\{N_U\leq k_u\}
+=
+\{N_U=j\}.
+\end{equation*}
+
+It follows that
+
+\begin{equation*}
+\Pr[N_U=j\mid N_U\leq k_u]
+=
+\frac{
+\Pr[N_U=j]
+}{
+\Pr[N_U\leq k_u]
+}.
+\end{equation*}
+
+Using the expressions derived above, we obtain
+
+\begin{equation*}
+\Pr[N_U=j\mid N_U\leq k_u]
+=
+\frac{
+\left(
+\prod_{i=1}^{j-1}\FRR(t_i)
+\right)
+\left(1-\FRR(t_j)\right)
+}{
+1-
+\prod_{i=1}^{k_u}\FRR(t_i)
+}.
+\end{equation*}
+
+The numerator is the probability that the first successful authentication occurs exactly at attempt~$j$. The denominator is the probability that the user succeeds at some attempt no later than~$k_u$. Their ratio therefore gives the fraction of successful users whose first successful authentication occurs at attempt~$j$.
+
+\subsection{Conditional Mean Number of User Attempts}
+
+The conditional mean number of attempts is the expected value of~$N_U$ among users who successfully authenticate within~$k_u$ attempts. By the definition of conditional expectation for a discrete random variable,
+
+\begin{equation*}
+\mathbb{E}
+\left[
+N_U
+\mid
+N_U\leq k_u
+\right]
+=
+\sum_{j=1}^{k_u}
+j
+\Pr[N_U=j\mid N_U\leq k_u].
+\end{equation*}
+
+Substituting the conditional probabilities gives
+
+\begin{equation*}
+\mathbb{E}
+\left[
+N_U
+\mid
+N_U\leq k_u
+\right]
+=
+\frac{
+\displaystyle
+\sum_{j=1}^{k_u}
+j
+\left(
+\prod_{i=1}^{j-1}\FRR(t_i)
+\right)
+\left(1-\FRR(t_j)\right)
+}{
+\displaystyle
+1-
+\prod_{j=1}^{k_u}\FRR(t_j)
+}.
+\end{equation*}
+
+Conditioning on~$N_U\leq k_u$ is necessary because~$N_U=\infty$ when the user is rejected in all permitted attempts. The conditional mean measures the average number of attempts required specifically among successful authentication sessions.
+
+\subsection{Optimization Under a Joint Success Constraint}
+
+We first minimize the conditional mean number of user attempts while requiring the overall success probability to exceed a prescribed lower bound~$P'$.
+
+The optimization problem is
+
+\begin{equation*}
+\begin{aligned}
+\underset{\mathbf{t}}{\operatorname{minimize}}
+\quad&
+\mathbb{E}
+\left[
+N_U
+\mid
+N_U\leq k_u
+\right]
+\\
+\text{subject to}
+\quad&
+P_{\mathrm{success}}(\mathbf{t})
+\geq
+P'.
+\end{aligned}
+\end{equation*}
+
+Equivalently, the constraint is
+
+\begin{equation*}
+\left(
+1-
+\prod_{j=1}^{k_u}\FRR(t_j)
+\right)
+\prod_{j=1}^{k_a}
+\left(1-\FAR(t_j)\right)
+\geq
+P'.
+\end{equation*}
+
+For example, setting~$P'=0.75$ requires
+
+\begin{equation*}
+P_U(\mathbf{t})
+P_A^{\mathrm{reject}}(\mathbf{t})
+\geq
+0.75.
+\end{equation*}
+
+Because both probabilities lie in the interval~$[0,1]$, this joint constraint implies
+
+\begin{equation*}
+P_U(\mathbf{t})
+\geq
+0.75
+\end{equation*}
+
+and
+
+\begin{equation*}
+P_A^{\mathrm{reject}}(\mathbf{t})
+\geq
+0.75.
+\end{equation*}
+
+However, it does not require the legitimate-user success probability to exceed a different prescribed value such as~$0.8$.
+
+\subsection{Optimization Under Separate Probability Constraints}
+
+Alternatively, the legitimate-user success probability and attacker-rejection probability can be constrained independently.
+
+The resulting optimization problem is
+
+\begin{equation*}
+\begin{aligned}
+\underset{\mathbf{t}}{\operatorname{minimize}}
+\quad&
+\mathbb{E}
+\left[
+N_U
+\mid
+N_U\leq k_u
+\right]
+\\
+\text{subject to}
+\quad&
+P_U(\mathbf{t})
+\geq
+P_U',
+\\
+&
+P_A^{\mathrm{reject}}(\mathbf{t})
+\geq
+P_A'.
+\end{aligned}
+\end{equation*}
+
+For the values considered here,
+
+\begin{equation*}
+P_U'
+=
+0.8
+\end{equation*}
+
+and
+
+\begin{equation*}
+P_A'
+=
+0.75.
+\end{equation*}
+
+The two constraints are therefore
+
+\begin{equation*}
+1-
+\prod_{j=1}^{k_u}\FRR(t_j)
+\geq
+0.8
+\end{equation*}
+
+and
+
+\begin{equation*}
+\prod_{j=1}^{k_a}
+\left(1-\FAR(t_j)\right)
+\geq
+0.75.
+\end{equation*}
+
+These constraints guarantee that the user authenticates within the permitted number of attempts with probability at least~$0.8$ and that every attacker attempt is rejected with probability at least~$0.75$.
+
+They consequently guarantee the lower bound
+
+\begin{equation*}
+P_{\mathrm{success}}(\mathbf{t})
+=
+P_U(\mathbf{t})
+P_A^{\mathrm{reject}}(\mathbf{t})
+\geq
+0.8\cdot0.75
+=
+0.6.
+\end{equation*}
+
+Therefore, the separate constraints are not equivalent to requiring
+
+\begin{equation*}
+P_{\mathrm{success}}(\mathbf{t})
+\geq
+0.75.
+\end{equation*}
+
+The joint constraint controls the product of the two probabilities, whereas the separate formulation controls each probability individually. In both formulations, the optimization selects the per-attempt thresholds that minimize the conditional mean number of legitimate-user authentication attempts while satisfying the prescribed security and usability requirements.
+
 \section{Characterizing Success Improvement}\label{sec:6} 
 \noindent
 We characterize the conditions under which a mechanism that uses both a biometric credential and an atomic credential mechanism achieves greater success than a mechanism that uses only the atomic credential. We show that any mechanism using a single atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$ and a biometric credential does not achieve greater success probability than a mechanism using only this atomic credential~$(\S\ref{sec:6.1})$. Next, we present a necessary and sufficient condition for such improvement~$(\S\ref{sec:6.2})$, extend the results to multiple atomic credentials, and derive a more intuitive sufficient condition.
@@ -2358,7 +2881,7 @@ However, the success probabilities of all evaluated mechanisms, when operated at
     xmin=0,
     xmax=100,
     ymin=0,
-    ymax=800,
+    ymax=600,
     enlarge x limits=false,
     tick style={draw=none},
     clip=true
@@ -2383,7 +2906,7 @@ table[x=score,y=impostor]
     xmin=0,
     xmax=100,
     ymin=0,
-    ymax=100,
+    ymax=80,
     enlarge x limits=false,
     tick style={draw=none},
     clip=true
@@ -2416,18 +2939,19 @@ table[x=score,y=genuine]
     legend style={font=\small},
 ]
 
-% Genuine: fitted Weibull PDF
-\addplot[blue, thick, domain=0.864333:100, samples=300]
-{(1.26817/29.1126) * ((x-0.864333)/29.1126)^0.26817 * exp(-((x-0.864333)/29.1126)^1.26817)};
-\addlegendentry{Genuine: Weibull}
+% Genuine: fitted normal PDF
+\addplot[blue, thick, domain=0:100, samples=300]
+{1/(19.855*sqrt(2*pi))*exp(-0.5*((x-35.6369)/19.855)^2)};
+\addlegendentry{Genuine: normal}
 
-% Impostor: fitted logistic PDF
+% Impostor: fitted normal PDF
 \addplot[red, thick, domain=0:100, samples=300]
-{exp(-(x-4.23277)/2.67652) / (2.67652* (1+exp(-(x-4.23277)/2.67652))^2)};
-\addlegendentry{Impostor: logistic}
+{1/(13.7593*sqrt(2*pi))*exp(-0.5*((x-12.6193)/13.7593)^2)};
+\addlegendentry{Impostor: normal}
+
 \end{axis}
 \end{tikzpicture}
-\caption{Probability-density functions selected by the KS estimation.}
+\caption{Normal probability-density functions fitted to the genuine and impostor scores using the KS estimation.}
 \label{fig:livdet_ks_estimation}
 \end{subfigure}
 
@@ -2479,25 +3003,25 @@ table[x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_prob
 table[x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 \addlegendentry{Empirical \FRR}
 
-% Uniform FAR: continuous KS model
-\addplot[
-    thick,
-    red,
-    dashed,
-    mark=none
-]
-table[x=T, y=FAR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
-\addlegendentry{Uniform \FAR}
+% % Uniform FAR: continuous KS model
+% \addplot[
+%     thick,
+%     red,
+%     dashed,
+%     mark=none
+% ]
+% table[x=T, y=FAR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+% \addlegendentry{Uniform \FAR}
 
-% Uniform FRR: continuous KS model
-\addplot[
-    thick,
-    blue,
-    dashed,
-    mark=none
-]
-table[x=T, y=FRR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
-\addlegendentry{Uniform \FRR}
+% % Uniform FRR: continuous KS model
+% \addplot[
+%     thick,
+%     blue,
+%     dashed,
+%     mark=none
+% ]
+% table[x=T, y=FRR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+% \addlegendentry{Uniform \FRR}
 
 % Quadratic FAR: continuous KS model
 \addplot[
@@ -2519,6 +3043,27 @@ table[x=T, y=FAR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_th
 table[x=T, y=FRR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
 \addlegendentry{Quadratic \FRR}
 
+% Normal FAR
+\addplot[
+    thick,
+    red,
+    dashdotted,
+    mark=none
+]
+table[x=T, y=FAR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+\addlegendentry{Normal \FAR}
+
+% Normal FRR
+\addplot[
+    thick,
+    blue,
+    dashdotted,
+    mark=none
+]
+table[x=T, y=FRR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+\addlegendentry{Normal \FRR}
+
+
 % Discrete empirical EER
 \addplot[
     only marks,
@@ -2532,7 +3077,7 @@ table[x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_
 \end{axis}
 \end{tikzpicture}
 
-\caption{Empirical \FAR and \FRR as functions of the threshold, compared with the uniform and quadratic PDFs obtained from the KS fits. The empirical \EER point is marked and occurs at $\approx 22.1\%$.}
+\caption{Empirical \FAR and \FRR as functions of the threshold, compared with the uniform and quadratic PDFs obtained from the KS fits. The empirical \EER point is marked and occurs at $\approx 24.8\%$.}
 \label{fig:livdet_sourceafis_far_frr}
 \end{subfigure}\hfill%
 \begin{subfigure}[t]{0.48\textwidth}
@@ -2748,49 +3293,49 @@ table[x=k, y=product_1_minus_FAR] {figs/fig_spoofed_users/livdet_fixed_prefix_fa
 \label{fig:Success_probability_by_k}
 \end{figure}
 
-\begin{figure}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.95\columnwidth,
-    height=0.65\columnwidth,
-    xlabel={Attempt number, $k$},
-    ylabel={Success probability},
-    xmin=1,
-    xmax=10,
-    ymin=0,
-    ymax=1,
-    xtick={1,2,...,10},
-    grid=major,
-    line width=1pt,
-    mark size=2.5pt,
-    legend style={
-        at={(0.5,-0.25)},
-        anchor=north,
-        legend columns=3,
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    }
-]
+% \begin{figure}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=0.95\columnwidth,
+%     height=0.65\columnwidth,
+%     xlabel={Attempt number, $k$},
+%     ylabel={Success probability},
+%     xmin=1,
+%     xmax=10,
+%     ymin=0,
+%     ymax=1,
+%     xtick={1,2,...,10},
+%     grid=major,
+%     line width=1pt,
+%     mark size=2.5pt,
+%     legend style={
+%         at={(0.5,-0.25)},
+%         anchor=north,
+%         legend columns=3,
+%         draw=black,
+%         fill=white,
+%         font=\scriptsize
+%     }
+% ]
 
-\addplot[green!60!black, solid, mark=*]
-table[x=k, y=P_success_optimized] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
-\addlegendentry{Optimized thresholds}
+% \addplot[green!60!black, solid, mark=*]
+% table[x=k, y=P_success_optimized] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
+% \addlegendentry{Optimized thresholds}
 
-\addplot[blue, dashed, mark=square*]
-table[x=k, y=P_success_EER] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
-\addlegendentry{EER threshold}
+% \addplot[blue, dashed, mark=square*]
+% table[x=k, y=P_success_EER] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
+% \addlegendentry{EER threshold}
 
-\addplot[red, densely dotted, mark=triangle*]
-table[x=k, y=P_success_single_attempt_optimum] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
-\addlegendentry{Single-attempt optimum}
+% \addplot[red, densely dotted, mark=triangle*]
+% table[x=k, y=P_success_single_attempt_optimum] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
+% \addlegendentry{Single-attempt optimum}
 
-\end{axis}
-\end{tikzpicture}
-\caption{The cumulative success probability through attempt~$k$ for the fixed attempt limits $k_u=3$ and $k_a=10$. The optimized policy uses independently optimized per-attempt thresholds. The two baselines reuse either the EER threshold or the single-attempt-optimal threshold at every active attempt. After $k=3$, the legitimate user's success term remains fixed while additional attacker attempts continue to affect the attacker-rejection term.}
-\label{fig:fixed_user_attacker_success_by_k}
-\end{figure}
+% \end{axis}
+% \end{tikzpicture}
+% \caption{The cumulative success probability through attempt~$k$ for the fixed attempt limits $k_u=3$ and $k_a=10$. The optimized policy uses independently optimized per-attempt thresholds. The two baselines reuse either the EER threshold or the single-attempt-optimal threshold at every active attempt. After $k=3$, the legitimate user's success term remains fixed while additional attacker attempts continue to affect the attacker-rejection term.}
+% \label{fig:fixed_user_attacker_success_by_k}
+% \end{figure}
 
 \section{Conclusion}\label{sec:8}
 \noindent
