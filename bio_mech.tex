@@ -2589,7 +2589,7 @@ Before comparing different mechanisms, we validate that the algorithm's performa
     xmin=0,
     xmax=100,
     ymin=0,
-    ymax=300,
+    ymax=9000,
     enlarge x limits=false,
     enlarge y limits=false,
     tick style={draw=none},
@@ -2616,7 +2616,7 @@ table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histog
     xmin=0,
     xmax=100,
     ymin=0,
-    ymax=10,
+    ymax=100,
     enlarge x limits=false,
     enlarge y limits=false,
     tick style={draw=none},
@@ -2681,51 +2681,51 @@ table[x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.t
 table[x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
 \addlegendentry{Empirical \FRR}
 
-% Uniform FAR: continuous theoretical curve
-\addplot[
-    thick,
-    red,
-    dashed,
-    no marks
-]
-table[x=T, y=FAR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Uniform \FAR}
+% % Uniform FAR: continuous theoretical curve
+% \addplot[
+%     thick,
+%     red,
+%     dashed,
+%     no marks
+% ]
+% table[x=T, y=FAR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Uniform \FAR}
 
-% Uniform FRR: continuous theoretical curve
-\addplot[
-    thick,
-    blue,
-    dashed,
-    no marks
-]
-table[x=T, y=FRR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Uniform \FRR}
+% % Uniform FRR: continuous theoretical curve
+% \addplot[
+%     thick,
+%     blue,
+%     dashed,
+%     no marks
+% ]
+% table[x=T, y=FRR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Uniform \FRR}
 
-% Quadratic FAR: continuous theoretical curve
-\addplot[
-    thick,
-    red,
-    densely dotted,
-    no marks
-]
-table[x=T, y=FAR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Quadratic \FAR}
+% % Quadratic FAR: continuous theoretical curve
+% \addplot[
+%     thick,
+%     red,
+%     densely dotted,
+%     no marks
+% ]
+% table[x=T, y=FAR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Quadratic \FAR}
 
-% Quadratic FRR: continuous theoretical curve
-\addplot[
-    thick,
-    blue,
-    densely dotted,
-    no marks
-]
-table[x=T, y=FRR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Quadratic \FRR}
+% % Quadratic FRR: continuous theoretical curve
+% \addplot[
+%     thick,
+%     blue,
+%     densely dotted,
+%     no marks
+% ]
+% table[x=T, y=FRR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Quadratic \FRR}
 
 % Discrete EER point
 \addplot[
     only marks,
     mark=*,
-    mark size=1.1pt,
+    mark size=1.4pt,
     black
 ]
 table[x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_points.txt};
@@ -2759,7 +2759,6 @@ table[x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_po
             fill=white,
             font=\scriptsize
         },
-        each nth point=2,
         filter discard warning=false
     }
 }
@@ -2838,8 +2837,8 @@ table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_succ
 \caption{
 Success probability as a function of the threshold.
 The AND and OR mechanisms achieve success probabilities of 
-$0.82$ and $0.82$ at the \EER point, and 
-$0.83$ and $0.84$ at their respective optimal operating points.
+$0.78$ and $0.82$ at the \EER point, and 
+$0.81$ and $0.84$ at their respective optimal operating points.
 }
 \label{fig:sourceafis_success}
 \end{figure*}

@@ -1,398 +1,364 @@
 import csv
+import hashlib
 import re
+import shutil
 import subprocess
+import tempfile
 from pathlib import Path
-
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import stats
-
 
 # =========================
 # Config
 # =========================
 REPO_ROOT = Path("/Users/dormalka/Desktop/Dor/Paper").resolve()
 SOURCEAFIS_DIR = REPO_ROOT / "sourceafis-demo"
-
-# Choose one dataset here.
-#DATA_DIR = SOURCEAFIS_DIR / "fvc2002_png" / "DB1_B"
-DATA_DIR = SOURCEAFIS_DIR / "fvc2004_png" / "DB1_B"
-
-# Multi-user evaluation:
-# - Set USER_IDS to an explicit list, e.g. [101, 102, 103, 104, 105], or
-# - Leave it as None and the script will use the first NUMBER_OF_USERS found.
-USER_IDS = None
-NUMBER_OF_USERS = 10
-PROBES_PER_USER = 3
-
-# Use only the selected users to construct the impostor distribution.
-# For every unordered pair of selected users {u, v}, only one direction is kept:
-# the smaller user ID is enrolled and templates of the larger user ID are candidates.
-# Example: keep 101 -> 102 and discard 102 -> 101.
-IMPOSTORS_ONLY_AMONG_SELECTED_USERS = True
-
+# LivDet Live images only. No file under any Fake directory is used.
+LIVDET_ROOT = SOURCEAFIS_DIR / "livdet_preproc_png"
+LIVE_DIRS_BY_SPLIT = {
+    "Training": LIVDET_ROOT / "Training" / "Digital_Persona" / "Live",
+    "Testing": LIVDET_ROOT / "Testing" / "Digital_Persona" / "Live",
+}
+# Enroll eligible identities independently in both partitions. Genuine
+# comparisons stay inside each partition. Testing never supplies impostors.
+# Optional subset: [("Training", "002_0"), ("Testing", "003_0")].
+SELECTED_COHORTS = None
+# Optional enrollment limit per partition. None enrolls every eligible identity.
+# Impostor candidates still come from all other Training identities.
+NUMBER_OF_USERS_PER_SPLIT = None
+PROBES_PER_USER = 5
+# Compare each enrolled identity against every other Training identity.
+# Set True only if you want one direction per unordered identity pair.
+REMOVE_MIRRORED_IMPOSTOR_DIRECTIONS = False
 OUTPUT_DIR = REPO_ROOT
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-SCORES_DIR = OUTPUT_DIR / "sourceafis_multiuser_scores"
+SCORES_DIR = OUTPUT_DIR / "sourceafis_livdet_training_live_one_scan_impostor_scores"
 SCORES_DIR.mkdir(parents=True, exist_ok=True)
-
-# Maximum raw impostor comparisons generated for EACH enrolled user.
-# Set to None to use all comparisons.
-MAX_IMPOSTER_SCORES_PER_USER = 20000
-
-HISTOGRAM_BIN_WIDTH = 5.0
+FIGURES_DIR = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+HISTOGRAM_BIN_WIDTH = 2.5
 HIST_BINS = np.arange(
     0.0,
     100.0 + HISTOGRAM_BIN_WIDTH,
     HISTOGRAM_BIN_WIDTH,
 )
+# The previous FVC2004 KS parameters are deliberately not reused. Run the KS
+# fitting script on the new LivDet histogram before adding theoretical curves.
+# A filename such as 002_0_5.png belongs to identity 002_0, sample 5.
+LIVDET_FILENAME_PATTERN = re.compile(
+    r"^(?P<identity>\d+_\d+)_(?P<sample>\d+)$"
+)
 
-# Exact fitted parameters reported by ks_histogram_test.py for this dataset.
-# scipy.stats.uniform parameters are (loc, scale), with support
-# [loc, loc + scale].
-KS_UNIFORM_GENUINE = (2.5, 95.0)
-KS_UNIFORM_IMPOSTOR = (2.5, 10.0)
+def identity_sort_key(identity):
+    return tuple(int(part) for part in identity.split("_"))
 
-# scipy.stats.rdist parameters are (shape, loc, scale).  Shape 4 is the
-# normalized parabolic/quadratic distribution, with support
-# [loc - scale, loc + scale].
-KS_QUADRATIC_GENUINE = (4.0, 45.6681, 53.7892)
-KS_QUADRATIC_IMPOSTOR = (4.0, 3.86298, 3.85285)
+def sample_sort_key(path):
+    match = LIVDET_FILENAME_PATTERN.match(Path(path).stem)
+    if match is None:
+        return float("inf")
+    return int(match.group("sample"))
 
-# Matches filenames such as 101_1.png or 101-1.png.
-FILENAME_PATTERN = re.compile(r"^(?P<user>\d+)[_-](?P<sample>\d+)")
+def cohort_sort_key(cohort):
+    split, identity = cohort
+    return {"Training": 0, "Testing": 1}[split], identity_sort_key(identity)
 
-
-def discover_dataset_samples():
-    """
-    Return:
-        {
-            user_id: {
-                sample_id: Path(...)
-            }
-        }
-
-    The dataset images must have names such as 101_1.png.
-    """
-    if not DATA_DIR.exists():
-        raise FileNotFoundError(f"Dataset directory does not exist: {DATA_DIR}")
-
-    users = {}
-
-    for path in sorted(DATA_DIR.iterdir()):
-        if not path.is_file():
-            continue
-
-        match = FILENAME_PATTERN.match(path.stem)
-        if match is None:
-            continue
-
-        user_id = int(match.group("user"))
-        sample_id = int(match.group("sample"))
-        users.setdefault(user_id, {})[sample_id] = path
-
-    if not users:
+def discover_live_samples():
+    """Discover Live samples separately in Training and Testing."""
+    cohorts = {}
+    for split, live_dir in LIVE_DIRS_BY_SPLIT.items():
+        if not live_dir.is_dir():
+            raise FileNotFoundError(
+                f"{split} Live directory does not exist: {live_dir}"
+            )
+        for path in sorted(live_dir.glob("*.png")):
+            if not path.is_file():
+                continue
+            match = LIVDET_FILENAME_PATTERN.match(path.stem)
+            if match is None:
+                print(f"[!] Ignoring unrecognized LivDet filename: {path.name}")
+                continue
+            identity = match.group("identity")
+            cohorts.setdefault((split, identity), []).append(path.resolve())
+    if not cohorts:
         raise ValueError(
-            f"No fingerprint images were discovered in {DATA_DIR}. "
-            "Expected filenames such as 101_1.png."
+            "No LivDet Live images were found. Expected filenames such as "
+            "002_0_5.png."
         )
-
-    return users
-
+    return {
+        cohort: sorted(paths, key=sample_sort_key)
+        for cohort, paths in cohorts.items()
+    }
 
 def select_users_and_probes():
-    """
-    Select several users and the first three available samples of each user
-    as probe/enrolment templates.
-    """
-    dataset_users = discover_dataset_samples()
-
-    if USER_IDS is None:
-        selected_user_ids = sorted(dataset_users)[:NUMBER_OF_USERS]
-    else:
-        selected_user_ids = list(USER_IDS)
-
-    if not selected_user_ids:
-        raise ValueError("No users were selected.")
-
-    selections = {}
-
-    for user_id in selected_user_ids:
-        if user_id not in dataset_users:
-            raise ValueError(f"User {user_id} was not found in {DATA_DIR}")
-
-        available_samples = sorted(dataset_users[user_id])
-
-        if len(available_samples) <= PROBES_PER_USER:
-            raise ValueError(
-                f"User {user_id} has only {len(available_samples)} samples. "
-                f"At least {PROBES_PER_USER + 1} are required: "
-                f"{PROBES_PER_USER} probes and at least one genuine candidate."
+    """Pool partition-local genuine scores; generate impostors from Training only."""
+    dataset_cohorts = discover_live_samples()
+    if SELECTED_COHORTS is None:
+        selected_cohorts = []
+        for split in LIVE_DIRS_BY_SPLIT:
+            split_cohorts = sorted(
+                (
+                    cohort
+                    for cohort in dataset_cohorts
+                    if cohort[0] == split
+                ),
+                key=cohort_sort_key,
             )
-
-        selections[user_id] = tuple(available_samples[:PROBES_PER_USER])
-
+            if NUMBER_OF_USERS_PER_SPLIT is not None:
+                split_cohorts = split_cohorts[:NUMBER_OF_USERS_PER_SPLIT]
+            selected_cohorts.extend(split_cohorts)
+    else:
+        selected_cohorts = list(dict.fromkeys(tuple(cohort) for cohort in SELECTED_COHORTS))
+        if any(cohort[0] not in LIVE_DIRS_BY_SPLIT for cohort in selected_cohorts):
+            raise ValueError("SELECTED_COHORTS must use Training or Testing.")
+    selections = {}
+    all_dataset_paths = {
+        cohort: list(paths) for cohort, paths in dataset_cohorts.items()
+        if cohort[0] == "Training"
+    }
+    for cohort in selected_cohorts:
+        if cohort not in dataset_cohorts:
+            raise ValueError(f"LivDet cohort was not found: {cohort}")
+        split, identity = cohort
+        live_files = dataset_cohorts[cohort]
+        if len(live_files) <= PROBES_PER_USER:
+            print(
+                f"[!] Skipping {split}/{identity}: only {len(live_files)} "
+                f"Live images are available; {PROBES_PER_USER} references "
+                "plus at least one genuine candidate are required."
+            )
+            continue
+        probes = live_files[:PROBES_PER_USER]
+        genuine_candidates = live_files[PROBES_PER_USER:]
+        if split == "Testing":
+            impostor_candidates = []
+            keep_impostor_scores = False
+            # Existing LivDetBatchScorer requires a nonempty fourth directory.
+            # Use one SAME-IDENTITY genuine image as a compatibility placeholder.
+            # These duplicate genuine comparisons are discarded by the loader;
+            # no cross-identity Testing comparisons enter the impostor histogram.
+            score_impostor_candidates = genuine_candidates[:1]
+        else:
+            # Select one scan per other identity: the lowest numeric sample number.
+            # Each selected scan is scored against all enrollment references; its
+            # maximum score contributes one impostor observation for this identity.
+            impostor_candidates = []
+            all_other_live_candidates = []
+            for candidate_cohort, candidate_paths in all_dataset_paths.items():
+                if candidate_cohort == cohort:
+                    continue
+                candidate_scan = candidate_paths[0]
+                all_other_live_candidates.append(candidate_scan)
+                if (
+                    REMOVE_MIRRORED_IMPOSTOR_DIRECTIONS
+                    and cohort_sort_key(candidate_cohort)
+                    <= cohort_sort_key(cohort)
+                ):
+                    continue
+                impostor_candidates.append(candidate_scan)
+            # LivDetBatchScorer receives a nonempty impostor directory. For the
+            # final ordered cohort, whose reverse directions are all discarded,
+            # score another cohort only as a temporary placeholder and discard
+            # those impostor rows after loading. Its genuine rows are still kept.
+            score_impostor_candidates = impostor_candidates
+            keep_impostor_scores = True
+            if not score_impostor_candidates:
+                score_impostor_candidates = all_other_live_candidates[:1]
+                keep_impostor_scores = False
+            if not score_impostor_candidates:
+                raise ValueError(
+                    f"No cross-user Live candidates exist for {cohort}."
+                )
+        key = f"{split.lower()}__{identity}"
+        selections[key] = {
+            "split": split,
+            "identity": identity,
+            "probes": probes,
+            "genuine": genuine_candidates,
+            "impostor": impostor_candidates,
+            "score_impostor": score_impostor_candidates,
+            "keep_impostor_scores": keep_impostor_scores,
+        }
+    if not selections:
+        raise ValueError("No eligible LivDet Live cohorts were selected.")
     return selections
 
+def source_tag(path: Path) -> str:
+    """Create a unique staged name that retains the source partition."""
+    path = Path(path).resolve()
+    try:
+        relative = path.relative_to(LIVDET_ROOT)
+    except ValueError:
+        relative = Path(path.name)
+    readable = str(relative).replace("/", "__").replace("\\", "__")
+    digest = hashlib.md5(str(path).encode("utf-8")).hexdigest()[:8]
+    return f"{readable}__{digest}"
+
+def stage_files(files, destination: Path):
+    destination.mkdir(parents=True, exist_ok=True)
+    for source in files:
+        source = Path(source).resolve()
+        staged = destination / f"{source_tag(source)}__{source.name}"
+        try:
+            staged.symlink_to(source)
+        except Exception:
+            shutil.copy2(source, staged)
+    return destination
 
 # =========================
 # SourceAFIS batch scoring
 # =========================
-def run_sourceafis_batch(user_id, probe_samples, scores_csv):
-    """
-    Run the existing Java BatchScorer for one enrolled user.
 
-    The Java program is expected to:
-      1. Compare every candidate against all selected probes.
-      2. Write one CSV row per probe-candidate comparison.
-      3. Mark each row as genuine or impostor.
-    """
-    probe_csv = ",".join(str(x) for x in sorted(probe_samples))
-    max_imp = (
-        -1
-        if MAX_IMPOSTER_SCORES_PER_USER is None
-        else int(MAX_IMPOSTER_SCORES_PER_USER)
-    )
-
-    cmd = [
-        "mvn",
-        "-q",
-        "-DskipTests",
-        "compile",
-        "exec:java",
-        "-Dexec.mainClass=BatchScorer",
-        (
-            f"-Dexec.args={DATA_DIR} {user_id} {probe_csv} "
-            f"{scores_csv} {max_imp}"
-        ),
-    ]
-
-    print()
-    print(f"[i] Running SourceAFIS for user {user_id}")
-    print(f"[i] Probe samples: {sorted(probe_samples)}")
-    print("[i] Working dir:", SOURCEAFIS_DIR)
-    print("[i] Command:", " ".join(map(str, cmd)))
-
-    subprocess.run(
-        cmd,
-        cwd=SOURCEAFIS_DIR,
-        check=True,
-        text=True,
-    )
-
-
-def extract_user_and_sample(candidate):
-    """
-    Try to parse a candidate identifier such as:
-      /some/path/103_4.png
-      103_4.png
-      103-4
-
-    Returns (user_id, sample_id), or (None, None) when parsing fails.
-    """
-    stem = Path(candidate).stem
-    match = FILENAME_PATTERN.match(stem)
-
-    if match is None:
-        return None, None
-
-    return int(match.group("user")), int(match.group("sample"))
-
-
-def load_best_scores_from_csv(
+def run_sourceafis_batch(
+    cohort_key,
+    probe_paths,
+    genuine_candidates,
+    impostor_candidates,
     scores_csv,
-    enrolled_user_id,
-    probe_samples,
-    selected_user_ids,
 ):
-    """
-    Collapse all comparisons between the same candidate and the three probes
-    into one score:
+    """Score one LivDet Live enrollment cohort with LivDetBatchScorer."""
+    print()
+    print(f"[i] Running SourceAFIS for cohort {cohort_key}")
+    print(f"[i] Enrollment references: {len(probe_paths)}")
+    print(f"[i] Genuine candidates:    {len(genuine_candidates)}")
+    print(f"[i] Impostor candidates:   {len(impostor_candidates)}")
+    with tempfile.TemporaryDirectory(prefix=f"livdet_live_{cohort_key}_") as tmp:
+        temporary_root = Path(tmp)
+        probe_dir = stage_files(probe_paths, temporary_root / "probes")
+        genuine_dir = stage_files(
+            genuine_candidates,
+            temporary_root / "genuine_candidates",
+        )
+        impostor_dir = stage_files(
+            impostor_candidates,
+            temporary_root / "impostor_candidates",
+        )
+        # LivDetBatchScorer labels its fourth directory as impostor input. The
+        # files placed there here are real Live scans of different identities,
+        # not spoof images.
+        exec_args = (
+            f'"{probe_dir}" '
+            f'"*.png" '
+            f'"{genuine_dir}" '
+            f'"{impostor_dir}" '
+            f'"{scores_csv}"'
+        )
+        cmd = [
+            "mvn",
+            "-DskipTests",
+            "compile",
+            "exec:java",
+            "-Dexec.mainClass=LivDetBatchScorer",
+            f"-Dexec.args={exec_args}",
+        ]
+        print("[i] Working dir:", SOURCEAFIS_DIR)
+        print("[i] Command:", " ".join(map(str, cmd)))
+        subprocess.run(
+            cmd,
+            cwd=SOURCEAFIS_DIR,
+            check=True,
+            text=True,
+        )
 
-        candidate_score = max(score(probe_1, candidate),
-                              score(probe_2, candidate),
-                              score(probe_3, candidate))
-
-    Returns:
-      - one genuine score per non-probe template of the enrolled user;
-      - one impostor score per candidate template after removing mirrored
-        user-pair comparisons.
-
-    For selected users, only one direction is retained for each unordered pair.
-    With users 101 and 102, this keeps:
-        enrolled 101 -> candidate templates of 102
-    and discards:
-        enrolled 102 -> candidate templates of 101
-    """
+def load_best_scores_from_csv(scores_csv, *, keep_impostor_scores=True):
+    """Keep one best-over-references score for every candidate image."""
     genuine_best = {}
     impostor_best = {}
-    selected_user_ids = set(selected_user_ids)
-
     with open(scores_csv, "r", newline="") as f:
         reader = csv.DictReader(f)
-
-        if reader.fieldnames is None:
-            raise ValueError(f"CSV has no header: {scores_csv}")
-
-        required = {"kind", "score"}
-        missing = required.difference(reader.fieldnames)
-        if missing:
+        expected = {"kind", "target", "score"}
+        columns = set(reader.fieldnames or [])
+        if not expected.issubset(columns):
             raise ValueError(
-                f"CSV {scores_csv} is missing columns {sorted(missing)}. "
-                f"Found: {reader.fieldnames}"
+                f"CSV columns mismatch. Expected at least {expected}, "
+                f"found {reader.fieldnames}."
             )
-
-        candidate_col = next(
-            (col for col in ("target", "candidate") if col in reader.fieldnames),
-            None,
-        )
-
-        if candidate_col is None:
-            raise ValueError(
-                f"CSV must contain a candidate identifier column named "
-                f"'target' or 'candidate'. Found: {reader.fieldnames}"
-            )
-
         for row in reader:
             kind = row["kind"].strip().lower()
+            target = row["target"].strip()
             score = float(row["score"])
-            candidate = row[candidate_col].strip()
-
-            candidate_user, candidate_sample = extract_user_and_sample(candidate)
-
-            # Do not let an enrolment/probe image become a genuine test sample.
-            if (
-                candidate_user == enrolled_user_id
-                and candidate_sample in probe_samples
-            ):
-                continue
-
             if kind == "genuine":
-                old_score = genuine_best.get(candidate)
-                if old_score is None or score > old_score:
-                    genuine_best[candidate] = score
-
+                genuine_best[target] = max(
+                    score,
+                    genuine_best.get(target, -np.inf),
+                )
             elif kind in {"impostor", "imposter"}:
-                if candidate_user is None:
-                    raise ValueError(
-                        f"Could not parse impostor candidate identifier: {candidate}"
-                    )
-
-                # Optionally restrict the impostor population to the selected
-                # evaluation cohort.
-                if (
-                    IMPOSTORS_ONLY_AMONG_SELECTED_USERS
-                    and candidate_user not in selected_user_ids
-                ):
+                if not keep_impostor_scores:
                     continue
-
-                # Remove mirrored user-pair comparisons.
-                #
-                # Keep only:
-                #     enrolled_user_id < candidate_user
-                #
-                # Example:
-                #   keep 101 probes against user 102 templates;
-                #   discard 102 probes against user 101 templates.
-                if candidate_user <= enrolled_user_id:
-                    continue
-
-                old_score = impostor_best.get(candidate)
-                if old_score is None or score > old_score:
-                    impostor_best[candidate] = score
-
+                impostor_best[target] = max(
+                    score,
+                    impostor_best.get(target, -np.inf),
+                )
+            else:
+                raise ValueError(f"Unknown CSV comparison kind: {kind!r}")
     if not genuine_best:
-        raise ValueError(
-            f"No genuine candidate scores were loaded for user {enrolled_user_id} "
-            f"from {scores_csv}"
-        )
-
-    print(
-        f"[i] User {enrolled_user_id}: "
-        f"{len(genuine_best)} genuine candidates, "
-        f"{len(impostor_best)} non-mirrored impostor candidates"
-    )
-
+        raise ValueError(f"No genuine scores were loaded from {scores_csv}.")
     return list(genuine_best.values()), list(impostor_best.values())
 
-
 def collect_multiuser_scores():
-    """
-    Run the experiment for every selected user and pool the resulting scores.
-
-    Mirrored impostor directions are removed. For each unordered pair of
-    selected users, only the direction from the smaller user ID to the larger
-    user ID is retained.
-    """
+    """Run and pool every independent LivDet Live enrollment cohort."""
     selections = select_users_and_probes()
-
-    print("[i] Selected users and probes:")
-    for user_id, probes in selections.items():
-        print(f"    user {user_id}: {list(probes)}")
-
+    print("[i] Impostors: one lowest-numbered Training Live scan per other identity")
+    print("[i] Selected LivDet Live cohorts:")
+    for key, files in selections.items():
+        print(
+            f"    {files['split']}/{files['identity']}: "
+            f"{len(files['probes'])} references, "
+            f"{len(files['genuine'])} genuine candidates, "
+            f"{len(files['impostor'])} cross-user impostor candidates"
+        )
     all_genuine = []
     all_impostor = []
-
-    for user_id, probe_samples in selections.items():
-        scores_csv = SCORES_DIR / f"sourceafis_scores_user_{user_id}.csv"
-
+    for key, files in selections.items():
+        scores_csv = SCORES_DIR / f"sourceafis_scores_{key}.csv"
         run_sourceafis_batch(
-            user_id=user_id,
-            probe_samples=probe_samples,
+            cohort_key=key,
+            probe_paths=files["probes"],
+            genuine_candidates=files["genuine"],
+            impostor_candidates=files["score_impostor"],
             scores_csv=scores_csv,
         )
-
         genuine_scores, impostor_scores = load_best_scores_from_csv(
-            scores_csv=scores_csv,
-            enrolled_user_id=user_id,
-            probe_samples=set(probe_samples),
-            selected_user_ids=selections.keys(),
+            scores_csv,
+            keep_impostor_scores=files["keep_impostor_scores"],
         )
-
         all_genuine.extend(genuine_scores)
         all_impostor.extend(impostor_scores)
-
+        print(
+            f"[i] {key}: pooled {len(genuine_scores)} genuine and "
+            f"{len(impostor_scores)} impostor scores"
+        )
     genuine = np.asarray(all_genuine, dtype=float)
     impostor = np.asarray(all_impostor, dtype=float)
-
     if genuine.size == 0:
         raise ValueError("The pooled genuine distribution is empty.")
     if impostor.size == 0:
         raise ValueError("The pooled impostor distribution is empty.")
-
     print()
-    print(f"[i] Total enrolled users: {len(selections)}")
+    print(f"[i] Total enrolled cohorts: {len(selections)}")
     print(f"[i] Total pooled genuine scores: {len(genuine)}")
     print(f"[i] Total pooled impostor scores: {len(impostor)}")
-    print(
-        "[i] Mirrored selected-user comparisons were removed "
-        "(for example, 102 -> 101 is discarded when 101 -> 102 is kept)."
-    )
-
+    print("[i] Testing contributes genuine scores only; Training supplies all impostors")
+    print("[i] Fake-directory images used: 0")
     return genuine, impostor, selections
-
 
 # =========================
 # Normalize raw SourceAFIS scores to [0,100]
 # =========================
+
 def normalize_scores_to_100(genuine_scores, impostor_scores):
     smax = max(np.max(genuine_scores), np.max(impostor_scores))
     if smax <= 0:
         raise ValueError("Maximum raw score must be positive for normalization.")
-
     genuine_norm = 100.0 * genuine_scores / smax
     impostor_norm = 100.0 * impostor_scores / smax
-
     genuine_norm = np.clip(genuine_norm, 0.0, 100.0)
     impostor_norm = np.clip(impostor_norm, 0.0, 100.0)
-
     return genuine_norm, impostor_norm, smax
-
 
 # =========================
 # Plot histogram + raw hist-PDF
 # =========================
+
 def plot_histograms(genuine_scores, impostor_scores):
     plt.figure(figsize=(8, 6))
     if len(impostor_scores) > 0:
@@ -401,7 +367,7 @@ def plot_histograms(genuine_scores, impostor_scores):
         plt.hist(genuine_scores, bins=HIST_BINS, alpha=0.6, label="Genuine")
     plt.xlabel("Normalized similarity score (%)")
     plt.ylabel("Count")
-    plt.title("Multi-user score histogram (three probes per user)")
+    plt.title(f"Live histogram ({PROBES_PER_USER} references per identity)")
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
@@ -411,16 +377,12 @@ def plot_histograms(genuine_scores, impostor_scores):
 def export_histograms(genuine_scores, impostor_scores):
     out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
     out_dir.mkdir(parents=True, exist_ok=True)
-
     bins = HIST_BINS
-
     # Compute histograms
     hist_g, edges = np.histogram(genuine_scores, bins=bins)
     hist_i, _     = np.histogram(impostor_scores, bins=bins)
-
     # Bin centers
     centers = (edges[:-1] + edges[1:]) / 2
-
     with open(out_dir / "sourceafis_histogram_data.txt", "w") as f:
         f.write("bin genuine impostor\n")
         for c, g, i in zip(centers, hist_g, hist_i):
@@ -429,72 +391,38 @@ def export_histograms(genuine_scores, impostor_scores):
 # =========================
 # FAR/FRR from discrete histogram counts + theoretical models
 # =========================
+
 def compute_far_frr_from_histogram(genuine_scores, impostor_scores, bins=HIST_BINS):
     """Compute empirical FAR/FRR only at the histogram-bin centers.
-
     A score is accepted when score >= threshold.  Each histogram bin is
     treated as a discrete mass located at its center.  Therefore, at threshold
     t:
-
         FAR(t) = sum of impostor counts at centers >= t / N_impostor
         FRR(t) = sum of genuine counts at centers <  t / N_genuine
-
     There is no interpolation, density estimation, or smoothing here.
     """
     genuine_counts, edges = np.histogram(genuine_scores, bins=bins)
     impostor_counts, _ = np.histogram(impostor_scores, bins=bins)
-
     if genuine_counts.sum() == 0 or impostor_counts.sum() == 0:
         raise ValueError("Both genuine and impostor histograms must be non-empty.")
-
     thresholds = (edges[:-1] + edges[1:]) / 2.0
-
     # Counts strictly below each threshold; the current bin is accepted.
     genuine_below = np.concatenate(([0], np.cumsum(genuine_counts)[:-1]))
-
     # Counts at or above each threshold; the current bin is accepted.
     impostor_at_or_above = np.cumsum(impostor_counts[::-1])[::-1]
-
     frrs = genuine_below / genuine_counts.sum()
     fars = impostor_at_or_above / impostor_counts.sum()
-
     return thresholds, fars.astype(float), frrs.astype(float)
 
-
 def compute_ks_theoretical_far_frr(thresholds):
-    """Evaluate the exact uniform and quadratic fits reported by the KS test.
-
-    The quadratic model is scipy.stats.rdist with shape fixed to 4, whose PDF is
-
-        f(x) = 3/(4*scale) * (1 - ((x-loc)/scale)^2)
-
-    on [loc-scale, loc+scale].  Both models are evaluated at exactly the same
-    thresholds as the empirical histogram.
-    """
-    theoretical = {
-        "uniform": {
-            "far": stats.uniform.sf(thresholds, *KS_UNIFORM_IMPOSTOR),
-            "frr": stats.uniform.cdf(thresholds, *KS_UNIFORM_GENUINE),
-            "genuine_parameters": KS_UNIFORM_GENUINE,
-            "impostor_parameters": KS_UNIFORM_IMPOSTOR,
-        },
-        "quadratic": {
-            "far": stats.rdist.sf(thresholds, *KS_QUADRATIC_IMPOSTOR),
-            "frr": stats.rdist.cdf(thresholds, *KS_QUADRATIC_GENUINE),
-            "genuine_parameters": KS_QUADRATIC_GENUINE,
-            "impostor_parameters": KS_QUADRATIC_IMPOSTOR,
-        },
-    }
-
-    return theoretical
-
+    """Return no model curves until KS fits are computed for this dataset."""
+    return {}
 
 def compute_eer_intersection(thresholds, fars, frrs):
     """Return the closest discrete EER point without interpolation."""
     i = int(np.argmin(np.abs(fars - frrs)))
     eer = 0.5 * (float(fars[i]) + float(frrs[i]))
     return eer, float(thresholds[i])
-
 
 def compute_p_success(thresholds, fars, frrs):
     p_success = (1 - fars) * (1 - frrs)
@@ -505,10 +433,8 @@ def compute_p_success(thresholds, fars, frrs):
     eer_success = p_success[idx_eer]
     return p_success,eer_success, max_success, max_threshold
 
-
 def plot_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold):
     plt.figure(figsize=(8, 6))
-
     # Empirical results are discrete histogram integrals.  The step rendering
     # and markers make it explicit that values exist only at these thresholds.
     plt.step(
@@ -527,37 +453,8 @@ def plot_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold):
         marker="o",
         label="Empirical FRR (histogram)",
     )
-
-    # Theoretical values are sampled at the same histogram thresholds.
-    plt.plot(
-        thresholds,
-        theoretical["uniform"]["far"],
-        "--s",
-        color="darkorange",
-        label="Uniform FAR",
-    )
-    plt.plot(
-        thresholds,
-        theoretical["uniform"]["frr"],
-        "--s",
-        color="teal",
-        label="Uniform FRR",
-    )
-    plt.plot(
-        thresholds,
-        theoretical["quadratic"]["far"],
-        ":^",
-        color="purple",
-        label="Quadratic FAR",
-    )
-    plt.plot(
-        thresholds,
-        theoretical["quadratic"]["frr"],
-        ":^",
-        color="green",
-        label="Quadratic FRR",
-    )
-
+    # The old FVC2004 theoretical fits are intentionally omitted. Re-enable
+    # model curves only after fitting the newly generated LivDet histogram.
     plt.scatter(
         eer_threshold,
         eer,
@@ -567,7 +464,7 @@ def plot_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold):
     )
     plt.xlabel("Threshold (%)")
     plt.ylabel("Error Rate")
-    plt.title("Discrete empirical and theoretical FAR / FRR")
+    plt.title("Discrete empirical FAR / FRR")
     plt.legend(fontsize=8, ncol=2)
     plt.grid(alpha=0.3)
     plt.tight_layout()
@@ -577,23 +474,12 @@ def plot_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold):
 def export_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold):
     out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
     out_dir.mkdir(parents=True, exist_ok=True)
-
-    # One row per histogram threshold.  FAR and FRR retain their old column
-    # names so existing TikZ plots continue to work.
+    # One row per histogram threshold. The FVC theoretical columns are omitted
+    # because their parameters do not describe the new LivDet distributions.
     with open(out_dir / "sourceafis_far_frr_data.txt", "w") as f:
-        f.write(
-            "T FAR FRR FAR_uniform FRR_uniform "
-            "FAR_quadratic FRR_quadratic\n"
-        )
+        f.write("T FAR FRR\n")
         for i, (t, fa, fr) in enumerate(zip(thresholds, fars, frrs)):
-            f.write(
-                f"{t:.6f} {fa:.6f} {fr:.6f} "
-                f"{theoretical['uniform']['far'][i]:.6f} "
-                f"{theoretical['uniform']['frr'][i]:.6f} "
-                f"{theoretical['quadratic']['far'][i]:.6f} "
-                f"{theoretical['quadratic']['frr'][i]:.6f}\n"
-            )
-
+            f.write(f"{t:.6f} {fa:.6f} {fr:.6f}\n")
     # EER point
     with open(out_dir / "sourceafis_far_frr_points.txt", "w") as f:
         f.write("T_eer EER\n")
@@ -612,32 +498,24 @@ def compute_success_and_or(
 ):
     if not np.isclose(P_safe + P_leak + P_loss + P_theft, 1.0):
         raise ValueError("P_safe + P_leak + P_loss + P_theft must sum to 1")
-
     p_and = (1 - frrs) * (P_safe + P_leak * (1 - fars))
     p_or = (1 - fars) * (P_safe + P_loss * (1 - frrs))
-
     idx_and = int(np.argmax(p_and))
     idx_or = int(np.argmax(p_or))
-
     p_and_eer = float(np.interp(eer_threshold, thresholds, p_and))
     p_or_eer = float(np.interp(eer_threshold, thresholds, p_or))
-
     return p_and, p_or, idx_and, idx_or, p_and_eer, p_or_eer
-
 
 def plot_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold):
     plt.figure(figsize=(8, 6))
-
     plt.plot(thresholds, p_success, label="P_success(t)")
     p_eer = float(np.interp(eer_threshold, thresholds, p_success))
-
     plt.scatter(
         eer_threshold,
         p_eer,
         zorder=3,
         label=f"P_success@EER={p_eer:.4f} (T≈{eer_threshold:.2f})"
     )
-
     plt.scatter(
         max_threshold,
         max_success,
@@ -645,7 +523,6 @@ def plot_p_success(thresholds, p_success, eer_threshold, max_success, max_thresh
         zorder=3,
         label=f"Max P_success={max_success:.4f} (T={max_threshold:.2f})"
     )
-
     plt.xlabel("Threshold (%)")
     plt.ylabel("P_success")
     plt.title("Success Probability vs Threshold")
@@ -654,7 +531,6 @@ def plot_p_success(thresholds, p_success, eer_threshold, max_success, max_thresh
     plt.tight_layout()
     plt.savefig(OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi" / "sourceafis_p_success.pdf", dpi=300, bbox_inches="tight")
     plt.close()
-
 
 def plot_success_and_or(
     thresholds,
@@ -667,38 +543,32 @@ def plot_success_and_or(
     p_or_eer,
 ):
     plt.figure(figsize=(8, 6))
-
     plt.plot(thresholds, p_and, label="P_success_AND")
     plt.plot(thresholds, p_or, label="P_success_OR")
-
     plt.scatter(
         thresholds[idx_and],
         p_and[idx_and],
         label=f"AND max, T={thresholds[idx_and]:.2f}, {p_and[idx_and]:.3f}",
         zorder=3,
     )
-
     plt.scatter(
         thresholds[idx_or],
         p_or[idx_or],
         label=f"OR max, T={thresholds[idx_or]:.2f}, {p_or[idx_or]:.3f}",
         zorder=3,
     )
-
     plt.scatter(
         eer_threshold,
         p_and_eer,
         label=f"AND@EER, {p_and_eer:.3f}",
         zorder=4,
     )
-
     plt.scatter(
         eer_threshold,
         p_or_eer,
         label=f"OR@EER, {p_or_eer:.3f}",
         zorder=4,
     )
-
     plt.xlabel("Threshold (%)")
     plt.ylabel("Success Probability")
     plt.title("Integrated Success vs Threshold (AND / OR)")
@@ -711,18 +581,14 @@ def plot_success_and_or(
 def export_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold):
     out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
     out_dir.mkdir(parents=True, exist_ok=True)
-
     p_eer = float(np.interp(eer_threshold, thresholds, p_success))
-
     with open(out_dir / "sourceafis_p_success_data.txt", "w") as f:
         f.write("T P_success\n")
         for t, p in zip(thresholds, p_success):
             f.write(f"{t:.6f} {p:.6f}\n")
-
     with open(out_dir / "sourceafis_p_success_points.txt", "w") as f:
         f.write("T_eer P_eer T_opt P_opt\n")
         f.write(f"{eer_threshold:.6f} {p_eer:.6f} {max_threshold:.6f} {max_success:.6f}\n")
-
 
 def export_success_and_or(
     thresholds,
@@ -736,12 +602,10 @@ def export_success_and_or(
 ):
     out_dir = OUTPUT_DIR / "figs" / "fig_different_users_sourceafsi"
     out_dir.mkdir(parents=True, exist_ok=True)
-
     with open(out_dir / "sourceafis_success_and_or_data.txt", "w") as f:
         f.write("T P_and P_or\n")
         for t, pa, po in zip(thresholds, p_and, p_or):
             f.write(f"{t:.6f} {pa:.6f} {po:.6f}\n")
-
     with open(out_dir / "sourceafis_success_and_or_points.txt", "w") as f:
         f.write("T_and_opt P_and_opt T_or_opt P_or_opt T_eer P_and_eer P_or_eer\n")
         f.write(
@@ -755,54 +619,32 @@ def export_success_and_or(
 # =========================
 if __name__ == "__main__":
     genuine_raw, impostor_raw, selections = collect_multiuser_scores()
-
     print(f"[i] Raw genuine scores:  n={len(genuine_raw)}  min={genuine_raw.min():.4f}  max={genuine_raw.max():.4f}  mean={genuine_raw.mean():.4f}")
     print(f"[i] Raw impostor scores: n={len(impostor_raw)} min={impostor_raw.min():.4f} max={impostor_raw.max():.4f} mean={impostor_raw.mean():.4f}")
-
     genuine, impostor, raw_max = normalize_scores_to_100(genuine_raw, impostor_raw)
-
     print(f"[i] Normalization factor (raw max) = {raw_max:.4f}")
     print(f"[i] Normalized genuine scores:  min={genuine.min():.4f}  max={genuine.max():.4f}  mean={genuine.mean():.4f}")
     print(f"[i] Normalized impostor scores: min={impostor.min():.4f} max={impostor.max():.4f} mean={impostor.mean():.4f}")
-
     plot_histograms(genuine, impostor)
     export_histograms(genuine, impostor)
-
     thresholds, fars, frrs = compute_far_frr_from_histogram(
         genuine,
         impostor,
     )
     theoretical = compute_ks_theoretical_far_frr(thresholds)
-
     eer, eer_threshold = compute_eer_intersection(thresholds, fars, frrs)
-
     print(f"[i] EER = {eer:.6f}")
     print(f"[i] Discrete EER threshold = {eer_threshold:.4f}")
     print(
-        "[i] Uniform genuine (loc, scale) = "
-        f"{theoretical['uniform']['genuine_parameters']}"
+        "[i] KS theoretical curves are disabled until the new LivDet Live "
+        "histogram is fitted."
     )
-    print(
-        "[i] Uniform impostor (loc, scale) = "
-        f"{theoretical['uniform']['impostor_parameters']}"
-    )
-    print(
-        "[i] Quadratic genuine (shape, loc, scale) = "
-        f"{theoretical['quadratic']['genuine_parameters']}"
-    )
-    print(
-        "[i] Quadratic impostor (shape, loc, scale) = "
-        f"{theoretical['quadratic']['impostor_parameters']}"
-    )
-
     plot_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold)
     export_far_frr(thresholds, fars, frrs, theoretical, eer, eer_threshold)
     p_success,eer_success, max_success, max_threshold = compute_p_success(thresholds, fars, frrs)
-
     print(f"[i] Max P_success = {max_success:.4f}")
     print(f"[i] EER P_success = {eer_success:.4f}")
     print(f"[i] Max P_success threshold = {max_threshold:.4f}")
-
     plot_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold)
     export_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold)
     p_and, p_or, idx_and, idx_or, p_and_eer, p_or_eer = compute_success_and_or(
@@ -815,12 +657,10 @@ if __name__ == "__main__":
         P_loss=0.1,
         P_theft=0.05,
     )
-
     print(f"[i] AND max P_success = {p_and[idx_and]:.4f} at T={thresholds[idx_and]:.4f}")
     print(f"[i] OR  max P_success = {p_or[idx_or]:.4f} at T={thresholds[idx_or]:.4f}")
     print(f"[i] AND at EER = {p_and_eer:.4f}")
     print(f"[i] OR  at EER = {p_or_eer:.4f}")
-
     plot_success_and_or(
         thresholds,
         p_and,

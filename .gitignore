@@ -28,5 +28,5 @@
 *.png
 # — VS Code workspace settings
 .vscode/
-
+*.csv
 *venv
