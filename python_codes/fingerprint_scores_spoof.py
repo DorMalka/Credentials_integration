@@ -240,7 +240,8 @@ def select_users_and_files():
     For every (partition, identity) pair:
       - the first PROBES_PER_USER live images are enrollment probes;
       - the remaining live images in that partition are genuine candidates;
-      - matching fake images from that same partition are spoof candidates.
+      - matching fake images from that same partition are spoof candidates;
+      - genuine candidates are retained even when no matching fakes exist.
 
     Results from both partitions are pooled only after their within-partition
     comparisons have been scored.
@@ -312,10 +313,15 @@ def select_users_and_files():
 
             if not fake_candidates:
                 print(
-                    f"[!] Skipping {split}/{identity}: no matching fake "
-                    "candidates were found in the same partition."
+                    f"[i] {split}/{identity}: genuine-only cohort; no matching "
+                    "fake candidates were found in the same partition."
                 )
-                continue
+
+            # LivDetBatchScorer requires a nonempty fourth directory. For a
+            # genuine-only cohort, stage one genuine scan as a compatibility
+            # placeholder and discard all fourth-directory scores on loading.
+            # Placeholder scores never enter the impostor distribution.
+            score_impostor_candidates = fake_candidates or genuine_candidates[:1]
 
             cohort_key = f"{split.lower()}__{identity}"
             selections[cohort_key] = {
@@ -324,6 +330,8 @@ def select_users_and_files():
                 "probes": probe_paths,
                 "genuine": genuine_candidates,
                 "impostor": fake_candidates,
+                "score_impostor": score_impostor_candidates,
+                "keep_impostor_scores": bool(fake_candidates),
             }
 
     if not selections:
@@ -405,7 +413,7 @@ def find_first_existing(row, candidates, required=True):
     return None
 
 
-def load_scores_from_csv_best_per_candidate(scores_csv):
+def load_scores_from_csv_best_per_candidate(scores_csv, *, keep_impostor_scores=True):
     """
     Each CSV row is one comparison:
         probe (stored template) vs target (candidate)
@@ -444,6 +452,8 @@ def load_scores_from_csv_best_per_candidate(scores_csv):
             if kind == "genuine":
                 genuine_best[target] = max(score, genuine_best.get(target, -np.inf))
             elif kind in ("impostor", "imposter"):
+                if not keep_impostor_scores:
+                    continue
                 impostor_best[target] = max(score, impostor_best.get(target, -np.inf))
             else:
                 raise ValueError(f"Unknown kind in CSV: {kind!r}")
@@ -456,7 +466,7 @@ def load_scores_from_csv_best_per_candidate(scores_csv):
 
     if len(genuine) == 0:
         raise ValueError("No genuine scores loaded after best-over-probes aggregation.")
-    if len(impostor) == 0:
+    if keep_impostor_scores and len(impostor) == 0:
         raise ValueError("No impostor scores loaded after best-over-probes aggregation.")
 
     return genuine, impostor, genuine_best, impostor_best
@@ -464,8 +474,8 @@ def load_scores_from_csv_best_per_candidate(scores_csv):
 
 def collect_multiuser_scores():
     """
-    Run the spoof experiment independently for every selected
-    (partition, identity) cohort, then pool the valid within-partition scores.
+    Pool genuine scores from every eligible Live cohort, independently within
+    each partition. Pool impostor scores only from cohorts with matching fakes.
     """
     selections = select_users_and_files()
 
@@ -492,12 +502,15 @@ def collect_multiuser_scores():
             identity=cohort_key,
             probe_paths=files["probes"],
             genuine_candidates=files["genuine"],
-            fake_candidates=files["impostor"],
+            fake_candidates=files["score_impostor"],
             scores_csv=scores_csv,
         )
 
         genuine, impostor, genuine_best, impostor_best = (
-            load_scores_from_csv_best_per_candidate(scores_csv)
+            load_scores_from_csv_best_per_candidate(
+                scores_csv,
+                keep_impostor_scores=files["keep_impostor_scores"],
+            )
         )
 
         all_genuine.extend(genuine)
@@ -516,12 +529,24 @@ def collect_multiuser_scores():
     if genuine.size == 0:
         raise ValueError("The pooled genuine distribution is empty.")
     if impostor.size == 0:
-        raise ValueError("The pooled fake distribution is empty.")
+        raise ValueError(
+            "Genuine cohorts were scored, but no matching Fake scans were found "
+            "for any eligible Live identity. FAR and spoof analysis require "
+            "at least one eligible cohort with matching Fake scans."
+        )
 
     print()
     print(
         "[i] Total enrolled partition/identity cohorts: "
         f"{len(selections)}"
+    )
+    print(
+        "[i] Cohorts contributing genuine scores only: "
+        f"{sum(not files['keep_impostor_scores'] for files in selections.values())}"
+    )
+    print(
+        "[i] Cohorts contributing genuine and fake scores: "
+        f"{sum(files['keep_impostor_scores'] for files in selections.values())}"
     )
     print(f"[i] Total pooled genuine scores: {len(genuine)}")
     print(f"[i] Total pooled fake scores: {len(impostor)}")
