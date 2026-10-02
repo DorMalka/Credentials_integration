@@ -10,6 +10,11 @@ impostor observations at that score. Commas, tabs, and spaces are accepted.
 
 The script reconstructs each sample, fits several candidate probability
 distributions independently, and ranks them by their one-sample KS statistic.
+By default parameters directly minimize KS distance (uniform uses linear
+feasibility; other models use a numerical search with an MLE fallback).
+--fit-method mle reproduces the previous fitting criterion. Bin centers remain
+an approximation to raw scores; no outliers are discarded. The script only
+prints fit results and does not modify histogram or FAR/FRR files.
 """
 
 from __future__ import annotations
@@ -21,6 +26,7 @@ import warnings
 
 import numpy as np
 from scipy import stats
+from scipy.optimize import differential_evolution, linprog
 
 
 DISTRIBUTIONS = {
@@ -54,8 +60,9 @@ PARAMETER_NAMES = {
 class FitResult:
     name: str
     statistic: float
-    pvalue: float
     parameters: tuple[float, ...]
+    mle_statistic: float
+    method: str
 
 
 def load_histogram(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -138,50 +145,133 @@ def maximum_cdf_gap(
     )
 
 
-def fit_distribution(sample: np.ndarray, name: str) -> FitResult:
-    """Fit one SciPy distribution and calculate its one-sample KS statistic."""
-    distribution = DISTRIBUTIONS[name]
+def empirical_cdf_sides(sample):
+    """CDF immediately before/after each jump; handle ties exactly."""
+    x, counts = np.unique(sample, return_counts=True)
+    right = np.cumsum(counts) / sample.size
+    left = right - counts / sample.size
+    return x, left, right
 
-    # Some flexible distributions emit harmless optimization warnings while
-    # searching for their maximum-likelihood parameters. A failed fit is still
-    # caught below and reported to the user.
+
+def ks_distance(distribution, parameters, x, left, right):
+    cdf = distribution.cdf(x, *parameters)
+    if np.any(~np.isfinite(cdf)):
+        return float("inf")
+    return float(max(np.max(right - cdf), np.max(cdf - left)))
+
+
+def fit_uniform_ks(sample):
+    """Minimum KS distance via bisection and linear feasibility, using all data.
+
+    F(x) = clip(q*z + r, 0, 1), where q > 0 and z rescales x to [0,1].
+    For a candidate D, require right-D <= F(x) <= left+D at every jump.
+    Only positive lower bounds and upper bounds below one impose constraints
+    on the unclipped line. No requirement forces all observations into support.
+    """
+    x, left, right = empirical_cdf_sides(sample)
+    if x.size == 1:
+        return (float(x[0] - 0.5), 1.0)
+    origin, span = float(x[0]), float(x[-1] - x[0])
+    z = (x - origin) / span
+    best = (origin, span)
+    upper = ks_distance(stats.uniform, best, x, left, right)
+    lower = float(np.max(right - left) / 2)
+    for _ in range(50):
+        d = (lower + upper) / 2
+        lo, hi = right - d, left + d
+        mask_lo, mask_hi = lo > 0, hi < 1
+        matrix = np.vstack([
+            np.column_stack([-z[mask_lo], -np.ones(mask_lo.sum())]),
+            np.column_stack([z[mask_hi], np.ones(mask_hi.sum())]),
+        ])
+        bounds = np.concatenate([-lo[mask_lo], hi[mask_hi]])
+        result = linprog(
+            [0.0, 0.0], A_ub=matrix, b_ub=bounds,
+            bounds=[(1e-8, None), (None, None)], method="highs",
+            options={"primal_feasibility_tolerance": 1e-9},
+        )
+        if result.success:
+            q, r = result.x
+            parameters = (origin - span * r / q, span / q)
+            actual = ks_distance(stats.uniform, parameters, x, left, right)
+            if actual <= upper + 1e-8:
+                best = parameters
+            upper = d
+        elif result.status == 2:
+            lower = d
+        else:
+            raise RuntimeError(f"Uniform fit failed: {result.message}")
+    # Account for LP tolerance; the returned fit must never worsen MLE.
+    mle = (origin, span)
+    return min([best, mle], key=lambda p: ks_distance(stats.uniform, p, x, left, right))
+
+
+def fit_distribution(sample, name, *, fit_method="ks", maxiter=300, seed=0):
+    """Use an MLE baseline, then directly minimize KS distance by default."""
+    distribution = DISTRIBUTIONS[name]
+    x, left, right = empirical_cdf_sides(sample)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
-        if name == "quadratic":
-            # scipy.stats.rdist with shape c=4 is the normalized parabolic
-            # distribution 3/(4*scale) * (1-z^2), where
-            # z=(x-loc)/scale and |z|<=1. Keep c fixed and fit loc/scale.
-            fitted = distribution.fit(sample, f0=4.0)
+        if name == "uniform" and np.ptp(sample) == 0:
+            # Degenerate MLE has zero scale; use a finite interval attaining
+            # the continuous-CDF lower bound D=0.5 for a point-mass sample.
+            fitted = (float(sample[0]) - 0.5, 1.0)
         else:
-            fitted = distribution.fit(sample)
-        parameters = tuple(float(value) for value in fitted)
+            fitted = (distribution.fit(sample, f0=4.0) if name == "quadratic"
+                      else distribution.fit(sample))
+    mle = tuple(float(v) for v in fitted)
+    mle_d = ks_distance(distribution, mle, x, left, right)
+    if not np.isfinite(mle_d):
+        raise ValueError("Maximum-likelihood baseline is invalid.")
+    parameters, method = mle, "MLE"
+    if fit_method == "ks":
+        if name == "uniform":
+            parameters, method = fit_uniform_ks(sample), "KS/LP"
+        else:
+            # Broad numerical search bounds include the MLE parameters.
+            # Scale is optimized logarithmically to cover narrow and wide fits.
+            span = max(float(np.ptp(sample)), 1.0)
+            loc0, scale0 = mle[-2:]
+            search_bounds = [
+                (min(0.05, value / 2), max(30.0, value * 2))
+                for value in mle[:-2]
+            ] if name != "quadratic" else []
+            search_bounds += [
+                (min(float(x[0]) - span, loc0 - span),
+                 max(float(x[-1]) + span, loc0 + span)),
+                (np.log(min(span * 1e-5, scale0 / 2)),
+                 np.log(max(span * 10, scale0 * 2))),
+            ]
+            def unpack(v):
+                loc_scale = (float(v[-2]), float(np.exp(v[-1])))
+                shapes = (4.0,) if name == "quadratic" else tuple(v[:-2])
+                return shapes + loc_scale
+            def objective(v):
+                return ks_distance(distribution, unpack(v), x, left, right)
+            initial = list(mle[:-2]) if name != "quadratic" else []
+            initial += [loc0, np.log(scale0)]
+            result = differential_evolution(
+                objective, search_bounds, seed=seed, x0=initial,
+                maxiter=maxiter, popsize=20, tol=1e-8, polish=True,
+            )
+            candidate = unpack(result.x)
+            if ks_distance(distribution, candidate, x, left, right) < mle_d:
+                parameters = candidate
+            method = "KS/search" if result.success else "KS/budget"
+    d = ks_distance(distribution, parameters, x, left, right)
+    return FitResult(name, d, parameters, mle_d, method)
 
-    result = stats.kstest(
-        sample,
-        distribution.cdf,
-        args=parameters,
-        alternative="two-sided",
-        method="asymp",
-    )
-    return FitResult(
-        name=name,
-        statistic=float(result.statistic),
-        pvalue=float(result.pvalue),
-        parameters=parameters,
-    )
 
-
-def fit_candidates(sample: np.ndarray, names: list[str]) -> tuple[list[FitResult], list[str]]:
-    """Fit all requested distributions and return successful and failed fits."""
-    fitted: list[FitResult] = []
-    failures: list[str] = []
-
+def fit_candidates(sample, names, *, fit_method="ks", maxiter=300, seed=0):
+    """Rank by actual KS distance; preserve failures for reporting."""
+    fitted, failures = [], []
     for name in names:
         try:
-            fitted.append(fit_distribution(sample, name))
-        except Exception as error:  # Continue so one difficult model does not stop the run.
+            fitted.append(fit_distribution(
+                sample, name, fit_method=fit_method, maxiter=maxiter, seed=seed
+            ))
+        except Exception as error:
             failures.append(f"{name}: {error}")
-
     fitted.sort(key=lambda item: item.statistic)
     return fitted, failures
 
@@ -197,12 +287,12 @@ def print_fit_table(label: str, sample: np.ndarray, fitted: list[FitResult]) -> 
     """Print candidate models ordered from smallest to largest KS statistic."""
     print()
     print(f"{label.upper()} DISTRIBUTION FIT (n = {sample.size})")
-    print("Rank  Distribution       KS D          Approx. p-value   Fitted parameters")
+    print("Rank  Distribution       KS D          MLE KS D      Method      Fitted parameters")
     print("----  -----------------  ------------  ----------------  -----------------")
     for rank, result in enumerate(fitted, start=1):
         print(
             f"{rank:<4}  {result.name:<17}  {result.statistic:<12.8f}  "
-            f"{result.pvalue:<16.8g}  "
+            f"{result.mle_statistic:<12.8f}  {result.method:<10}  "
             f"{format_parameters(result.name, result.parameters)}"
         )
 
@@ -283,7 +373,17 @@ def main() -> None:
         action="store_true",
         help="also run the direct genuine-vs-impostor two-sample KS test",
     )
+    parser.add_argument(
+        "--fit-method", choices=("ks", "mle"), default="ks",
+        help="direct KS-distance fitting (default) or previous MLE fitting",
+    )
+    parser.add_argument("--maxiter", type=int, default=300,
+                        help="numerical optimizer iteration budget (default: 300)")
+    parser.add_argument("--seed", type=int, default=0,
+                        help="reproducible optimizer seed (default: 0)")
     args = parser.parse_args()
+    if args.maxiter < 1 or args.seed < 0:
+        parser.error("--maxiter must be positive and --seed non-negative.")
 
     if not 0.0 < args.alpha < 1.0:
         parser.error("--alpha must be strictly between 0 and 1.")
@@ -313,10 +413,12 @@ def main() -> None:
     print(f"Impostor sample size:{impostor.size:>7}")
 
     genuine_fits, genuine_failures = fit_candidates(
-        genuine, requested_distributions
+        genuine, requested_distributions, fit_method=args.fit_method,
+        maxiter=args.maxiter, seed=args.seed
     )
     impostor_fits, impostor_failures = fit_candidates(
-        impostor, requested_distributions
+        impostor, requested_distributions, fit_method=args.fit_method,
+        maxiter=args.maxiter, seed=args.seed
     )
     print_fit_table("genuine", genuine, genuine_fits)
     print_fit_table("impostor", impostor, impostor_fits)
@@ -339,13 +441,19 @@ def main() -> None:
         )
 
     print()
+    print("Uniform KS/LP minimizes distance by linear feasibility and bisection.")
+    print("Other KS fits are numerical searches within finite bounds; a global")
+    print("minimum is not guaranteed. KS/budget means the iteration limit was hit.")
+    print("Returned KS fits never worsen their MLE baseline. No observations are removed.")
     print("Interpretation: the smallest KS statistic D indicates the closest")
     print("candidate among those tested; it does not prove that the model is true.")
     print("Caution: these are approximate goodness-of-fit results because histogram")
     print("bin centers replace the raw scores, causing ties. In addition, parameters")
-    print("were estimated from the tested data, so the displayed standard KS p-values")
-    print("should not be used as formally calibrated significance values.")
+    print("were estimated from the tested data. Uncalibrated one-sample KS p-values")
+    print("are intentionally omitted. Two-sample p-values, if requested, are also")
+    print("approximate for tied/bin-center data and assume independent observations.")
 
 
 if __name__ == "__main__":
     main()
+

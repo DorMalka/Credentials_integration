@@ -2659,76 +2659,81 @@ table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogr
     }
 ]
 
-% Empirical FAR: discrete step function
+\pgfplotsset{
+    impostor curve/.style={
+        thick, dashed
+    },
+    genuine curve/.style={
+        thick, solid
+    },
+    uniform model/.style={purple},
+    quadratic model/.style={orange},
+    normal model/.style={cyan}
+}
+
+% Empirical FAR: discrete histogram integral
 \addplot[
-    thick,
+    only marks,
     red,
-    const plot mark left,
     mark=*,
-    mark size=1.1pt
+    mark size=1.3pt
 ]
 table[x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
 \addlegendentry{Empirical \FAR}
 
-% Empirical FRR: discrete step function
+% Empirical FRR: discrete histogram integral
 \addplot[
-    thick,
+    only marks,
     blue,
-    const plot mark left,
     mark=*,
-    mark size=1.1pt
+    mark size=1.3pt
 ]
 table[x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
 \addlegendentry{Empirical \FRR}
 
-% % Uniform FAR: continuous theoretical curve
-% \addplot[
-%     thick,
-%     red,
-%     dashed,
-%     no marks
-% ]
-% table[x=T, y=FAR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-% \addlegendentry{Uniform \FAR}
+% Uniform: squares
+\addplot[impostor curve, uniform model]
+table[x=T, y=FAR_uniform]
+{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Uniform \FAR}
 
-% % Uniform FRR: continuous theoretical curve
-% \addplot[
-%     thick,
-%     blue,
-%     dashed,
-%     no marks
-% ]
-% table[x=T, y=FRR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-% \addlegendentry{Uniform \FRR}
+\addplot[genuine curve, uniform model]
+table[x=T, y=FRR_uniform]
+{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Uniform \FRR}
 
-% % Quadratic FAR: continuous theoretical curve
-% \addplot[
-%     thick,
-%     red,
-%     densely dotted,
-%     no marks
-% ]
-% table[x=T, y=FAR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-% \addlegendentry{Quadratic \FAR}
+% Quadratic: diamonds
+\addplot[impostor curve, quadratic model]
+table[x=T, y=FAR_quadratic]
+{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Quadratic \FAR}
 
-% % Quadratic FRR: continuous theoretical curve
-% \addplot[
-%     thick,
-%     blue,
-%     densely dotted,
-%     no marks
-% ]
-% table[x=T, y=FRR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-% \addlegendentry{Quadratic \FRR}
+\addplot[genuine curve, quadratic model]
+table[x=T, y=FRR_quadratic]
+{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Quadratic \FRR}
 
-% Discrete EER point
+% Normal: triangles
+\addplot[impostor curve, normal model]
+table[x=T, y=FAR_normal]
+{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Normal \FAR}
+
+\addplot[genuine curve, normal model]
+table[x=T, y=FRR_normal]
+{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Normal \FRR}
+
+% Empirical EER: black star
 \addplot[
+    black,
     only marks,
-    mark=*,
-    mark size=1.4pt,
-    black
+    mark=star,
+    mark size=3.5pt,
+    mark options={line width=2pt}
 ]
-table[x=T_eer, y=EER] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_points.txt};
+table[x=T_eer, y=EER]
+{figs/fig_different_users_sourceafsi/sourceafis_far_frr_points.txt};
 \addlegendentry{\EER}
 
 \end{axis}
@@ -2940,12 +2945,12 @@ table[x=score,y=genuine]
 
 % Genuine: fitted normal PDF
 \addplot[blue, thick, domain=0:100, samples=300]
-{1/(19.855*sqrt(2*pi))*exp(-0.5*((x-35.6369)/19.855)^2)};
+{1/(17.7711*sqrt(2*pi))*exp(-0.5*((x-30.975)/17.7711)^2)};
 \addlegendentry{Genuine: normal}
 
 % Impostor: fitted normal PDF
 \addplot[red, thick, domain=0:100, samples=300]
-{1/(13.7593*sqrt(2*pi))*exp(-0.5*((x-12.6193)/13.7593)^2)};
+{1/(11.5956*sqrt(2*pi))*exp(-0.5*((x-10.37179232)/11.5956)^2)};
 \addlegendentry{Impostor: normal}
 
 \end{axis}
@@ -2980,97 +2985,81 @@ table[x=score,y=genuine]
     }
 ]
 
+\pgfplotsset{
+    impostor curve/.style={
+        thick, dashed
+    },
+    genuine curve/.style={
+        thick, solid
+    },
+    uniform model/.style={purple},
+    quadratic model/.style={orange},
+    normal model/.style={cyan}
+}
+
 % Empirical FAR: discrete histogram integral
 \addplot[
-    thick,
+    only marks,
     red,
-    const plot mark left,
     mark=*,
-    mark size=0.9pt
+    mark size=1.3pt
 ]
 table[x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 \addlegendentry{Empirical \FAR}
 
 % Empirical FRR: discrete histogram integral
 \addplot[
-    thick,
+    only marks,
     blue,
-    const plot mark left,
     mark=*,
-    mark size=0.9pt
+    mark size=1.3pt
 ]
 table[x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 \addlegendentry{Empirical \FRR}
 
-% % Uniform FAR: continuous KS model
-% \addplot[
-%     thick,
-%     red,
-%     dashed,
-%     mark=none
-% ]
-% table[x=T, y=FAR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
-% \addlegendentry{Uniform \FAR}
+% Uniform: squares
+\addplot[impostor curve, uniform model]
+table[x=T, y=FAR_uniform]
+{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+\addlegendentry{Uniform \FAR}
 
-% % Uniform FRR: continuous KS model
-% \addplot[
-%     thick,
-%     blue,
-%     dashed,
-%     mark=none
-% ]
-% table[x=T, y=FRR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
-% \addlegendentry{Uniform \FRR}
+\addplot[genuine curve, uniform model]
+table[x=T, y=FRR_uniform]
+{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+\addlegendentry{Uniform \FRR}
 
-% Quadratic FAR: continuous KS model
-\addplot[
-    thick,
-    red,
-    densely dotted,
-    mark=none
-]
-table[x=T, y=FAR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+% Quadratic: diamonds
+\addplot[impostor curve, quadratic model]
+table[x=T, y=FAR_quadratic]
+{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 \addlegendentry{Quadratic \FAR}
 
-% Quadratic FRR: continuous KS model
-\addplot[
-    thick,
-    blue,
-    densely dotted,
-    mark=none
-]
-table[x=T, y=FRR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+\addplot[genuine curve, quadratic model]
+table[x=T, y=FRR_quadratic]
+{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 \addlegendentry{Quadratic \FRR}
 
-% Normal FAR
-\addplot[
-    thick,
-    red,
-    dashdotted,
-    mark=none
-]
-table[x=T, y=FAR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+% Normal: triangles
+\addplot[impostor curve, normal model]
+table[x=T, y=FAR_normal]
+{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 \addlegendentry{Normal \FAR}
 
-% Normal FRR
-\addplot[
-    thick,
-    blue,
-    dashdotted,
-    mark=none
-]
-table[x=T, y=FRR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_theoretical_data.txt};
+\addplot[genuine curve, normal model]
+table[x=T, y=FRR_normal]
+{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 \addlegendentry{Normal \FRR}
 
-
-% Discrete empirical EER
+% Empirical EER: black star
 \addplot[
+    black,
     only marks,
-    mark=*,
-    mark size=1.6pt,
-    black
+    mark=star,
+    mark size=3.5pt,
+    mark options={line width=2pt}
 ]
-table[x=T_eer, y=EER] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_points.txt};
+table[x=T_eer, y=EER]
+{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_points.txt};
 \addlegendentry{\EER}
 
 \end{axis}
@@ -3233,7 +3222,7 @@ We follow the theoretical analysis in~$(\S\ref{sec:4.2})$, and calculate the suc
 
 We find that the success probability of a mechanism that uses a biometric credential only, increases with the number of attempts~$k$, when optimizing the threshold overl all~$k$ attempts. Futhermore, we can see that the success probability when reusing the~\EER threshold for all~$k$ attempts, is reducing with the number of attempts~$k$, indicating that the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
 
-We next consider a different policy where the user is allowed~$k_u$ authentication attempts and the attacker is allowed~$k_a$ spoofing attempts. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~$(\S\ref{sec:7.2})$ and fix the number of attempts for the attacker to~$k_a=10$ and the number of attempts for the user to~$k_u=3$. These selections simulate a real-world scenario that represents the typical number of attempts for a user authentication versus the maximal allowed attempts forced by the mechanism~\cite{typical_aut_attempts}. We examine how the threshold selection affects the success probability of a mechanism that uses a biometric credential only. Under this policy, we present the success probability as function of the number of attempts in three baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:fixed_user_attacker_success_by_k}. We find that for the first three attempts, the optimal threshold doesn't change and is optimized repectively for~$k_u$. That means different user attempts lead to different optimal thresholds over~$k_u$. However, as the attempt index increases above~$k_u$, the threshold increases to reduce the probability of a successful spoofing attack. We also find that the success probability of a mechanism that uses a biometric credential only, is significantly higher when using the optimal threshold selection over~$k_u$ attempts, compared to reusing the~\EER threshold for all~$k_u$ attempts. 
+We next consider a different policy where the user is allowed~$k_u$ authentication attempts and the attacker is allowed~$k_a$ spoofing attempts. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~$(\S\ref{sec:7.2})$. This policy is based on real-world scenarios were system designers constraint a user successful authentication under specific attempts number~\cite{typical_aut_attempts}. However, as the mechanism success probability depends on the number of attempts, constraint it might lead to suboptimal performance. Previously we note that for each number of attempts~$k$, the optimal threshold is constant over the over all~$k$ attempts and increases with~$k$. Then, we search how the optimal threshold selections is effected when we constraint the mean number of attempts, seeking to maximize the mechanism success probability. We find that the optimal threshold is increasing with the number of attempts~$k$, and that the mechanism success probability is increasing when the mean number of attempts is increasing. Nevertheless, system designers seeking to minimze the mean number of a user's authentication attempts. The mean attempts and maximal success tradeoff, we find the minimal mean attempts of user authentication, when stricting the mechanism success probability to be greater than a threshold $P_{\mathrm{success}}^{\min}$. The threshold slection when constraint the mean number of user's succesful authentication attempts is shown in Figure~\ref{fig:livdet_mean_threshold_success}. 
 
 \begin{figure}
 \centering
@@ -3292,53 +3281,91 @@ table[x=k, y=product_1_minus_FAR] {figs/fig_spoofed_users/livdet_fixed_prefix_fa
 \label{fig:Success_probability_by_k}
 \end{figure}
 
-% \begin{figure}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     width=0.95\columnwidth,
-%     height=0.65\columnwidth,
-%     xlabel={Attempt number, $k$},
-%     ylabel={Success probability},
-%     xmin=1,
-%     xmax=10,
-%     ymin=0,
-%     ymax=1,
-%     xtick={1,2,...,10},
-%     grid=major,
-%     line width=1pt,
-%     mark size=2.5pt,
-%     legend style={
-%         at={(0.5,-0.25)},
-%         anchor=north,
-%         legend columns=3,
-%         draw=black,
-%         fill=white,
-%         font=\scriptsize
-%     }
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.95\linewidth,
+    height=0.62\linewidth,
+    xlabel={Selected threshold (\%)},
+    ylabel={Mechanism success probability},
+    ymin=0,
+    xmin=20,
+    xmax=100,
+    ymax=1,
+    grid=major,
+    legend style={
+        at={(0.5,-0.35)},
+        anchor=north,
+        legend columns=3,
+        font=\scriptsize,
+        draw=black,
+        fill=white
+    },
+    legend cell align=left
+]
+
+% Mean limit: 1.6
+\addplot[
+    blue,
+    thick,
+    mark=o,
+    mark size=1.5pt
+]
+table[x=Threshold, y=P_success]
+{figs/fig_spoofed_users/livdet_mean_threshold_success_1_6.txt};
+\addlegendentry{Mean limit $\leq 1.6$}
+
+% Mean limit: 1.9
+\addplot[
+    red,
+    thick,
+    mark=square*,
+    mark size=1.5pt
+]
+table[x=Threshold, y=P_success]
+{figs/fig_spoofed_users/livdet_mean_threshold_success_1_9.txt};
+\addlegendentry{Mean limit $\leq 1.9$}
+
+% Mean limit: 2.2
+\addplot[
+    teal!70!black,
+    thick,
+    mark=diamond*,
+    mark size=1.5pt
+]
+table[x=Threshold, y=P_success]
+{figs/fig_spoofed_users/livdet_mean_threshold_success_2_2.txt};
+\addlegendentry{Mean limit $\leq 2.2$}
+
+% % Mean limit: 2.5
+% \addplot[
+%     orange!85!black,
+%     thick,
+%     mark=triangle*,
+%     mark size=2.4pt
 % ]
+% table[x=Threshold, y=P_success]
+% {figs/fig_spoofed_users/livdet_mean_threshold_success_2_5.txt};
+% \addlegendentry{Mean limit $\leq 2.5$}
 
-% \addplot[green!60!black, solid, mark=*]
-% table[x=k, y=P_success_optimized] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
-% \addlegendentry{Optimized thresholds}
+\end{axis}
+\end{tikzpicture}
 
-% \addplot[blue, dashed, mark=square*]
-% table[x=k, y=P_success_EER] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
-% \addlegendentry{EER threshold}
+\caption{
+Mechanism success probability through attempt $i$ versus the
+threshold selected for that attempt, for four conditional mean
+user-attempt limits and $k_u=k_a=10$.
+Markers represent attempts and are connected in attempt order.
+Each mean limit constrains the complete ten-attempt policy.
+}
+\label{fig:livdet_mean_threshold_success}
+\end{figure}
 
-% \addplot[red, densely dotted, mark=triangle*]
-% table[x=k, y=P_success_single_attempt_optimum] {figs/fig_spoofed_users/livdet_fixed_user_attacker_success_by_k.txt};
-% \addlegendentry{Single-attempt optimum}
-
-% \end{axis}
-% \end{tikzpicture}
-% \caption{The cumulative success probability through attempt~$k$ for the fixed attempt limits $k_u=3$ and $k_a=10$. The optimized policy uses independently optimized per-attempt thresholds. The two baselines reuse either the EER threshold or the single-attempt-optimal threshold at every active attempt. After $k=3$, the legitimate user's success term remains fixed while additional attacker attempts continue to affect the attacker-rejection term.}
-% \label{fig:fixed_user_attacker_success_by_k}
-% \end{figure}
 
 \section{Conclusion}\label{sec:8}
 \noindent
-We find that the optimal threshold of a biometric credential depends on the other credentials in the mechanism and differs from the heuristic threshold commonly used today. We characterize a condition on the biometric credential and prove that whenever this condition holds, a mechanism designer always benefits from adding a biometric credential over using atomic credentials alone. We quantify this theoretical result by simulating different scenarios using public biometric datasets, including spoofing attacks. Our results show that optimizing the threshold significantly reduces the failure probability under spoofing attacks by~18-70\%.
+We find that the optimal threshold of a biometric credential depends on the other credentials in the mechanism and differs from the heuristic threshold commonly used today. We characterize a condition on the biometric credential and prove that whenever this condition holds, a mechanism designer always benefits from adding a biometric credential over using atomic credentials alone. We quantify this theoretical result by simulating different scenarios using public biometric datasets, including spoofing attacks. Our results show that optimizing the threshold significantly reduces the failure probability under spoofing attacks by~20-72\%.
 
 % We introduce a formal model of authentication mechanisms with both biometric and atomic credentials. We find that the optimal threshold of a biometric credential depends on the other credentials in the mechanism and differs from the heuristic threshold commonly used today. We then prove that using an asymptotically separable biometric credential and~$k$ atomic credentials in a mechanism achieves greater success probability than a mechanism that uses the atomic credentials only. This result indicates that a mechanism designer will always benefit from adding an asymptotically separable biometric credential into a mechanism that uses atomic credentials only.
 

@@ -1864,6 +1864,147 @@ def conditional_user_mean_attempts(
     )
 
 
+def optimize_success_with_mean_attempt_limit(
+    thresholds, fars, frrs, *, user_attempts, attacker_attempts,
+    maximum_mean_attempts, optimizer_starts=64, de_maxiter=300,
+):
+    """Largest joint success found with E[J | user succeeds] <= limit.
+
+    Uses the same independent-attempt probabilities and shared threshold
+    schedule as the existing policy optimizers. This is a numerical search,
+    not a certificate of global optimality.
+    """
+    thresholds, fars, frrs = (
+        np.asarray(a, dtype=float) for a in (thresholds, fars, frrs)
+    )
+    if (thresholds.ndim != 1 or thresholds.size < 2
+            or fars.shape != thresholds.shape or frrs.shape != thresholds.shape
+            or not all(np.all(np.isfinite(a)) for a in (thresholds, fars, frrs))
+            or np.any(np.diff(thresholds) <= 0)
+            or np.any((fars < 0) | (fars > 1))
+            or np.any((frrs < 0) | (frrs > 1))):
+        raise ValueError("Need increasing finite thresholds and matching FAR/FRR arrays in [0, 1].")
+    if user_attempts < 1 or attacker_attempts < 1 or optimizer_starts < 1:
+        raise ValueError("Attempt counts and optimizer starts must be positive.")
+    if not np.isfinite(maximum_mean_attempts) or maximum_mean_attempts < 1:
+        raise ValueError("The conditional mean attempt limit must be finite and at least 1.")
+    count = max(user_attempts, attacker_attempts)
+    lo, hi = float(thresholds[0]), float(thresholds[-1])
+    # Optimize in [0, 1] so numerical tolerances do not depend on score units.
+    def unpack(x):
+        return lo + (hi - lo) * np.asarray(x)
+
+    def quantities(x):
+        t = unpack(x)
+        rr = np.interp(t[:user_attempts], thresholds, frrs)
+        first = np.concatenate(([1.0], np.cumprod(rr[:-1]))) * (1.0 - rr)
+        pu = float(first.sum())
+        pa = float(np.prod(1.0 - np.interp(t[:attacker_attempts], thresholds, fars)))
+        weighted = float(np.dot(np.arange(1, user_attempts + 1), first))
+        mean = weighted / pu if pu > np.finfo(float).eps else float("inf")
+        return pu * pa, mean, maximum_mean_attempts * pu - weighted, pu
+
+    tolerance = 1e-9
+    best_x, best_success = None, -1.0
+    def remember(x):
+        nonlocal best_x, best_success
+        x = np.clip(np.asarray(x), 0.0, 1.0)
+        success, mean, _, _ = quantities(x)
+        if np.isfinite(mean) and mean <= maximum_mean_attempts + tolerance:
+            if success > best_success:
+                best_x, best_success = x.copy(), success
+
+    def penalty(x):
+        success, mean, _, _ = quantities(x)
+        if not np.isfinite(mean):
+            return 1e6
+        return -success + 1e4 * max(0.0, mean - maximum_mean_attempts) ** 2
+
+    rng = np.random.default_rng(42)
+    seeds = []
+    for v in np.unique(np.r_[np.linspace(0, 1, 65), (thresholds - lo) / (hi - lo)]):
+        # Equal policies, attacker-only strict tail, and early success policies.
+        equal = np.full(count, v)
+        tail = equal.copy()
+        tail[user_attempts:] = 1.0
+        early = np.ones(count)
+        early[0] = v
+        seeds.extend((equal, tail, early))
+    seeds.extend(rng.random((optimizer_starts, count)))
+    for seed in seeds:
+        remember(seed)
+    global_result = differential_evolution(
+        penalty, [(0.0, 1.0)] * count, seed=42, maxiter=de_maxiter,
+        popsize=15, tol=1e-9, polish=False,
+    )
+    remember(global_result.x)
+    # Start constrained searches from both feasible policies and penalty minima.
+    ranked = sorted(seeds, key=penalty)
+    starts = [global_result.x]
+    if best_x is not None:
+        starts.append(best_x.copy())
+    starts.extend(ranked[:max(0, optimizer_starts - len(starts))])
+    starts = starts[:optimizer_starts]
+    completed, feasible = 0, 0
+    constraints = [
+        {"type": "ineq", "fun": lambda x: quantities(x)[2]},
+        {"type": "ineq", "fun": lambda x: quantities(x)[3] - 1e-12},
+    ]
+    for seed in starts:
+        result = minimize(
+            lambda x: -quantities(x)[0], seed, method="SLSQP",
+            bounds=[(0.0, 1.0)] * count, constraints=constraints,
+            options={"maxiter": 2000, "ftol": 1e-12},
+        )
+        completed += int(result.success)
+        mean = quantities(result.x)[1]
+        feasible += int(np.isfinite(mean) and mean <= maximum_mean_attempts + tolerance)
+        remember(result.x)
+    if best_x is None:
+        raise ValueError("No feasible positive-user-success policy found for the mean attempt limit.")
+    return unpack(best_x), best_success, {
+        "conditional_mean_attempts": quantities(best_x)[1],
+        "successful_local_runs": completed, "feasible_local_runs": feasible,
+        "local_runs": len(starts), "global_search_converged": bool(global_result.success),
+    }
+
+
+def run_maximum_success_mean_attempt_policy(
+    thresholds, fars, frrs, *, user_attempts, attacker_attempts,
+    maximum_mean_attempts, optimizer_starts=64,
+):
+    """Report a cached-input policy under a conditional mean attempt cap."""
+    policy, success, diagnostics = optimize_success_with_mean_attempt_limit(
+        thresholds, fars, frrs, user_attempts=user_attempts,
+        attacker_attempts=attacker_attempts, maximum_mean_attempts=maximum_mean_attempts,
+        optimizer_starts=optimizer_starts,
+    )
+    pu, pa = user_attacker_policy_probabilities(
+        policy, thresholds, fars, frrs, user_attempts, attacker_attempts,
+    )
+    mean = diagnostics["conditional_mean_attempts"]
+    print("\nMaximum joint success with a conditional mean user-attempt limit")
+    print(f"Mean limit: {maximum_mean_attempts:.10g}; achieved E[J | user succeeds]: {mean:.10g}")
+    print(f"P_user_success = {pu:.10g}")
+    print(f"P_attacker_rejected = {pa:.10g}; P_attacker_success = {1-pa:.10g}")
+    print(f"P_success = {success:.10g} (largest found by numerical search)")
+    print("Attempt  Threshold  FAR  FRR  Applies to")
+    for j, t in enumerate(policy, 1):
+        roles = []
+        if j <= user_attempts:
+            roles.append("user")
+        if j <= attacker_attempts:
+            roles.append("attacker")
+        print(f"{j:>7}  {t:.10g}  {np.interp(t, thresholds, fars):.10g}  "
+              f"{np.interp(t, thresholds, frrs):.10g}  {' + '.join(roles)}")
+    print(f"Local searches: {diagnostics['successful_local_runs']} converged, "
+          f"{diagnostics['feasible_local_runs']}/{diagnostics['local_runs']} feasible; "
+          f"global search converged: {diagnostics['global_search_converged']}")
+    return {"attempt_thresholds": policy, "success_probability": success,
+            "user_success_probability": pu, "attacker_rejection_probability": pa,
+            **diagnostics}
+
+
 def run_minimum_mean_user_attempt_policy(
     thresholds: np.ndarray,
     fars: np.ndarray,
@@ -2644,7 +2785,7 @@ def optimize_user_mean_attempts_with_success_constraint(
             seed=seed,
         )
     )
-    feasibility_tolerance = 1e-9
+    feasibility_tolerance = 0
     if maximum_success < minimum_success_probability - feasibility_tolerance:
         raise ValueError(
             "The requested success-probability constraint is infeasible: "
@@ -3582,6 +3723,59 @@ def export_fixed_prefix_tikz_data(results, out_file: Path) -> None:
             )
 
 
+def export_mean_threshold_success_curves(
+    thresholds, fars, frrs, *, optimizer_starts=64, output_dir=None,
+):
+    """Four optimized 10-attempt trajectories: (t_i, joint prefix success).
+
+    Mean caps constrain the complete policy, conditioned on user success.
+    Rows stay in attempt order, even when thresholds double back.
+    """
+    if output_dir is None:
+        output_dir = SPOOF_OUTPUT_DIR
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results = []
+    for limit in (1.6, 1.9, 2.2, 2.5):
+        policy, final_success, diagnostics = optimize_success_with_mean_attempt_limit(
+            thresholds, fars, frrs, user_attempts=10, attacker_attempts=10,
+            maximum_mean_attempts=limit, optimizer_starts=optimizer_starts,
+        )
+        policy = np.asarray(policy, dtype=float)
+        if policy.shape != (10,):
+            raise RuntimeError('Exactly ten thresholds are required for each curve.')
+        actual_mean = conditional_user_mean_attempts(policy, thresholds, frrs, 10)
+        if not np.isfinite(actual_mean) or actual_mean > limit + 1e-9:
+            raise RuntimeError(f'The policy violates the mean-attempt cap {limit}.')
+        attempt_fars = np.interp(policy, thresholds, fars)
+        attempt_frrs = np.interp(policy, thresholds, frrs)
+        user_success = 1.0 - np.cumprod(attempt_frrs)
+        attacker_rejected = np.cumprod(1.0 - attempt_fars)
+        prefix_success = user_success * attacker_rejected
+        if not np.isclose(prefix_success[-1], final_success, rtol=1e-10, atol=1e-12):
+            raise RuntimeError('Final prefix success differs from the optimized objective.')
+        rows = np.column_stack((
+            np.arange(1, 11), policy, prefix_success,
+            attempt_fars, attempt_frrs, user_success, attacker_rejected,
+            np.full(10, limit), np.full(10, actual_mean),
+            np.full(10, final_success), np.full(10, 10), np.full(10, 10),
+        ))
+        tag = f'{limit:.1f}'.replace('.', '_')
+        path = output_dir / f'livdet_mean_threshold_success_{tag}.txt'
+        np.savetxt(
+            path, rows, fmt='%.17g', comments='',
+            header=('Attempt Threshold P_success FAR FRR P_user_success '
+                    'P_attacker_rejected MeanLimit AchievedMean FinalP_success k_user k_attacker'),
+        )
+        print(f'[curve] mean cap={limit:.1f}; achieved mean={actual_mean:.10g}; '
+              f'final P_success={final_success:.10g}; saved {path}', flush=True)
+        results.append({'mean_limit': limit, 'achieved_mean': actual_mean,
+                        'policy': policy, 'prefix_success': prefix_success,
+                        'final_success': final_success, 'file': path,
+                        'optimizer_diagnostics': diagnostics})
+    return results
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description=(
@@ -3640,6 +3834,24 @@ def parse_arguments():
             "P_success >= P' or separate lower bounds on user success and "
             "attacker rejection."
         ),
+    )
+    mode.add_argument(
+        "--maximize-success-with-mean-attempts",
+        type=float, default=None, metavar="MEAN_LIMIT",
+        help=("Reuse psafe_sweep_inputs.npz and maximize joint P_success subject "
+              "to E[J | user succeeds] <= MEAN_LIMIT (finite and at least 1). "
+              "Uses --k-user, --k-attacker and --optimizer-starts."),
+    )
+    mode.add_argument(
+        "--mean-threshold-curves-only", "--attempt-tradeoff-only",
+        dest="attempt_tradeoff_only", action="store_true",
+        help=("Reuse psafe_sweep_inputs.npz and export four threshold/prefix-success "
+              "curves for mean limits 1.6, 1.9, 2.2, 2.5. This mode fixes "
+              "k_user=k_attacker=10 and uses --optimizer-starts."),
+    )
+    parser.add_argument(
+        "--tradeoff-output-dir", type=Path, default=SPOOF_OUTPUT_DIR,
+        help="Directory for the four livdet_mean_threshold_success_*.txt tables.",
     )
     parser.add_argument(
         "--attempts",
@@ -3770,6 +3982,14 @@ def parse_arguments():
             "The separate probability constraints require "
             "--minimize-user-attempts-only."
         )
+    if args.maximize_success_with_mean_attempts is not None:
+        if (not np.isfinite(args.maximize_success_with_mean_attempts)
+                or args.maximize_success_with_mean_attempts < 1):
+            parser.error("--maximize-success-with-mean-attempts must be finite and at least 1.")
+        if min(args.k_user, args.k_attacker, args.optimizer_starts) < 1:
+            parser.error("--k-user, --k-attacker and --optimizer-starts must be positive.")
+    if args.attempt_tradeoff_only and args.optimizer_starts < 1:
+        parser.error("--optimizer-starts must be positive.")
     return args
 
 # =========================
@@ -3872,6 +4092,25 @@ if __name__ == "__main__":
                 args.minimum_attacker_rejection_probability
             ),
             optimizer_starts=args.optimizer_starts,
+        )
+        raise SystemExit(0)
+
+    if args.maximize_success_with_mean_attempts is not None:
+        thresholds, fars, frrs, _ = load_sweep_inputs(SWEEP_INPUTS_FILE)
+        run_maximum_success_mean_attempt_policy(
+            thresholds, fars, frrs,
+            user_attempts=args.k_user, attacker_attempts=args.k_attacker,
+            maximum_mean_attempts=args.maximize_success_with_mean_attempts,
+            optimizer_starts=args.optimizer_starts,
+        )
+        raise SystemExit(0)
+
+    if args.attempt_tradeoff_only:
+        thresholds, fars, frrs, _ = load_sweep_inputs(SWEEP_INPUTS_FILE)
+        export_mean_threshold_success_curves(
+            thresholds, fars, frrs,
+            optimizer_starts=args.optimizer_starts,
+            output_dir=args.tradeoff_output_dir,
         )
         raise SystemExit(0)
 
