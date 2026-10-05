@@ -1,0 +1,37 @@
+% Preamble: \usepackage{pgfplots}
+%           \pgfplotsset{compat=1.18}
+% Override \SuccessCurveDataDir if your TXT files are in a different folder.
+\providecommand{\SuccessCurveDataDir}{figs/fig_spoofed_users}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.95\linewidth,height=0.62\linewidth,
+xlabel={Selected threshold (\%)},ylabel={Mechanism success probability},
+ymin=0,ymax=1,grid=major,
+legend style={at={(0.5,-0.22)},anchor=north,legend columns=2,
+font=\scriptsize,draw=black,fill=white},legend cell align=left]
+% Keep rows in attempt order; do not sort by threshold.
+\addplot[blue,thick,mark=o,mark size=2.4pt]
+table[x=Threshold,y=P_success]
+{\SuccessCurveDataDir/livdet_success_threshold_min_mean_0_5.txt};
+\addlegendentry{$P_{\mathrm{success}}\geq 0.5$}
+\addplot[red,thick,mark=square*,mark size=2.4pt]
+table[x=Threshold,y=P_success]
+{\SuccessCurveDataDir/livdet_success_threshold_min_mean_0_6.txt};
+\addlegendentry{$P_{\mathrm{success}}\geq 0.6$}
+\addplot[teal!70!black,thick,mark=diamond*,mark size=2.4pt]
+table[x=Threshold,y=P_success]
+{\SuccessCurveDataDir/livdet_success_threshold_min_mean_0_7.txt};
+\addlegendentry{$P_{\mathrm{success}}\geq 0.7$}
+\addplot[orange!85!black,thick,mark=triangle*,mark size=2.4pt]
+table[x=Threshold,y=P_success]
+{\SuccessCurveDataDir/livdet_success_threshold_min_mean_0_75.txt};
+\addlegendentry{$P_{\mathrm{success}}\geq 0.75$}
+\end{axis}
+\end{tikzpicture}
+\caption{Mechanism success through attempt $i$ versus its selected threshold.
+Each policy minimizes conditional mean user attempts subject to a final
+success-probability requirement, with $k_u=k_a=10$. Markers are connected
+in attempt order; the requirement applies to the complete ten-attempt policy.}
+\label{fig:livdet_success_constrained_thresholds}
+\end{figure}

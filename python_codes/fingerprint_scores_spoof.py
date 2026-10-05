@@ -3776,6 +3776,114 @@ def export_mean_threshold_success_curves(
     return results
 
 
+def export_success_constrained_threshold_curves(
+    thresholds, fars, frrs, eer_threshold, *,
+    success_requirements=(0.5, 0.6, 0.7, 0.8), optimizer_starts=64,
+    output_dir=None,
+):
+    """Minimize conditional mean at each joint-success requirement.
+
+    Ten threshold/prefix-success points per policy, with k_user=k_attacker=10.
+    Only the full ten-attempt success must meet the requirement; earlier
+    prefix probabilities need not do so. Enforce nonnegative final slack.
+    """
+    requirements = np.asarray(success_requirements, dtype=float)
+    if (requirements.ndim != 1 or requirements.size == 0
+            or not np.all(np.isfinite(requirements))
+            or np.any((requirements <= 0) | (requirements > 1))):
+        raise ValueError('Success requirements must be finite values in (0, 1].')
+    if optimizer_starts < 1:
+        raise ValueError('optimizer_starts must be positive.')
+    output_dir = Path(SPOOF_OUTPUT_DIR if output_dir is None else output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results = []
+    for requirement in dict.fromkeys(requirements.tolist()):
+        print(f'[optimize] minimize mean with P_success >= {requirement:.10g}', flush=True)
+        try:
+            policy, _, diagnostics = optimize_user_mean_attempts_with_success_constraint(
+                thresholds, fars, frrs, 10, 10,
+                minimum_success_probability=requirement,
+                eer_threshold=eer_threshold, n_starts=optimizer_starts,
+            )
+        except ValueError as exc:
+            print(f'[skip] P_success requirement {requirement:.10g}: {exc}', flush=True)
+            continue
+        policy = np.asarray(policy, dtype=float)
+        if policy.shape != (10,):
+            raise RuntimeError('Exactly ten thresholds are required for each curve.')
+        actual_mean = conditional_user_mean_attempts(policy, thresholds, frrs, 10)
+        attempt_fars = np.interp(policy, thresholds, fars)
+        attempt_frrs = np.interp(policy, thresholds, frrs)
+        user_success = 1.0 - np.cumprod(attempt_frrs)
+        attacker_rejected = np.cumprod(1.0 - attempt_fars)
+        prefix_success = user_success * attacker_rejected
+        final_success = float(prefix_success[-1])
+        slack = final_success - requirement
+        if not np.isfinite(actual_mean) or slack < 0.0:
+            raise RuntimeError('The returned policy has undefined mean or negative success slack.')
+        rows = np.column_stack((
+            np.arange(1, 11), policy, prefix_success, attempt_fars, attempt_frrs,
+            user_success, attacker_rejected,
+            np.full(10, requirement), np.full(10, actual_mean),
+            np.full(10, final_success), np.full(10, slack),
+            np.full(10, 10), np.full(10, 10),
+        ))
+        # Round-trip precision avoids collisions for distinct float requirements.
+        tag = str(float(requirement)).replace('.', '_').replace('-', 'm')
+        path = output_dir / f'livdet_success_threshold_min_mean_{tag}.txt'
+        np.savetxt(path, rows, fmt='%.17g', comments='',
+                   header=('Attempt Threshold P_success FAR FRR P_user_success '
+                           'P_attacker_rejected SuccessRequirement AchievedMean '
+                           'FinalP_success ConstraintSlack k_user k_attacker'))
+        print(f'[curve] P_success >= {requirement:.10g}; mean={actual_mean:.10g}; '
+              f'final success={final_success:.10g}; slack={slack:.10g}; saved {path}', flush=True)
+        results.append({'success_requirement': requirement, 'achieved_mean': actual_mean,
+                        'policy': policy, 'prefix_success': prefix_success,
+                        'final_success': final_success, 'constraint_slack': slack,
+                        'file': path, 'optimizer_diagnostics': diagnostics})
+    if not results:
+        raise RuntimeError('No success-constrained curves were generated; see diagnostics above.')
+
+    # Emit matching TikZ for every successful requirement, with symbols only.
+    styles = [('blue', 'o'), ('red', 'square*'), ('teal!70!black', 'diamond*'),
+              ('orange!85!black', 'triangle*'), ('violet', 'pentagon*'), ('black', 'star')]
+    tex = [
+        r'% Preamble: \usepackage{pgfplots}',
+        r'%           \pgfplotsset{compat=1.18}',
+        r'% Override \SuccessCurveDataDir if your TXT files are in a different folder.',
+        r'\providecommand{\SuccessCurveDataDir}{figs/fig_spoofed_users}',
+        r'\begin{figure}[t]', r'\centering', r'\begin{tikzpicture}',
+        r'\begin{axis}[width=0.95\linewidth,height=0.62\linewidth,',
+        r'xlabel={Selected threshold (\%)},ylabel={Mechanism success probability},',
+        r'ymin=0,ymax=1,grid=major,',
+        r'legend style={at={(0.5,-0.22)},anchor=north,legend columns=2,',
+        r'font=\scriptsize,draw=black,fill=white},legend cell align=left]',
+        r'% Keep rows in attempt order; do not sort by threshold.',
+    ]
+    for j, result in enumerate(results):
+        color, marker = styles[j % len(styles)]
+        name = result['file'].name
+        label = f"{result['success_requirement']:.10g}"
+        tex.extend([
+            rf'\addplot[{color},thick,mark={marker},mark size=2.4pt]',
+            r'table[x=Threshold,y=P_success]',
+            rf'{{\SuccessCurveDataDir/{name}}};',
+            rf'\addlegendentry{{$P_{{\mathrm{{success}}}}\geq {label}$}}',
+        ])
+    tex.extend([
+        r'\end{axis}', r'\end{tikzpicture}',
+        r'\caption{Mechanism success through attempt $i$ versus its selected threshold.',
+        r'Each policy minimizes conditional mean user attempts subject to a final',
+        r'success-probability requirement, with $k_u=k_a=10$. Markers are connected',
+        r'in attempt order; the requirement applies to the complete ten-attempt policy.}',
+        r'\label{fig:livdet_success_constrained_thresholds}', r'\end{figure}',
+    ])
+    tikz_path = output_dir / 'livdet_success_threshold_min_mean.tex'
+    tikz_path.write_text('\n'.join(tex) + '\n')
+    print(f'[TikZ] saved {tikz_path}', flush=True)
+    return results
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description=(
@@ -3849,9 +3957,19 @@ def parse_arguments():
               "curves for mean limits 1.6, 1.9, 2.2, 2.5. This mode fixes "
               "k_user=k_attacker=10 and uses --optimizer-starts."),
     )
+    mode.add_argument(
+        "--success-threshold-curves-only", action="store_true",
+        help=("Reuse saved inputs and minimize conditional mean attempts for each "
+              "--success-requirements value. Export threshold/prefix-success TXT "
+              "curves and matching TikZ. This mode fixes k_user=k_attacker=10."),
+    )
+    parser.add_argument(
+        "--success-requirements", type=float, nargs="+", default=None, metavar="P",
+        help="Joint success lower bounds for --success-threshold-curves-only (default: 0.5 0.6 0.7 0.8).",
+    )
     parser.add_argument(
         "--tradeoff-output-dir", type=Path, default=SPOOF_OUTPUT_DIR,
-        help="Directory for the four livdet_mean_threshold_success_*.txt tables.",
+        help="Output directory for the mean-limit or success-requirement TXT curves.",
     )
     parser.add_argument(
         "--attempts",
@@ -3990,6 +4108,15 @@ def parse_arguments():
             parser.error("--k-user, --k-attacker and --optimizer-starts must be positive.")
     if args.attempt_tradeoff_only and args.optimizer_starts < 1:
         parser.error("--optimizer-starts must be positive.")
+    if args.success_requirements is not None and not args.success_threshold_curves_only:
+        parser.error("--success-requirements requires --success-threshold-curves-only.")
+    if args.success_threshold_curves_only:
+        if args.success_requirements is None:
+            args.success_requirements = [0.5, 0.6, 0.7, 0.8]
+        if any(not np.isfinite(p) or not 0 < p <= 1 for p in args.success_requirements):
+            parser.error("Success requirements must be finite values in (0, 1].")
+        if args.optimizer_starts < 1:
+            parser.error("--optimizer-starts must be positive.")
     return args
 
 # =========================
@@ -4109,6 +4236,16 @@ if __name__ == "__main__":
         thresholds, fars, frrs, _ = load_sweep_inputs(SWEEP_INPUTS_FILE)
         export_mean_threshold_success_curves(
             thresholds, fars, frrs,
+            optimizer_starts=args.optimizer_starts,
+            output_dir=args.tradeoff_output_dir,
+        )
+        raise SystemExit(0)
+
+    if args.success_threshold_curves_only:
+        thresholds, fars, frrs, eer_threshold = load_sweep_inputs(SWEEP_INPUTS_FILE)
+        export_success_constrained_threshold_curves(
+            thresholds, fars, frrs, eer_threshold,
+            success_requirements=args.success_requirements,
             optimizer_starts=args.optimizer_starts,
             output_dir=args.tradeoff_output_dir,
         )

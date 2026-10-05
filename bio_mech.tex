@@ -1876,23 +1876,18 @@ table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_
 
 \section{Authentication with Multiple Attempts}
 \label{sec:multiple_authentication_attempts}
+\noindent
+We consider an authentication mechanism that uses a biometric credential and allows the player~$P$ to make multiple authentication attempts. We formalize two policies: one that imposes the same limit on the number of attempts for both the legitimate user and the attacker~$(\S\ref{sec:6.1})$, and another that imposes different limits~$(\S\ref{sec:6.2})$. We then analyze the user's successful authentication probability within those limits and the mean number of attempts required for a user's first successful authentication~$(\S\ref{sec:6.3})$. We examine the tradeoff between this mean and the mechanism's success probability by minimizing the mean subject to a constraint on the success probability, and maximizing the success probability subject to a constraint on the mean~$(\S\ref{sec:6.4})$.
 
-We consider a biometric authentication mechanism that accepts a submitted biometric sample when its similarity score is greater than or equal to a decision threshold. The threshold used at attempt~$j$ is denoted by~$t_j$. Consequently, the legitimate user is rejected at attempt~$j$ with probability~$\FRR(t_j)$ and accepted with probability~$1-\FRR(t_j)$. Similarly, the attacker is accepted at attempt~$j$ with probability~$\FAR(t_j)$ and rejected with probability~$1-\FAR(t_j)$.
-
-Throughout this section, we assume that the outcomes of different authentication attempts are independent, conditioned on whether the claimant is the legitimate user or the attacker. We also assume that the legitimate-user and attacker authentication sessions are independent. These assumptions allow the corresponding per-attempt probabilities to be multiplied.
-
-\subsection{Equal Numbers of User and Attacker Attempts}
-
-We first consider a policy in which both the legitimate user and the attacker are allowed at most~$k$ authentication attempts. The policy may use a different threshold~$t_j$ at every attempt~$j$.
-
-The legitimate user fails to authenticate only if rejected in all~$k$ attempts. Under the independence assumption, the probability of this event is
+\subsection{Equal Numbers of User and Attacker Attempts}\label{sec:6.1}
+\noindent
+We first consider a policy in which both the legitimate user and the attacker are allowed at most~$k$ authentication attempts. The policy may use a different threshold~$t_j$ at every attempt~$j$. The legitimate user fails to authenticate only if rejected in all~$k$ attempts. Each attempt~$j$ is independent, and the user is rejected at attempt~$j$ with probability~$\FRR(t_j)$. Therefore, the probability that the user is rejected in all~$k$ attempts is
 
 \begin{equation*}
 \Pr[\text{user is rejected in all }k\text{ attempts}]
 =
 \prod_{j=1}^{k}\FRR(t_j).
 \end{equation*}
-
 Therefore, the probability that the user is accepted at least once is
 
 \begin{equation*}
@@ -1901,16 +1896,8 @@ P_U^{(k)}(\mathbf{t})
 1-
 \prod_{j=1}^{k}\FRR(t_j),
 \end{equation*}
-
-where
-
-\begin{equation*}
-\mathbf{t}
-=
-(t_1,\ldots,t_k)
-\end{equation*}
-
-is the vector of per-attempt thresholds.
+where~$\mathbf{t}=(t_1,\ldots,t_k)$
+is the threshold per attempt~$j$ vector.
 
 For the attacker, the desired event is rejection at every attempt. Since the attacker is rejected at attempt~$j$ with probability~$1-\FAR(t_j)$, the probability that all~$k$ attacker attempts are rejected is
 
@@ -1929,7 +1916,6 @@ P_{\mathrm{success}}^{(k)}(\mathbf{t})
 P_U^{(k)}(\mathbf{t})
 P_A^{\mathrm{reject},(k)}(\mathbf{t}).
 \end{equation*}
-
 Substituting the two probabilities gives
 
 \begin{equation*}
@@ -1943,38 +1929,17 @@ P_{\mathrm{success}}^{(k)}(\mathbf{t})
 \left(1-\FAR(t_j)\right).
 \end{equation*}
 
-Allowing additional attempts benefits the legitimate user because the user has more opportunities to be accepted. However, additional attempts also benefit the attacker because the attacker has more opportunities to be falsely accepted. The thresholds must therefore balance these two effects.
+Increasing~$k$ benefits the legitimate user as the products of~$\FRR(t_j)$ decreases, indicating the user has higher probability to be accepted. However, additional attempts also decreases the attacker rejection probability, meaning the attacker has higher probability to be falsely accepted. The thresholds selection, when optimizing the success probability, must therefore balance these two effects.
 
-\subsection{Different Numbers of User and Attacker Attempts}
-
-We next allow the legitimate user and attacker to have different attempt limits. Let~$k_u$ denote the maximum number of legitimate-user attempts and let~$k_a$ denote the maximum number of attacker attempts.
-
-The number of thresholds required to describe the complete policy is
-
+\subsection{Different Numbers of User and Attacker Attempts}\label{sec:6.2}
+\noindent
+We next consider a policy in which the legitimate user and attacker can have different attempt limits. Let~$k_u$ denote the maximum number of legitimate user attempts and let~$k_a$ denote the maximum number of attacker attempts. The number of thresholds required to describe the complete policy is
 \begin{equation*}
 m
 =
 \max\{k_u,k_a\}.
 \end{equation*}
-
-We therefore define the threshold vector as
-
-\begin{equation*}
-\mathbf{t}
-=
-(t_1,\ldots,t_m).
-\end{equation*}
-
-The legitimate user can use only the first~$k_u$ attempts. Therefore, the probability that the user is rejected in every permitted attempt is
-
-\begin{equation*}
-\Pr[\text{user is rejected in all }k_u\text{ attempts}]
-=
-\prod_{j=1}^{k_u}\FRR(t_j).
-\end{equation*}
-
-The probability that the user is accepted at least once within the permitted attempts is consequently
-
+We therefore define the threshold vector as~$\mathbf{t}=(t_1,\ldots,t_m)$. The legitimate user can use only the first~$k_u$ attempts. Therefore, the probability that the user is accepted at least once within the permitted attempts is consequently
 \begin{equation*}
 P_U(\mathbf{t})
 =
@@ -1992,16 +1957,6 @@ P_A^{\mathrm{reject}}(\mathbf{t})
 \end{equation*}
 
 The success probability of the authentication mechanism is therefore
-
-\begin{equation*}
-P_{\mathrm{success}}(\mathbf{t})
-=
-P_U(\mathbf{t})
-P_A^{\mathrm{reject}}(\mathbf{t}),
-\end{equation*}
-
-or, explicitly,
-
 \begin{equation*}
 P_{\mathrm{success}}(\mathbf{t})
 =
@@ -2012,98 +1967,44 @@ P_{\mathrm{success}}(\mathbf{t})
 \prod_{j=1}^{k_a}
 \left(1-\FAR(t_j)\right).
 \end{equation*}
+\noindent
+For example, when~$k_u=4$ and~$k_a=10$, the user's success probability depends only on thresholds~$t_1,\ldots,t_4$, whereas the attacker's rejection probability depends on thresholds~$t_1,\ldots,t_{10}$. Hence, thresholds~$t_5,\ldots,t_{10}$ affect only the attacker rejection probability.
 
-For example, when~$k_u=4$ and~$k_a=10$, the legitimate-user success probability depends only on thresholds~$t_1,\ldots,t_4$, whereas the attacker-rejection probability depends on thresholds~$t_1,\ldots,t_{10}$. Hence, thresholds~$t_5,\ldots,t_{10}$ affect only the attacker-rejection probability.
+\subsection{User Successful Authentication Within~$k_u$ Attempts}\label{sec:6.3}
+\noindent
+We are interested not only in whether the legitimate user eventually authenticates, but also in how many attempts are required for user successful authentication.
 
-\subsection{Attempt of the First Successful User Authentication}
-
-We are interested not only in whether the legitimate user eventually authenticates, but also in how many attempts are required.
-
-Let~$N_U$ denote the attempt number at which the legitimate user is accepted for the first time. Formally, if the user is accepted within the permitted attempts, then
+Let~$N_U$ denote the attempt number at which the legitimate user authenticates for the first time. Formally, if the user authenticates within the permitted attempts at attempt~$j$, then
 
 \begin{equation*}
 N_U
 =
-\min
-\left\{
-j\in\{1,\ldots,k_u\}
-:
-\text{the user is accepted at attempt }j
-\right\}.
+\min \Bigl\{
+j \in \{1,\ldots,k_u\}
+\Bigr\}.
 \end{equation*}
 
-If the user is rejected in all~$k_u$ attempts, we define
+If the mechanism rejects the user in all~$k_u$ attempts, we define~$N_U =\infty$.
+The event~$\{N_U=j\}$ means that the user is rejected in attempts~$1,\ldots,j-1$ and is then accepted at attempt~$j$.
+Under the assumption that every authentication attempt is independent, the probability that the user authenticates for the first time at attempt~$j$ is therefore
 
-\begin{equation*}
-N_U=\infty.
-\end{equation*}
-
-The event~$\{N_U=j\}$ means that the user is rejected in attempts~$1,\ldots,j-1$ and is then accepted at attempt~$j$. Thus,
-
-\begin{equation*}
-\{N_U=j\}
-=
-\{
-\text{rejected at attempts }1,\ldots,j-1
-\}
-\cap
-\{
-\text{accepted at attempt }j
-\}.
-\end{equation*}
-
-Under the independence assumption, the probability of this event is
-
-\begin{equation*}
+\begin{equation}\label{eq:fist_success}
 \Pr[N_U=j]
 =
 \left(
 \prod_{i=1}^{j-1}\FRR(t_i)
 \right)
-\left(1-\FRR(t_j)\right),
-\qquad
-j\in\{1,\ldots,k_u\}.
-\end{equation*}
-
-This quantity is the \emph{first-success probability} at attempt~$j$: it is the probability that the user successfully authenticates specifically at attempt~$j$, having failed every preceding attempt.
-
-For~$j=1$, there are no preceding attempts. By convention, the empty product equals one, and therefore
-
-\begin{equation*}
-\Pr[N_U=1]
-=
-1-\FRR(t_1).
-\end{equation*}
-
-For~$j=2$, the user must be rejected at the first attempt and accepted at the second attempt. Hence,
-
-\begin{equation*}
-\Pr[N_U=2]
-=
-\FRR(t_1)
-\left(1-\FRR(t_2)\right).
-\end{equation*}
-
-Similarly, for~$j=3$,
-
-\begin{equation*}
-\Pr[N_U=3]
-=
-\FRR(t_1)
-\FRR(t_2)
-\left(1-\FRR(t_3)\right).
-\end{equation*}
-
-Summing the first-success probabilities over all permitted attempts gives the probability that the user successfully authenticates within~$k_u$ attempts:
+\left(1-\FRR(t_j)\right).
+\end{equation}
+This is the \emph{first success probability} that the user successfully authenticates specifically at attempt~$j$, having failed every preceding attempt.
+Summing the first success probabilities over all permitted attempts gives the probability that the user successfully authenticates within~$k_u$ attempts:
 
 \begin{equation*}
 \Pr[N_U\leq k_u]
 =
 \sum_{j=1}^{k_u}\Pr[N_U=j].
 \end{equation*}
-
-Substituting the first-success probabilities yields
-
+Substituting the first success probabilities yields
 \begin{equation*}
 \Pr[N_U\leq k_u]
 =
@@ -2113,28 +2014,48 @@ Substituting the first-success probabilities yields
 \right)
 \left(1-\FRR(t_j)\right).
 \end{equation*}
-
-This sum telescopes to
-
+Each summand can be written as the difference of two consecutive products:
 \begin{equation*}
+\left(\prod_{i=1}^{j-1}\FRR(t_i)\right)
+\left(1-\FRR(t_j)\right)
+=
+\prod_{i=1}^{j-1}\FRR(t_i)
+-
+\prod_{i=1}^{j}\FRR(t_i).
+\end{equation*}
+Using the convention that an empty product equals~$1$, we obtain
+\begin{align*}
+\Pr[N_U\leq k_u]
+&=
+\sum_{j=1}^{k_u}
+\left(
+\prod_{i=1}^{j-1}\FRR(t_i)
+-
+\prod_{i=1}^{j}\FRR(t_i)
+\right)\\
+&=
+\bigl(1-\FRR(t_1)\bigr)\\
+&\quad+
+\bigl(\FRR(t_1)-\FRR(t_1)\FRR(t_2)\bigr)\\
+&\quad+\cdots\\
+&\quad+
+\left(
+\prod_{i=1}^{k_u-1}\FRR(t_i)
+-
+\prod_{i=1}^{k_u}\FRR(t_i)
+\right)\\
+&=
+1-\prod_{i=1}^{k_u}\FRR(t_i).
+\end{align*}
+Each negative product cancels with the positive product in the next
+summand, leaving only the first and last terms, thus
+\begin{equation}\label{eq:auth_within_ku}
 \Pr[N_U\leq k_u]
 =
-1-
-\prod_{j=1}^{k_u}\FRR(t_j).
-\end{equation*}
+1-\prod_{i=1}^{k_u}\FRR(t_i).
+\end{equation}
 
-Therefore,
-
-\begin{equation*}
-\Pr[N_U\leq k_u]
-=
-P_U(\mathbf{t}).
-\end{equation*}
-
-\subsection{Conditional Distribution of the Successful Attempt}
-
-We now consider the attempt number under the condition that the user successfully authenticates within the permitted~$k_u$ attempts.
-
+Having derived the probability that the user successfully authenticates within~$k_u$ attempts, we now consider the conditional distribution of the attempt number~$N_U$ given that the user successfully authenticates within~$k_u$ attempts.
 By the definition of conditional probability,
 
 \begin{equation*}
@@ -2150,7 +2071,6 @@ By the definition of conditional probability,
 \Pr[N_U\leq k_u]
 }.
 \end{equation*}
-
 For every~$j\in\{1,\ldots,k_u\}$, the event~$\{N_U=j\}$ implies that the user succeeds within~$k_u$ attempts. In set notation,
 
 \begin{equation*}
@@ -2158,9 +2078,7 @@ For every~$j\in\{1,\ldots,k_u\}$, the event~$\{N_U=j\}$ implies that the user su
 \subseteq
 \{N_U\leq k_u\}.
 \end{equation*}
-
 Consequently, their intersection is simply
-
 \begin{equation*}
 \{N_U=j\}
 \cap
@@ -2168,9 +2086,7 @@ Consequently, their intersection is simply
 =
 \{N_U=j\}.
 \end{equation*}
-
-It follows that
-
+Then it follows that
 \begin{equation*}
 \Pr[N_U=j\mid N_U\leq k_u]
 =
@@ -2180,9 +2096,7 @@ It follows that
 \Pr[N_U\leq k_u]
 }.
 \end{equation*}
-
-Using the expressions derived above, we obtain
-
+Using Equation~\ref{eq:fist_success} and Equation~\ref{eq:auth_within_ku}, we obtain
 \begin{equation*}
 \Pr[N_U=j\mid N_U\leq k_u]
 =
@@ -2196,13 +2110,9 @@ Using the expressions derived above, we obtain
 \prod_{i=1}^{k_u}\FRR(t_i)
 }.
 \end{equation*}
-
 The numerator is the probability that the first successful authentication occurs exactly at attempt~$j$. The denominator is the probability that the user succeeds at some attempt no later than~$k_u$. Their ratio therefore gives the fraction of successful users whose first successful authentication occurs at attempt~$j$.
 
-\subsection{Conditional Mean Number of User Attempts}
-
 The conditional mean number of attempts is the expected value of~$N_U$ among users who successfully authenticate within~$k_u$ attempts. By the definition of conditional expectation for a discrete random variable,
-
 \begin{equation*}
 \mathbb{E}
 \left[
@@ -2215,7 +2125,6 @@ N_U\leq k_u
 j
 \Pr[N_U=j\mid N_U\leq k_u].
 \end{equation*}
-
 Substituting the conditional probabilities gives
 
 \begin{equation*}
@@ -2240,10 +2149,9 @@ j
 \prod_{j=1}^{k_u}\FRR(t_j)
 }.
 \end{equation*}
+Conditioning on~$N_U\leq k_u$ is necessary because~$N_U=\infty$ when the user is rejected in all permitted attempts. The conditional mean measures the average number of attempts required specifically among successful authentication sessions, helping system designers to determine their requirements and priorities when optimizing thresholds over attempts.
 
-Conditioning on~$N_U\leq k_u$ is necessary because~$N_U=\infty$ when the user is rejected in all permitted attempts. The conditional mean measures the average number of attempts required specifically among successful authentication sessions.
-
-\subsection{Optimization Under a Joint Success Constraint}
+\subsection{Optimization Under a Joint Success Constraint}\label{sec:6.4}
 
 We first minimize the conditional mean number of user attempts while requiring the overall success probability to exceed a prescribed lower bound~$P'$.
 
@@ -2399,8 +2307,8 @@ The joint constraint controls the product of the two probabilities, whereas the 
 
 \section{Characterizing Success Improvement}\label{sec:6} 
 \noindent
-We characterize the conditions under which a mechanism that uses both a biometric credential and an atomic credential mechanism achieves greater success than a mechanism that uses only the atomic credential. We show that any mechanism using a single atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$ and a biometric credential does not achieve greater success probability than a mechanism using only this atomic credential~$(\S\ref{sec:6.1})$. Next, we present a necessary and sufficient condition for such improvement~$(\S\ref{sec:6.2})$, extend the results to multiple atomic credentials, and derive a more intuitive sufficient condition.
-\subsection{No Improvement In Mechanism Success}\label{sec:6.1}
+We characterize the conditions under which a mechanism that uses both a biometric credential and an atomic credential mechanism achieves greater success than a mechanism that uses only the atomic credential. We show that any mechanism using a single atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$ and a biometric credential does not achieve greater success probability than a mechanism using only this atomic credential~$(\S\ref{sec:7.1})$. Next, we present a necessary and sufficient condition for such improvement~$(\S\ref{sec:7.2})$, extend the results to multiple atomic credentials, and derive a more intuitive sufficient condition.
+\subsection{No Improvement In Mechanism Success}\label{sec:7.1}
 \noindent
 We first consider an atomic credential that is always either safe or stolen, never lost or leaked. This case admits no benefit from producing a mechanism that uses an atomic credential in this setting and a biometric credential. The following proposition formalizes this result.
 \begin{proposition}
@@ -2416,7 +2324,7 @@ We first consider an atomic credential that is always either safe or stolen, nev
     \end{equation*}
     Each state probability of the biometric credential is strictly less than one; in particular,~$P^2_{\text{safe}}(t) \le 1$ for all values of~$t$. Therefore,~$P_{\text{success}}(t) \le P^1_\text{safe}$ and thus, adding a biometric credential does not produce a new mechanism~$\bar{M}$ whose success probability is greater than that of a single atomic credential mechanism.
 \end{proof}
-\subsection{Necessary and Sufficient Condition for Integrating Biometric Credentials}\label{sec:6.2}
+\subsection{Necessary and Sufficient Condition for Integrating Biometric Credentials}\label{sec:7.2}
 \noindent 
 We turn to the general case of an atomic credential that can also be lost or leaked. Then, we identify a biometric credential that is \emph{asymptotically separable}. We show that this is a necessary and sufficient condition for a mechanism using an atomic credential and a biometric credential to achieve strictly greater success probability than a mechanism using only the atomic credential.
 Intuitively, asymptotic separability means that there exists a threshold~$t$ such that the error rate is negligible with respect to the correctness rate, making the user and attacker distributions effectively separated.
@@ -2558,11 +2466,11 @@ P^M_{\text{stolen}}
 
 Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential achieves a greater success probability than that of a single atomic credential mechanism~$M$, and show it is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}). 
 
-\section{Empirical Evaluation}\label{sec:7}
+\section{Empirical Evaluation}\label{sec:8}
 \noindent
-We now empirically evaluate different mechanisms that use an atomic credential and a biometric credential under two attack scenarios. In each scenario, we compare the mechanism's success probability when the threshold is set to the~\EER and when it is optimized. We first simulate a baseline attack in which an attacker attempts to authenticate using their own fingerprints~$(\S\ref{sec:7.1})$. We show that although optimizing the threshold increases the mechanism's success probability, the improvement is limited. We then present a more sophisticated attack in which an attacker creates a fake fingerprint using spoofing techniques~$(\S\ref{sec:7.2})$ and show that the improvement becomes substantially larger. To reflect real-world authentication systems, we evaluate spoofing attack when multiple attempts are allowed~$(\S\ref{sec:7.3})$. We show that in such cases, the threshold should be optimized with respect to the maximum number of allowed attempts for siginificant improvement in the mechanism's success probability.
+We now empirically evaluate different mechanisms that use an atomic credential and a biometric credential under two attack scenarios. In each scenario, we compare the mechanism's success probability when the threshold is set to the~\EER and when it is optimized. We first simulate a baseline attack in which an attacker attempts to authenticate using their own fingerprints~$(\S\ref{sec:8.1})$. We show that although optimizing the threshold increases the mechanism's success probability, the improvement is limited. We then present a more sophisticated attack in which an attacker creates a fake fingerprint using spoofing techniques~$(\S\ref{sec:8.2})$ and show that the improvement becomes substantially larger. To reflect real-world authentication systems, we evaluate spoofing attack when multiple attempts are allowed~$(\S\ref{sec:8.3})$. We show that in such cases, the threshold should be optimized with respect to the maximum number of allowed attempts for siginificant improvement in the mechanism's success probability.
 
-\subsection{Baseline Attack Scenario}\label{sec:7.1}
+\subsection{Baseline Attack Scenario}\label{sec:8.1}
 \noindent
 To simulate a biometric credential, we use the public real-world~\textit{FVC2004} dataset of fingerprints, developed for the third international Fingerprint Verification Competition to compare fingerprint verification algorithms~\cite{fvc2004}. This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors. We divide each user's scans in the dataset into a reference set, simulating the reference scans stored in advance, and a probe set, simulating the scans obtained by the sensor. To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images. We evaluate all~10 users who appear in~$\textit{FVC2004}$ dataset whose fingerprints obtained by the same sensor. For each user, we randomly select three fingerprint scan images for the reference set, while the probe set comprises the remaining images in the dataset. We compute a similarity score for each probe scan by running the algorithm against each of the three reference images, and choose the maximum score as the probe's final score~\cite{hong1998,Cappelli2006,max_score2009}. The genuine comparisons are all comparisons between the user's probe images and the user's reference images. By contrast, the imposter comparisons are all comparisons between the users' reference images and the scans of the other users in the database.
 
@@ -3180,7 +3088,7 @@ At the \EER operating point, the success probabilities are $0.713$ and $0.649$ f
 \refstepcounter{subsection}
 \subsection*{\thesubsection.\quad Spoofing Attack Scenario}
 \makeatletter
-\immediate\write\@auxout{\string\newlabel{sec:7.2}{{\thesubsection}{\thepage}{Spoofing Attack Scenario}{\@currentHref}{}}}
+\immediate\write\@auxout{\string\newlabel{sec:8.2}{{\thesubsection}{\thepage}{Spoofing Attack Scenario}{\@currentHref}{}}}
 \immediate\write\@auxout{\string\@writefile{toc}{\string\contentsline {subsection}{\string\numberline {\thesubsection}Spoofing Attack Scenario}{\thepage}{\@currentHref}\string\protected@file@percent}}
 \makeatother
 \noindent
@@ -3214,15 +3122,15 @@ We simulate a spoofing attack by using fake fingerprint images of each user prod
 \end{strip}
 \flushbottom
 
-\subsection{Spoofing Attack With Multiple Attempts}\label{sec:7.3}
+\subsection{Spoofing Attack With Multiple Attempts}\label{sec:8.3}
 \noindent
-We simulate a spoofing attack scenario in which a player has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the previous section~$(\S\ref{sec:7.2})$ using the LivDet2015 database. 
+We simulate a spoofing attack scenario in which a player has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the previous section~$(\S\ref{sec:8.2})$ using the LivDet2015 database. 
 
 We follow the theoretical analysis in~$(\S\ref{sec:4.2})$, and calculate the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). Then, we simulate several authentication attempts of a player~$P$. For each number of attempts~$k$, we calculate the probability of a successful authentication as the probability that the user is accepted at least once, while the attacker is rejected over all~$k$ attempts. As the success probability becomes dependant on the number of attempts~$k$, we compare the mechanism success probability under three baselines of threshold selections: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the one attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}.
 
 We find that the success probability of a mechanism that uses a biometric credential only, increases with the number of attempts~$k$, when optimizing the threshold overl all~$k$ attempts. Futhermore, we can see that the success probability when reusing the~\EER threshold for all~$k$ attempts, is reducing with the number of attempts~$k$, indicating that the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
 
-We next consider a different policy where the user is allowed~$k_u$ authentication attempts and the attacker is allowed~$k_a$ spoofing attempts. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~$(\S\ref{sec:7.2})$. This policy is based on real-world scenarios were system designers constraint a user successful authentication under specific attempts number~\cite{typical_aut_attempts}. However, as the mechanism success probability depends on the number of attempts, constraint it might lead to suboptimal performance. Previously we note that for each number of attempts~$k$, the optimal threshold is constant over the over all~$k$ attempts and increases with~$k$. Then, we search how the optimal threshold selections is effected when we constraint the mean number of attempts, seeking to maximize the mechanism success probability. We find that the optimal threshold is increasing with the number of attempts~$k$, and that the mechanism success probability is increasing when the mean number of attempts is increasing. Nevertheless, system designers seeking to minimze the mean number of a user's authentication attempts. The mean attempts and maximal success tradeoff, we find the minimal mean attempts of user authentication, when stricting the mechanism success probability to be greater than a threshold $P_{\mathrm{success}}^{\min}$. The threshold slection when constraint the mean number of user's succesful authentication attempts is shown in Figure~\ref{fig:livdet_mean_threshold_success}. 
+We next consider a different policy where the user is allowed~$k_u$ authentication attempts and the attacker is allowed~$k_a$ spoofing attempts. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~$(\S\ref{sec:8.2})$. This policy is based on real-world scenarios were system designers constraint a user successful authentication under specific attempts number~\cite{typical_aut_attempts}. However, as the mechanism success probability depends on the number of attempts, constraint it might lead to suboptimal performance. Previously we note that for each number of attempts~$k$, the optimal threshold is constant over the over all~$k$ attempts and increases with~$k$. Then, we search how the optimal threshold selections is effected when we constraint the mean number of attempts, seeking to maximize the mechanism success probability. We find that the optimal threshold is increasing with the number of attempts~$k$, and that the mechanism success probability is increasing when the mean number of attempts is increasing. Nevertheless, system designers seeking to minimze the mean number of a user's authentication attempts. The mean attempts and maximal success tradeoff, we find the minimal mean attempts of user authentication, when stricting the mechanism success probability to be greater than a threshold $P_{\mathrm{success}}^{\min}$. The threshold slection when constraint the mean number of user's succesful authentication attempts is shown in Figure~\ref{fig:livdet_mean_threshold_success}. 
 
 \begin{figure}
 \centering
@@ -3360,6 +3268,112 @@ Markers represent attempts and are connected in attempt order.
 Each mean limit constrains the complete ten-attempt policy.
 }
 \label{fig:livdet_mean_threshold_success}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+
+% Read the data and achieved means.
+\pgfplotstableread
+{figs/fig_spoofed_users/livdet_success_threshold_min_mean_0_5.txt}
+\SuccessA
+\pgfplotstablegetelem{0}{AchievedMean}\of{\SuccessA}
+\edef\MeanA{\pgfplotsretval}
+
+\pgfplotstableread
+{figs/fig_spoofed_users/livdet_success_threshold_min_mean_0_6.txt}
+\SuccessB
+\pgfplotstablegetelem{0}{AchievedMean}\of{\SuccessB}
+\edef\MeanB{\pgfplotsretval}
+
+\pgfplotstableread
+{figs/fig_spoofed_users/livdet_success_threshold_min_mean_0_7.txt}
+\SuccessC
+\pgfplotstablegetelem{0}{AchievedMean}\of{\SuccessC}
+\edef\MeanC{\pgfplotsretval}
+
+\pgfplotstableread
+{figs/fig_spoofed_users/livdet_success_threshold_min_mean_0_75.txt}
+\SuccessD
+\pgfplotstablegetelem{0}{AchievedMean}\of{\SuccessD}
+\edef\MeanD{\pgfplotsretval}
+
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.95\linewidth,
+    height=0.62\linewidth,
+    xlabel={Selected threshold (\%)},
+    ylabel={Mechanism success probability},
+    ymin=0,
+    ymax=1,
+    grid=major,
+    legend style={
+        at={(0.5,-0.25)},
+        anchor=north,
+        legend columns=2,
+        font=\scriptsize,
+        draw=black,
+        fill=white
+    },
+    legend cell align=left
+]
+
+\addplot[
+    blue, thick,
+    mark=o,
+    mark size=2.4pt
+]
+table[x=Threshold, y=P_success] {\SuccessA};
+\addlegendentryexpanded{
+    $p'=0.5,\quad
+    \text{mean}=\noexpand\pgfmathprintnumber[fixed,precision=2]{\MeanA}$
+}
+
+\addplot[
+    red, thick,
+    mark=square*,
+    mark size=2.4pt
+]
+table[x=Threshold, y=P_success] {\SuccessB};
+\addlegendentryexpanded{
+    $p'=0.6,\quad
+    \text{mean}=\noexpand\pgfmathprintnumber[fixed,precision=2]{\MeanB}$
+}
+
+\addplot[
+    teal!70!black, thick,
+    mark=diamond*,
+    mark size=2.4pt
+]
+table[x=Threshold, y=P_success] {\SuccessC};
+\addlegendentryexpanded{
+    $p'=0.7,\quad
+    \text{mean}=\noexpand\pgfmathprintnumber[fixed,precision=2]{\MeanC}$
+}
+
+\addplot[
+    orange!85!black, thick,
+    mark=triangle*,
+    mark size=2.4pt
+]
+table[x=Threshold, y=P_success] {\SuccessD};
+\addlegendentryexpanded{
+    $p'=0.75,\quad
+    \text{mean}=\noexpand\pgfmathprintnumber[fixed,precision=2]{\MeanD}$
+}
+
+\end{axis}
+\end{tikzpicture}
+
+\caption{
+Mechanism success probability through attempt $i$ versus its
+selected threshold, with $k_u=k_a=10$.
+Each policy minimizes the conditional mean user attempts subject
+to $P_{\mathrm{success}}\geq p'$.
+The legend reports the achieved conditional mean.
+Markers are connected in attempt order.
+}
+\label{fig:livdet_success_constrained_thresholds}
 \end{figure}
 
 
