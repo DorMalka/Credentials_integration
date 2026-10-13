@@ -2151,12 +2151,13 @@ j
 \end{equation*}
 Conditioning on~$N_U\leq k_u$ is necessary because~$N_U=\infty$ when the user is rejected in all permitted attempts. The conditional mean measures the average number of attempts required specifically among successful authentication sessions, helping system designers to determine their requirements and priorities when optimizing thresholds over attempts.
 
-\subsection{Optimization Under a Joint Success Constraint}\label{sec:6.4}
+\subsection{Optimization Under Mean-Success Trade-Off}\label{sec:6.4}
+\noindent
+System designers evaluate the security of a multiple attempt authentication mechanism by two metrics: (1)~the conditional mean number of a user authentication attempts, and (2)~the overall success probability of the mechanism. The first metric measures usability, while the second metric measures reliability. However, there is an inherent trade-off between these metrics. As the number of attempts grows, the overall success probability increases while usability degrades. 
 
-We first minimize the conditional mean number of user attempts while requiring the overall success probability to exceed a prescribed lower bound~$P'$.
+We consider two optimization problems: one that minimizes the conditional mean number of user authentication attempts subject to a constraint on the success probability, and another that maximizes the success probability subject to a constraint on the conditional mean number of user authentication attempts.  
 
-The optimization problem is
-
+We start by minimizing the conditional mean number of user authentication attempts. Thus
 \begin{equation*}
 \begin{aligned}
 \underset{\mathbf{t}}{\operatorname{minimize}}
@@ -2175,7 +2176,6 @@ P_{\mathrm{success}}(\mathbf{t})
 P'.
 \end{aligned}
 \end{equation*}
-
 Equivalently, the constraint is
 
 \begin{equation*}
@@ -2189,123 +2189,55 @@ Equivalently, the constraint is
 P'.
 \end{equation*}
 
-For example, setting~$P'=0.75$ requires
-
-\begin{equation*}
-P_U(\mathbf{t})
-P_A^{\mathrm{reject}}(\mathbf{t})
-\geq
-0.75.
-\end{equation*}
-
-Because both probabilities lie in the interval~$[0,1]$, this joint constraint implies
-
-\begin{equation*}
-P_U(\mathbf{t})
-\geq
-0.75
-\end{equation*}
-
-and
-
-\begin{equation*}
-P_A^{\mathrm{reject}}(\mathbf{t})
-\geq
-0.75.
-\end{equation*}
-
-However, it does not require the legitimate-user success probability to exceed a different prescribed value such as~$0.8$.
-
-\subsection{Optimization Under Separate Probability Constraints}
-
-Alternatively, the legitimate-user success probability and attacker-rejection probability can be constrained independently.
-
-The resulting optimization problem is
-
+We next maximize the mechanism's success probability subject to an upper
+bound on the conditional mean number of user authentication attempts.
+Let~$\mu'$ denote this upper bound. For fixed attempt limits~$k_u$
+and~$k_a$, we optimize the threshold vector~$\mathbf{t}=(t_1,\ldots,t_m)$,
+where~$m=\max\{k_u,k_a\}$. Thus
 \begin{equation*}
 \begin{aligned}
-\underset{\mathbf{t}}{\operatorname{minimize}}
+\underset{\mathbf{t}}{\operatorname{maximize}}
 \quad&
-\mathbb{E}
-\left[
-N_U
-\mid
-N_U\leq k_u
-\right]
+P_{\mathrm{success}}(\mathbf{t})
 \\
 \text{subject to}
 \quad&
-P_U(\mathbf{t})
-\geq
-P_U',
-\\
-&
-P_A^{\mathrm{reject}}(\mathbf{t})
-\geq
-P_A'.
+\mathbb{E}\left[N_U\mid N_U\leq k_u\right]
+\leq \mu'.
 \end{aligned}
 \end{equation*}
-
-For the values considered here,
-
+Substituting the success probability and the conditional mean gives
 \begin{equation*}
-P_U'
-=
-0.8
+\begin{aligned}
+\underset{\mathbf{t}}{\operatorname{maximize}}
+\quad&
+\left(
+1-\prod_{j=1}^{k_u}\FRR(t_j)
+\right)
+\prod_{j=1}^{k_a}\left(1-\FAR(t_j)\right)
+\\
+\text{subject to}
+\quad&
+\frac{
+\displaystyle
+\sum_{j=1}^{k_u}
+j\left(\prod_{i=1}^{j-1}\FRR(t_i)\right)
+\left(1-\FRR(t_j)\right)
+}{
+\displaystyle
+1-\prod_{j=1}^{k_u}\FRR(t_j)
+}
+\leq \mu'.
+\end{aligned}
 \end{equation*}
+We restrict the optimization to threshold vectors for which
+$P_U(\mathbf{t})>0$, so that the conditional mean is defined.
+This optimization selects the thresholds that maximize the probability
+that the legitimate user authenticates within~$k_u$ attempts and the attacker is rejected in all~$k_a$ attempts, while ensuring that successful user authentication sessions require at most~$\mu'$ attempts on average.
+The constraint bounds this conditional average rather than the number
+of attempts in every individual session.
 
-and
-
-\begin{equation*}
-P_A'
-=
-0.75.
-\end{equation*}
-
-The two constraints are therefore
-
-\begin{equation*}
-1-
-\prod_{j=1}^{k_u}\FRR(t_j)
-\geq
-0.8
-\end{equation*}
-
-and
-
-\begin{equation*}
-\prod_{j=1}^{k_a}
-\left(1-\FAR(t_j)\right)
-\geq
-0.75.
-\end{equation*}
-
-These constraints guarantee that the user authenticates within the permitted number of attempts with probability at least~$0.8$ and that every attacker attempt is rejected with probability at least~$0.75$.
-
-They consequently guarantee the lower bound
-
-\begin{equation*}
-P_{\mathrm{success}}(\mathbf{t})
-=
-P_U(\mathbf{t})
-P_A^{\mathrm{reject}}(\mathbf{t})
-\geq
-0.8\cdot0.75
-=
-0.6.
-\end{equation*}
-
-Therefore, the separate constraints are not equivalent to requiring
-
-\begin{equation*}
-P_{\mathrm{success}}(\mathbf{t})
-\geq
-0.75.
-\end{equation*}
-
-The joint constraint controls the product of the two probabilities, whereas the separate formulation controls each probability individually. In both formulations, the optimization selects the per-attempt thresholds that minimize the conditional mean number of legitimate-user authentication attempts while satisfying the prescribed security and usability requirements.
-
-\section{Characterizing Success Improvement}\label{sec:6} 
+\section{Characterizing Success Improvement}\label{sec:7} 
 \noindent
 We characterize the conditions under which a mechanism that uses both a biometric credential and an atomic credential mechanism achieves greater success than a mechanism that uses only the atomic credential. We show that any mechanism using a single atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$ and a biometric credential does not achieve greater success probability than a mechanism using only this atomic credential~$(\S\ref{sec:7.1})$. Next, we present a necessary and sufficient condition for such improvement~$(\S\ref{sec:7.2})$, extend the results to multiple atomic credentials, and derive a more intuitive sufficient condition.
 \subsection{No Improvement In Mechanism Success}\label{sec:7.1}
@@ -3193,191 +3125,80 @@ table[x=k, y=product_1_minus_FAR] {figs/fig_spoofed_users/livdet_fixed_prefix_fa
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.95\linewidth,
-    height=0.62\linewidth,
-    xlabel={Selected threshold (\%)},
-    ylabel={Mechanism success probability},
-    ymin=0,
-    xmin=20,
-    xmax=100,
-    ymax=1,
+    width=0.9\linewidth,
+    height=0.55\linewidth,
+    xlabel={Attempt},
+    ylabel={Threshold},
+    xmin=1, xmax=10,
+    ymin=00, ymax=100,
+    xtick={1,...,10},
     grid=major,
-    legend style={
-        at={(0.5,-0.35)},
-        anchor=north,
-        legend columns=3,
-        font=\scriptsize,
-        draw=black,
-        fill=white
-    },
-    legend cell align=left
 ]
-
-% Mean limit: 1.6
 \addplot[
     blue,
     thick,
     mark=o,
-    mark size=1.5pt
-]
-table[x=Threshold, y=P_success]
-{figs/fig_spoofed_users/livdet_mean_threshold_success_1_6.txt};
-\addlegendentry{Mean limit $\leq 1.6$}
-
-% Mean limit: 1.9
-\addplot[
-    red,
-    thick,
-    mark=square*,
-    mark size=1.5pt
-]
-table[x=Threshold, y=P_success]
-{figs/fig_spoofed_users/livdet_mean_threshold_success_1_9.txt};
-\addlegendentry{Mean limit $\leq 1.9$}
-
-% Mean limit: 2.2
-\addplot[
-    teal!70!black,
-    thick,
-    mark=diamond*,
-    mark size=1.5pt
-]
-table[x=Threshold, y=P_success]
-{figs/fig_spoofed_users/livdet_mean_threshold_success_2_2.txt};
-\addlegendentry{Mean limit $\leq 2.2$}
-
-% % Mean limit: 2.5
-% \addplot[
-%     orange!85!black,
-%     thick,
-%     mark=triangle*,
-%     mark size=2.4pt
-% ]
-% table[x=Threshold, y=P_success]
-% {figs/fig_spoofed_users/livdet_mean_threshold_success_2_5.txt};
-% \addlegendentry{Mean limit $\leq 2.5$}
-
+    mark size=2.5pt,
+] table[
+    x=Attempt,
+    y=Threshold,
+] {figs/fig_spoofed_users/livdet_threshold_by_attempt.txt};
 \end{axis}
 \end{tikzpicture}
-
-\caption{
-Mechanism success probability through attempt $i$ versus the
-threshold selected for that attempt, for four conditional mean
-user-attempt limits and $k_u=k_a=10$.
-Markers represent attempts and are connected in attempt order.
-Each mean limit constrains the complete ten-attempt policy.
-}
-\label{fig:livdet_mean_threshold_success}
+\caption{Selected threshold at each authentication attempt.}
+\label{fig:threshold_by_attempt}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-
-% Read the data and achieved means.
-\pgfplotstableread
-{figs/fig_spoofed_users/livdet_success_threshold_min_mean_0_5.txt}
-\SuccessA
-\pgfplotstablegetelem{0}{AchievedMean}\of{\SuccessA}
-\edef\MeanA{\pgfplotsretval}
-
-\pgfplotstableread
-{figs/fig_spoofed_users/livdet_success_threshold_min_mean_0_6.txt}
-\SuccessB
-\pgfplotstablegetelem{0}{AchievedMean}\of{\SuccessB}
-\edef\MeanB{\pgfplotsretval}
-
-\pgfplotstableread
-{figs/fig_spoofed_users/livdet_success_threshold_min_mean_0_7.txt}
-\SuccessC
-\pgfplotstablegetelem{0}{AchievedMean}\of{\SuccessC}
-\edef\MeanC{\pgfplotsretval}
-
-\pgfplotstableread
-{figs/fig_spoofed_users/livdet_success_threshold_min_mean_0_75.txt}
-\SuccessD
-\pgfplotstablegetelem{0}{AchievedMean}\of{\SuccessD}
-\edef\MeanD{\pgfplotsretval}
-
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.95\linewidth,
-    height=0.62\linewidth,
-    xlabel={Selected threshold (\%)},
-    ylabel={Mechanism success probability},
-    ymin=0,
-    ymax=1,
-    grid=major,
-    legend style={
-        at={(0.5,-0.25)},
+    width=0.9\linewidth,
+    height=0.55\linewidth,
+    xlabel={Attempt},
+    ylabel={Cumulative success probability},
+    xmin=1, xmax=10,
+    xtick={1,...,10},
+    ymin=0, ymax=1,
+    grid=major,legend style={
+        at={(0.5,-0.32)},
         anchor=north,
         legend columns=2,
-        font=\scriptsize,
         draw=black,
-        fill=white
-    },
-    legend cell align=left
+        fill=white,
+        font=\scriptsize
+    }
 ]
-
 \addplot[
-    blue, thick,
+    blue,
+    thick,
     mark=o,
-    mark size=2.4pt
-]
-table[x=Threshold, y=P_success] {\SuccessA};
-\addlegendentryexpanded{
-    $p'=0.5,\quad
-    \text{mean}=\noexpand\pgfmathprintnumber[fixed,precision=2]{\MeanA}$
-}
+    mark size=2.5pt,
+] table[
+    x=Attempt,
+    y=P_user_success,
+] {figs/fig_spoofed_users/livdet_user_attacker_success_by_attempt.txt};
+\addlegendentry{User}
 
 \addplot[
-    red, thick,
+    red,
+    thick,
     mark=square*,
-    mark size=2.4pt
-]
-table[x=Threshold, y=P_success] {\SuccessB};
-\addlegendentryexpanded{
-    $p'=0.6,\quad
-    \text{mean}=\noexpand\pgfmathprintnumber[fixed,precision=2]{\MeanB}$
-}
-
-\addplot[
-    teal!70!black, thick,
-    mark=diamond*,
-    mark size=2.4pt
-]
-table[x=Threshold, y=P_success] {\SuccessC};
-\addlegendentryexpanded{
-    $p'=0.7,\quad
-    \text{mean}=\noexpand\pgfmathprintnumber[fixed,precision=2]{\MeanC}$
-}
-
-\addplot[
-    orange!85!black, thick,
-    mark=triangle*,
-    mark size=2.4pt
-]
-table[x=Threshold, y=P_success] {\SuccessD};
-\addlegendentryexpanded{
-    $p'=0.75,\quad
-    \text{mean}=\noexpand\pgfmathprintnumber[fixed,precision=2]{\MeanD}$
-}
-
+    mark size=2.5pt,
+] table[
+    x=Attempt,
+    y=P_attacker_success,
+] {figs/fig_spoofed_users/livdet_user_attacker_success_by_attempt.txt};
+\addlegendentry{Attacker}
 \end{axis}
 \end{tikzpicture}
-
-\caption{
-Mechanism success probability through attempt $i$ versus its
-selected threshold, with $k_u=k_a=10$.
-Each policy minimizes the conditional mean user attempts subject
-to $P_{\mathrm{success}}\geq p'$.
-The legend reports the achieved conditional mean.
-Markers are connected in attempt order.
-}
-\label{fig:livdet_success_constrained_thresholds}
+\caption{Probability that the user or attacker is accepted at least once
+within the first~$i$ attempts under the optimized threshold policy given the user and attacker have~${k_u=k_a=10}$ authentication attempts.}
+\label{fig:user_attacker_success_by_attempt}
 \end{figure}
 
 
-\section{Conclusion}\label{sec:8}
+\section{Conclusion}\label{sec:9}
 \noindent
 We find that the optimal threshold of a biometric credential depends on the other credentials in the mechanism and differs from the heuristic threshold commonly used today. We characterize a condition on the biometric credential and prove that whenever this condition holds, a mechanism designer always benefits from adding a biometric credential over using atomic credentials alone. We quantify this theoretical result by simulating different scenarios using public biometric datasets, including spoofing attacks. Our results show that optimizing the threshold significantly reduces the failure probability under spoofing attacks by~20-72\%.
 
