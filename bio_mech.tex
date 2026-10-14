@@ -3064,12 +3064,16 @@ We find that the success probability of a mechanism that uses a biometric creden
 
 We next consider a different policy where the user is allowed~$k_u$ authentication attempts and the attacker is allowed~$k_a$ spoofing attempts. We use the~\FAR and~\FRR estimated from the LivDet2015 database in previous section~$(\S\ref{sec:8.2})$. This policy is based on real-world scenarios were system designers constraint a user successful authentication under specific attempts number~\cite{typical_aut_attempts}. However, as the mechanism success probability depends on the number of attempts, constraint it might lead to suboptimal performance. Previously we note that for each number of attempts~$k$, the optimal threshold is constant over the over all~$k$ attempts and increases with~$k$. Then, we search how the optimal threshold selections is effected when we constraint the mean number of attempts, seeking to maximize the mechanism success probability. We find that the optimal threshold is increasing with the number of attempts~$k$, and that the mechanism success probability is increasing when the mean number of attempts is increasing. Nevertheless, system designers seeking to minimze the mean number of a user's authentication attempts. The mean attempts and maximal success tradeoff, we find the minimal mean attempts of user authentication, when stricting the mechanism success probability to be greater than a threshold $P_{\mathrm{success}}^{\min}$. The threshold slection when constraint the mean number of user's succesful authentication attempts is shown in Figure~\ref{fig:livdet_mean_threshold_success}. 
 
-\begin{figure}
+\begin{figure}[t]
+\centering
+
+% Upper subfigure: probabilities versus maximum attempt count
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.95\columnwidth,
-    height=0.65\columnwidth,
+    width=0.95\linewidth,
+    height=0.65\linewidth,
     xlabel={Number of attempts, $k$},
     ylabel={Probability},
     xmin=1,
@@ -3079,7 +3083,7 @@ We next consider a different policy where the user is allowed~$k_u$ authenticati
     xtick=data,
     grid=major,
     line width=1pt,
-    mark size=2.5pt,
+    mark size=1.6pt,
     legend style={
         at={(0.5,-0.28)},
         anchor=north,
@@ -3090,113 +3094,292 @@ We next consider a different policy where the user is allowed~$k_u$ authenticati
     }
 ]
 
-% Maximum cumulative success probability
-\addplot[green!60!black, solid, mark=*,mark size=1.6pt]
-table[x=k, y=P_success_max] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addplot[green!60!black, solid, mark=*]
+table[x=k, y=P_success_max]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
 \addlegendentry{$P_{\mathrm{success}}^{\max}$}
 
-% EER threshold reused for all k attempts
-\addplot[blue, dashed, mark=square*,mark size=1.6pt]
-table[x=k, y=P_success_EER] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addplot[blue, dashed, mark=square*]
+table[x=k, y=P_success_EER]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
 \addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{EER}})$}
 
-% Single-attempt optimal threshold reused for all k attempts
-\addplot[red, densely dotted, mark=triangle*,mark size=1.6pt]
-table[x=k, y=P_success_single_attempt_optimum] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addplot[red, densely dotted, mark=triangle*]
+table[x=k, y=P_success_single_attempt_optimum]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
 \addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{opt}}^{(1)})$}
 
-% Product of the false-rejection rates
-\addplot[orange, solid, mark=diamond*,mark size=1.6pt]
-table[x=k, y=product_FRR] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addplot[orange, solid, mark=diamond*]
+table[x=k, y=product_FRR]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
 \addlegendentry{$\prod_{j=1}^{k}\mathrm{FRR}_j$}
 
-% Product of the attacker-rejection probabilities
-\addplot[purple, solid, mark=pentagon*,mark size=1.6pt]
-table[x=k, y=product_1_minus_FAR] {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addplot[purple, solid, mark=pentagon*]
+table[x=k, y=product_1_minus_FAR]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
 \addlegendentry{$\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
 
 \end{axis}
 \end{tikzpicture}
-\caption{The maximal cumulative success probability as a function of the number of authentication attempts~$k$, compared with reusing the \EER threshold and the single-attempt optimal threshold for all attempts. The products of the false-rejection rates and attacker-rejection probabilities of the optimized policy are also shown.}
+\caption{Cumulative success and rejection probabilities.}
+\label{fig:Success_probability_by_k_probabilities}
+\end{subfigure}
+
+\medskip
+
+% Lower subfigure: final applied threshold for each k-attempt policy
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.95\linewidth,
+    height=0.50\linewidth,
+    xlabel={Number of attempts, $k$},
+    ylabel={Selected threshold, $t_k^{(k)}$},
+    xmin=1,
+    xmax=10,
+    xtick=data,
+    grid=major,
+    line width=1pt,
+    mark size=1.6pt
+]
+
+\addplot[green!60!black, solid, mark=*]
+table[x=k, y=Threshold]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+
+\end{axis}
+\end{tikzpicture}
+\caption{Threshold applied at the final attempt of each policy.}
+\label{fig:Success_probability_by_k_thresholds}
+\end{subfigure}
+
+\caption{Success probabilities and selected thresholds as a function
+of the maximum number of authentication attempts~$k$.
+(a)~The optimized cumulative success probability, compared with
+reusing the \EER threshold and the single-attempt optimal threshold,
+together with the products of user-rejection and attacker-rejection
+probabilities.
+(b)~The threshold applied at attempt~$k$ of the corresponding
+$k$-attempt fixed-prefix policy.
+Each value of~$k$ represents a separately optimized policy.}
 \label{fig:Success_probability_by_k}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.9\linewidth,
-    height=0.55\linewidth,
-    xlabel={Attempt},
-    ylabel={Threshold},
-    xmin=1, xmax=10,
-    ymin=00, ymax=100,
-    xtick={1,...,10},
-    grid=major,
-]
-\addplot[
-    blue,
-    thick,
-    mark=o,
-    mark size=2.5pt,
-] table[
-    x=Attempt,
-    y=Threshold,
-] {figs/fig_spoofed_users/livdet_threshold_by_attempt.txt};
-\end{axis}
-\end{tikzpicture}
-\caption{Selected threshold at each authentication attempt.}
-\label{fig:threshold_by_attempt}
-\end{figure}
+\pgfplotsset{compat=1.18}
 
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.9\linewidth,
-    height=0.55\linewidth,
-    xlabel={Attempt},
-    ylabel={Cumulative success probability},
-    xmin=1, xmax=10,
-    xtick={1,...,10},
-    ymin=0, ymax=1,
-    grid=major,legend style={
-        at={(0.5,-0.32)},
-        anchor=north,
-        legend columns=2,
-        draw=black,
-        fill=white,
-        font=\scriptsize
+\pgfplotsset{
+    constraint axis/.style={
+        width=0.9\linewidth,
+        height=0.55\linewidth,
+        xlabel={Attempt},
+        xmin=1, xmax=10,
+        xtick={1,...,10},
+        grid=major,
+        mark size=2pt,
+        legend style={
+            at={(0.5,-0.31)},
+            anchor=north,
+            draw=black,
+            fill=white,
+            font=\scriptsize
+        },
+        legend cell align=left
+    },
+    player axis/.style={
+        constraint axis,
+        ylabel={Cumulative success probability},
+        ymin=0, ymax=1,
+        legend columns=3,
+        every axis plot/.append style={forget plot}
     }
-]
-\addplot[
-    blue,
-    thick,
-    mark=o,
-    mark size=2.5pt,
-] table[
-    x=Attempt,
-    y=P_user_success,
-] {figs/fig_spoofed_users/livdet_user_attacker_success_by_attempt.txt};
-\addlegendentry{User}
+}
 
-\addplot[
-    red,
-    thick,
-    mark=square*,
-    mark size=2.5pt,
-] table[
-    x=Attempt,
-    y=P_attacker_success,
-] {figs/fig_spoofed_users/livdet_user_attacker_success_by_attempt.txt};
-\addlegendentry{Attacker}
+% Two-row legend:
+% Row 1: three constraint values and their line styles.
+% Row 2: user and attacker markers.
+\newcommand{\TwoRowConstraintLegend}[3]{%
+    \addlegendimage{black, thick, solid, mark=none}
+    \addlegendentry{#1}
+    \addlegendimage{black, thick, densely dotted, mark=none}
+    \addlegendentry{#2}
+    \addlegendimage{black, thick, dashed, mark=none}
+    \addlegendentry{#3}
+    \addlegendimage{blue, only marks, mark=o, mark size=2pt}
+    \addlegendentry{User}
+    \addlegendimage{red, only marks, mark=square, mark size=2pt}
+    \addlegendentry{Attacker}
+    \addlegendimage{empty legend}
+    \addlegendentry{}
+}
+
+% =========================================================
+% Figure 1: minimize mean attempts under success constraints
+% =========================================================
+
+\begin{figure}[t]
+\centering
+\def\PolicyData{figs/fig_spoofed_users/livdet_success_constraints_comparison.txt}
+
+% Upper: threshold versus attempt
+\begin{subfigure}{\linewidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    constraint axis,
+    ylabel={Threshold},
+    ymin=0, ymax=100
+]
+
+\addplot[black, thick, solid, mark=*, mark size=1pt, mark options={solid}]
+table[x=Attempt, y=Threshold_0_6] {\PolicyData};
+
+\addplot[black, thick, densely dotted, mark=*, mark size=1pt, mark options={solid}]
+table[x=Attempt, y=Threshold_0_7] {\PolicyData};
+
+\addplot[black, thick, dashed, mark=*, mark size=1pt, mark options={solid}]
+table[x=Attempt, y=Threshold_0_75] {\PolicyData};
+
 \end{axis}
 \end{tikzpicture}
-\caption{Probability that the user or attacker is accepted at least once
-within the first~$i$ attempts under the optimized threshold policy given the user and attacker have~${k_u=k_a=10}$ authentication attempts.}
-\label{fig:user_attacker_success_by_attempt}
+\caption{Selected thresholds.}
+\label{fig:success_constraints_thresholds}
+\end{subfigure}
+
+\par\medskip
+
+% Lower: user and attacker success versus attempt
+\begin{subfigure}{\linewidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[player axis]
+
+% Lowest constraint: solid
+\addplot[blue, thick, solid, mark=o, mark options={solid}]
+table[x=Attempt, y=P_user_success_0_6] {\PolicyData};
+
+\addplot[red, thick, solid, mark=square, mark options={solid}]
+table[x=Attempt, y=P_attacker_success_0_6] {\PolicyData};
+
+% Middle constraint: dotted
+\addplot[blue, thick, densely dotted, mark=o, mark options={solid}]
+table[x=Attempt, y=P_user_success_0_7] {\PolicyData};
+
+\addplot[red, thick, densely dotted, mark=square, mark options={solid}]
+table[x=Attempt, y=P_attacker_success_0_7] {\PolicyData};
+
+% Highest constraint: dashed
+\addplot[blue, thick, dashed, mark=o, mark options={solid}]
+table[x=Attempt, y=P_user_success_0_75] {\PolicyData};
+
+\addplot[red, thick, dashed, mark=square, mark options={solid}]
+table[x=Attempt, y=P_attacker_success_0_75] {\PolicyData};
+
+\TwoRowConstraintLegend
+    {$P'=0.6$}
+    {$P'=0.7$}
+    {$P'=0.75$}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Cumulative user and attacker acceptance probabilities.}
+\label{fig:success_constraints_probabilities}
+\end{subfigure}
+
+\caption{Policies minimizing the conditional mean number of user
+authentication attempts subject to
+$P_{\mathrm{success}}\geq P'$, with $k_u=k_a=10$.
+The upper panel shows selected thresholds; the lower panel shows
+the probability of at least one user or attacker acceptance through
+each attempt. Line styles identify constraint values, while blue
+circles represent the user and red squares represent the attacker.
+The constraint applies to the complete policy.}
+\label{fig:success_constraints_comparison}
 \end{figure}
 
+% =========================================================
+% Figure 2: maximize success under mean-attempt constraints
+% =========================================================
+
+\begin{figure}[t]
+\centering
+\def\PolicyData{figs/fig_spoofed_users/livdet_mean_limits_comparison.txt}
+
+% Upper: threshold versus attempt
+\begin{subfigure}{\linewidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    constraint axis,
+    ylabel={Threshold},
+    ymin=0, ymax=100
+]
+
+\addplot[black, thick, solid, mark=*, mark size=1pt, mark options={solid}]
+table[x=Attempt, y=Threshold_1_5] {\PolicyData};
+
+\addplot[black, thick, densely dotted, mark=*, mark size=1pt, mark options={solid}]
+table[x=Attempt, y=Threshold_1_9] {\PolicyData};
+
+\addplot[black, thick, dashed, mark=*, mark size=1pt, mark options={solid}]
+table[x=Attempt, y=Threshold_2_4] {\PolicyData};
+
+\end{axis}
+\end{tikzpicture}
+\caption{Selected thresholds.}
+\label{fig:mean_limits_thresholds}
+\end{subfigure}
+
+\par\medskip
+
+% Lower: user and attacker success versus attempt
+\begin{subfigure}{\linewidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[player axis]
+
+% Lowest constraint: solid
+\addplot[blue, thick, solid, mark=o, mark options={solid}]
+table[x=Attempt, y=P_user_success_1_5] {\PolicyData};
+
+\addplot[red, thick, solid, mark=square, mark options={solid}]
+table[x=Attempt, y=P_attacker_success_1_5] {\PolicyData};
+
+% Middle constraint: dotted
+\addplot[blue, thick, densely dotted, mark=o, mark options={solid}]
+table[x=Attempt, y=P_user_success_1_9] {\PolicyData};
+
+\addplot[red, thick, densely dotted, mark=square, mark options={solid}]
+table[x=Attempt, y=P_attacker_success_1_9] {\PolicyData};
+
+% Highest constraint: dashed
+\addplot[blue, thick, dashed, mark=o, mark options={solid}]
+table[x=Attempt, y=P_user_success_2_4] {\PolicyData};
+
+\addplot[red, thick, dashed, mark=square, mark options={solid}]
+table[x=Attempt, y=P_attacker_success_2_4] {\PolicyData};
+
+\TwoRowConstraintLegend
+    {$\mu'=1.5$}
+    {$\mu'=1.9$}
+    {$\mu'=2.4$}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Cumulative user and attacker acceptance probabilities.}
+\label{fig:mean_limits_probabilities}
+\end{subfigure}
+
+\caption{Policies maximizing the mechanism's success probability
+subject to $\mathbb{E}[N_U\mid N_U\leq k_u]\leq\mu'$,
+with $k_u=k_a=10$.
+The upper panel shows selected thresholds; the lower panel shows
+the probability of at least one user or attacker acceptance through
+each attempt. Line styles identify constraint values, while blue
+circles represent the user and red squares represent the attacker.
+The constraint applies to the complete policy.}
+\label{fig:mean_limits_comparison}
+\end{figure}
 
 \section{Conclusion}\label{sec:9}
 \noindent

@@ -1972,6 +1972,7 @@ def optimize_success_with_mean_attempt_limit(
 def run_maximum_success_mean_attempt_policy(
     thresholds, fars, frrs, *, user_attempts, attacker_attempts,
     maximum_mean_attempts, optimizer_starts=64, plot_output_dir=None,
+    saturation_gain_tolerance=0.01,
 ):
     """Report a cached-input policy under a conditional mean attempt cap."""
     policy, success, diagnostics = optimize_success_with_mean_attempt_limit(
@@ -2004,6 +2005,8 @@ def run_maximum_success_mean_attempt_policy(
         policy, thresholds, fars, frrs,
         user_attempts=user_attempts, attacker_attempts=attacker_attempts,
         output_dir=plot_output_dir,
+        saturation_gain_tolerance=saturation_gain_tolerance,
+        policy_label=f"Mean limit={maximum_mean_attempts:g}",
     )
     return {"graphs": graphs, "attempt_thresholds": policy, "success_probability": success,
             "user_success_probability": pu, "attacker_rejection_probability": pa,
@@ -2023,6 +2026,7 @@ def run_minimum_mean_user_attempt_policy(
     minimum_attacker_rejection_probability=None,
     optimizer_starts: int = 64,
     plot_output_dir=None,
+    saturation_gain_tolerance=0.01,
 ):
     """Minimize the conditional mean under joint or separate constraints."""
     use_separate_constraints = (
@@ -2144,6 +2148,9 @@ def run_minimum_mean_user_attempt_policy(
         optimal_thresholds, thresholds, fars, frrs,
         user_attempts=user_attempts, attacker_attempts=attacker_attempts,
         output_dir=plot_output_dir,
+        saturation_gain_tolerance=saturation_gain_tolerance,
+        policy_label=("Separate probability constraints" if use_separate_constraints
+                      else f"P_success >= {minimum_success_probability:g}"),
     )
     return {
         "graphs": graphs,
@@ -3629,11 +3636,15 @@ def export_fixed_prefix_tikz_data(results, out_file: Path) -> None:
     and current_success values stored in policy[3], while both products use
     all four policy rows. P_success_EER reuses the EER threshold for all k
     attempts, and P_success_single_attempt_optimum reuses the one-attempt
-    optimal threshold for all k attempts.
+    optimal threshold for all k attempts. Threshold is the applied last-attempt
+    threshold t_k of that k-attempt policy. Threshold_1 ... Threshold_max_k
+    retain each policy's complete applied sequence; unused entries are nan.
+    Each row is a separate horizon, not a prefix of a common longest policy.
     """
     if not results:
         raise ValueError("No fixed-prefix results are available to export.")
 
+    max_attempt_count = max(int(result["attempt_count"]) for result in results)
     output_rows = []
     for result in results:
         attempt_count = int(result["attempt_count"])
@@ -3642,6 +3653,17 @@ def export_fixed_prefix_tikz_data(results, out_file: Path) -> None:
             raise ValueError(
                 f"The fixed-prefix policy for k={attempt_count} is empty."
             )
+
+        if len(policy) != attempt_count or [
+            int(row["attempt_number"]) for row in policy
+        ] != list(range(1, attempt_count + 1)):
+            raise ValueError(f"Expected consecutive attempts 1 through {attempt_count}.")
+        applied_thresholds = [float(row["threshold"]) for row in policy]
+        if not np.all(np.isfinite(applied_thresholds)):
+            raise ValueError(f"Nonfinite applied thresholds for k={attempt_count}.")
+        padded_thresholds = applied_thresholds + [float("nan")] * (
+            max_attempt_count - attempt_count
+        )
 
         final_attempt = policy[-1]
         if int(final_attempt["attempt_number"]) != attempt_count:
@@ -3688,6 +3710,8 @@ def export_fixed_prefix_tikz_data(results, out_file: Path) -> None:
                 product_one_minus_far,
                 p_success_eer,
                 p_success_single_attempt_optimum,
+                applied_thresholds[-1],
+                *padded_thresholds,
             )
         )
 
@@ -3709,35 +3733,63 @@ def export_fixed_prefix_tikz_data(results, out_file: Path) -> None:
                 "product_1_minus_FAR",
                 "P_success_EER",
                 "P_success_single_attempt_optimum",
-            ]
+                "Threshold",
+            ] + [f"Threshold_{j}" for j in range(1, max_attempt_count + 1)]
         )
-        for (
-            attempt_count,
-            far,
-            frr,
-            p_success_max,
-            product_frr,
-            product_one_minus_far,
-            p_success_eer,
-            p_success_single_attempt_optimum,
-        ) in output_rows:
-            writer.writerow(
-                [
-                    attempt_count,
-                    f"{far:.10f}",
-                    f"{frr:.10f}",
-                    f"{p_success_max:.10f}",
-                    f"{product_frr:.10f}",
-                    f"{product_one_minus_far:.10f}",
-                    f"{p_success_eer:.10f}",
-                    f"{p_success_single_attempt_optimum:.10f}",
-                ]
-            )
+        for row in output_rows:
+            writer.writerow([row[0]] + [f"{value:.10f}" for value in row[1:]])
+
+
+def find_mechanism_success_saturation(success, attempt_count, gain_tolerance=0.01):
+    """Earliest i < m with max_{j>i}|P_success(j)-P_success(i)| <= epsilon.
+
+    Overall success need not be monotone. Check every later prefix, so an
+    intermediate rise or decline cannot be hidden by a similar final value.
+    This is a finite-horizon plateau diagnostic, not a new optimized policy.
+    """
+    values = np.asarray(success, dtype=float)
+    if (not isinstance(attempt_count, (int, np.integer)) or attempt_count < 1
+            or values.ndim != 1 or values.size != attempt_count):
+        raise ValueError('Provide one mechanism-success value per policy attempt.')
+    if not np.isfinite(gain_tolerance) or not 0 <= gain_tolerance <= 1:
+        raise ValueError('Saturation tolerance must be finite and in [0, 1].')
+    if not np.all(np.isfinite(values)) or np.any((values < 0) | (values > 1)):
+        raise ValueError('Mechanism success must be finite and in [0,1].')
+    attempt = None
+    max_change = None
+    for index in range(attempt_count - 1):
+        change = float(np.max(np.abs(values[index + 1:] - values[index])))
+        if change <= gain_tolerance + 1e-12:
+            attempt = index + 1
+            max_change = change
+            break
+    return {
+        'attempt': attempt, 'gain_tolerance': float(gain_tolerance),
+        'attempt_count': int(attempt_count), 'final_success': float(values[-1]),
+        'success_at_saturation': float(values[attempt - 1]) if attempt else None,
+        'maximum_remaining_change': max_change,
+    }
+
+
+def print_mechanism_success_saturation(success, attempt_count, *,
+                                       gain_tolerance=0.01, policy_label='Policy'):
+    """Print overall mechanism saturation, accounting for both players."""
+    info = find_mechanism_success_saturation(success, attempt_count, gain_tolerance)
+    if attempt_count == 1:
+        status = 'not assessable (only one attempt)'
+    elif info['attempt'] is None:
+        status = f'not reached within {attempt_count} attempts'
+    else:
+        status = str(info['attempt'])
+    print(f'[saturation] {policy_label}: overall success saturation attempt = {status}',
+          flush=True)
+    return info
 
 
 def export_attempt_policy_graphs(
     attempt_thresholds, thresholds, fars, frrs, *,
     user_attempts, attacker_attempts, output_dir=None,
+    saturation_gain_tolerance=0.01, policy_label="Policy",
 ):
     """Export threshold and cumulative acceptance graphs for one fixed policy.
 
@@ -3776,15 +3828,20 @@ def export_attempt_policy_graphs(
     )
     user_success = 1.0 - np.cumprod(user_failure_factors)
     attacker_success = 1.0 - np.cumprod(attacker_rejection_factors)
+    joint_success = user_success * (1.0 - attacker_success)
+    saturation = print_mechanism_success_saturation(
+        joint_success, count, gain_tolerance=saturation_gain_tolerance,
+        policy_label=policy_label,
+    )
     output_dir = Path(SPOOF_OUTPUT_DIR if output_dir is None else output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     threshold_data = output_dir / 'livdet_threshold_by_attempt.txt'
     success_data = output_dir / 'livdet_user_attacker_success_by_attempt.txt'
     np.savetxt(threshold_data, np.column_stack((attempts, policy)),
                fmt=['%d', '%.17g'], comments='', header='Attempt Threshold')
-    np.savetxt(success_data, np.column_stack((attempts, user_success, attacker_success)),
-               fmt=['%d', '%.17g', '%.17g'], comments='',
-               header='Attempt P_user_success P_attacker_success')
+    np.savetxt(success_data, np.column_stack((attempts, user_success, attacker_success, joint_success)),
+               fmt=['%d', '%.17g', '%.17g', '%.17g'], comments='',
+               header='Attempt P_user_success P_attacker_success P_success')
     threshold_pdf = output_dir / 'livdet_threshold_by_attempt.pdf'
     success_pdf = output_dir / 'livdet_user_attacker_success_by_attempt.pdf'
     for kind, path in [('threshold', threshold_pdf), ('success', success_pdf)]:
@@ -3846,7 +3903,195 @@ def export_attempt_policy_graphs(
         print(f'[graph] saved {path}', flush=True)
     return {'attempts': attempts, 'thresholds': policy,
             'user_success': user_success, 'attacker_success': attacker_success,
-            **files}
+            'joint_success': joint_success, 'mechanism_saturation': saturation, **files}
+
+
+def export_constraint_comparison(results, family, *, output_dir):
+    """Three policies: thresholds above, user/attacker acceptance below.
+
+    All points on a curve use one full-horizon optimized policy; no policy
+    is re-optimized at intermediate x-axis attempts.
+    """
+    if family not in {'success_constraints', 'mean_limits'} or not results:
+        raise ValueError('Provide a supported comparison family and nonempty results.')
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    attempts = np.asarray(results[0]['graphs']['attempts'])
+    columns = [attempts]
+    headers = ['Attempt']
+    count = len(attempts)
+    for result in results:
+        graph = result['graphs']
+        if not np.array_equal(graph['attempts'], attempts):
+            raise ValueError('All policies in a comparison must have the same attempt limits.')
+        tag = result['tag']
+        for name, values in [
+            ('Threshold', graph['thresholds']),
+            ('P_success', graph['joint_success']),
+            ('P_user_success', graph['user_success']),
+            ('P_attacker_success', graph['attacker_success']),
+            ('AchievedMean', np.full(count, result['achieved_mean'])),
+            ('FinalP_success', np.full(count, graph['joint_success'][-1])),
+        ]:
+            headers.append(f'{name}_{tag}')
+            columns.append(values)
+    data_path = output_dir / f'livdet_{family}_comparison.txt'
+    np.savetxt(data_path, np.column_stack(columns), fmt='%.17g',
+               comments='', header=' '.join(headers))
+    styles = [('blue', 'o', 'tab:blue'), ('red', 'square*', 'tab:red'),
+              ('teal!70!black', 'triangle*', 'teal')]
+    fig, axes = plt.subplots(2, 1, figsize=(8, 9), sharex=True)
+    for index, result in enumerate(results):
+        color, marker, mpl_color = styles[index % len(styles)]
+        mpl_marker = ['o', 's', '^'][index % 3]
+        value = result['constraint_value']
+        label = (f"P_success >= {value:g}" if family == 'success_constraints'
+                 else f"Conditional mean <= {value:g}")
+        graph = result['graphs']
+        axes[0].plot(attempts, graph['thresholds'], color=mpl_color,
+                     marker=mpl_marker, linewidth=2, label=label)
+        axes[1].plot(attempts, graph['user_success'], color=mpl_color,
+                     marker='o', linestyle='-', linewidth=2,
+                     label=f'User, {label}')
+        axes[1].plot(attempts, graph['attacker_success'], color=mpl_color,
+                     marker='s', linestyle='--', linewidth=2,
+                     label=f'Attacker, {label}')
+    axes[0].set_ylabel('Threshold (normalized score)')
+    axes[1].set_ylabel('Cumulative success probability')
+    axes[1].set_xlabel('Attempt')
+    axes[1].set_ylim(0, 1)
+    for ax in axes:
+        ax.set_xticks(attempts)
+        ax.set_xlim(0.5, count + 0.5)
+        ax.grid(alpha=0.3)
+    axes[0].legend(fontsize=9)
+    axes[1].legend(fontsize=8, ncol=2)
+    fig.tight_layout()
+    pdf_path = output_dir / f'livdet_{family}_comparison.pdf'
+    fig.savefig(pdf_path, bbox_inches='tight')
+    plt.close(fig)
+    # One complete figure with vertically stacked subfigures per objective.
+    tex = [
+        r'% Preamble: \usepackage{pgfplots} and \usepackage{subcaption}',
+        r'%           \pgfplotsset{compat=1.18}',
+        r'% Override \ConstraintPolicyDataDir when using a custom output folder.',
+        r'\providecommand{\ConstraintPolicyDataDir}{figs/fig_spoofed_users}',
+        r'\begin{figure}[t]', r'\centering',
+    ]
+    for column, ylabel, caption in [
+        ('Threshold', 'Threshold', 'Optimized threshold at each attempt.'),
+        ('Players', 'Cumulative success probability',
+         'Cumulative user and attacker acceptance probabilities.'),
+    ]:
+        tex.extend([
+            r'\begin{subfigure}{\columnwidth}', r'\centering',
+            r'\begin{tikzpicture}',
+            r'\begin{axis}[width=0.95\linewidth,height=0.55\linewidth,',
+            rf'xlabel={{Attempt}},ylabel={{{ylabel}}},',
+            rf'xmin=0.5,xmax={count+0.5:g},xtick={{1,...,{count}}},grid=major,',
+            rf'legend style={{at={{(0.5,-0.28)}},anchor=north,legend columns={2 if column == "Players" else 3},',
+            r'font=\scriptsize,draw=black,fill=white},legend cell align=left,',
+            r'ymin=0,ymax=1]' if column == 'Players' else r'ymin=0,ymax=100]',
+        ])
+        for index, result in enumerate(results):
+            color, marker, _ = styles[index % len(styles)]
+            value = result['constraint_value']
+            label = (rf"$P'={value:g}$"
+                     if family == 'success_constraints'
+                     else rf"$\mu'={value:g}$")
+            curves = (
+                [('P_user_success', 'solid', 'o', f'User, {label}'),
+                 ('P_attacker_success', 'dashed', 'square*', f'Attacker, {label}')]
+                if column == 'Players' else
+                [('Threshold', 'solid', marker, label)]
+            )
+            for data_column, line_style, point_marker, curve_label in curves:
+                tex.extend([
+                    rf'\addplot[{color},thick,{line_style},mark={point_marker},mark size=1.8pt]',
+                    rf'table[x=Attempt,y={data_column}_{result["tag"]}]',
+                    rf'{{\ConstraintPolicyDataDir/{data_path.name}}};',
+                    rf'\addlegendentry{{{curve_label}}}',
+                ])
+        tex.extend([
+            r'\end{axis}', r'\end{tikzpicture}',
+            rf'\caption{{{caption}}}', r'\end{subfigure}', r'\par\medskip',
+        ])
+    objective = (
+        r"Policies minimizing conditional mean user attempts under three joint-success lower bounds $P'$."
+        if family == 'success_constraints' else
+        r"Policies maximizing joint success under three conditional mean user-attempt upper bounds $\mu'$."
+    )
+    ku, ka = results[0]['k_user'], results[0]['k_attacker']
+    tex.extend([
+        rf'\caption{{{objective} Here $k_u={ku}$ and $k_a={ka}$.',
+        r'Upper panels show thresholds; lower panels show user and attacker acceptance.',
+        r'Colors identify constraints; solid circles denote the user and dashed squares the attacker.',
+        r'Each curve uses one optimized full-horizon threshold sequence.',
+        r'The constraint applies to the complete policy, not to every prefix.}',
+        rf'\label{{fig:livdet_{family}_comparison}}', r'\end{figure}',
+    ])
+    tex_path = output_dir / f'livdet_{family}_comparison.tex'
+    tex_path.write_text('\n'.join(tex) + '\n')
+    for path in (data_path, pdf_path, tex_path):
+        print(f'[comparison] saved {path}', flush=True)
+    return {'data_file': data_path, 'pdf_file': pdf_path, 'tikz_file': tex_path}
+
+
+def run_constraint_policy_comparisons(
+    thresholds, fars, frrs, eer_threshold, *, family, user_attempts,
+    attacker_attempts, optimizer_starts=64, output_dir=None,
+    saturation_gain_tolerance=0.01,
+):
+    """Run the requested three constraints without overwriting policy exports."""
+    if family == 'success_constraints':
+        values = (0.75, 0.7, 0.6)
+        prefix = 'success_min'
+    elif family == 'mean_limits':
+        values = (1.5, 1.9, 2.4)
+        prefix = 'mean_limit'
+    else:
+        raise ValueError('Unknown constraint comparison family.')
+    output_dir = Path(SPOOF_OUTPUT_DIR if output_dir is None else output_dir)
+    results = []
+    for value in values:
+        tag = f'{value:g}'.replace('.', '_')
+        case_dir = output_dir / f'{prefix}_{tag}'
+        print(f'\n[comparison] {prefix}={value:g}', flush=True)
+        try:
+            if family == 'success_constraints':
+                result = run_minimum_mean_user_attempt_policy(
+                    thresholds, fars, frrs, user_attempts=user_attempts,
+                    attacker_attempts=attacker_attempts,
+                    minimum_success_probability=value, eer_threshold=eer_threshold,
+                    optimizer_starts=optimizer_starts, plot_output_dir=case_dir,
+                    saturation_gain_tolerance=saturation_gain_tolerance,
+                )
+                mean = result['conditional_mean_user_attempts']
+            else:
+                result = run_maximum_success_mean_attempt_policy(
+                    thresholds, fars, frrs, user_attempts=user_attempts,
+                    attacker_attempts=attacker_attempts, maximum_mean_attempts=value,
+                    optimizer_starts=optimizer_starts, plot_output_dir=case_dir,
+                    saturation_gain_tolerance=saturation_gain_tolerance,
+                )
+                mean = result['conditional_mean_attempts']
+        except ValueError as exc:
+            raise ValueError(f'{prefix}={value:g}: {exc}') from exc
+        graphs = result['graphs']
+        final_success = float(graphs['joint_success'][-1])
+        if not np.isfinite(mean):
+            raise RuntimeError(f'{prefix}={value:g}: undefined conditional mean.')
+        if family == 'success_constraints' and final_success < value - 1e-8:
+            raise RuntimeError(f'{prefix}={value:g}: success constraint not met.')
+        if family == 'mean_limits' and mean > value + 1e-8:
+            raise RuntimeError(f'{prefix}={value:g}: mean constraint not met.')
+        results.append({
+            'constraint_value': value, 'tag': tag, 'achieved_mean': mean,
+            'k_user': user_attempts, 'k_attacker': attacker_attempts,
+            'graphs': graphs,
+        })
+    files = export_constraint_comparison(results, family, output_dir=output_dir)
+    return {'policies': results, **files}
 
 
 def parse_arguments():
@@ -3910,10 +4155,29 @@ def parse_arguments():
     )
     mode.add_argument(
         "--maximize-success-with-mean-attempts",
+        "--maximize-success-with-mean-attempt",
         type=float, default=None, metavar="MEAN_LIMIT",
         help=("Reuse psafe_sweep_inputs.npz and maximize joint P_success subject "
               "to E[J | user succeeds] <= MEAN_LIMIT (finite and at least 1). "
               "Uses --k-user, --k-attacker and --optimizer-starts."),
+    )
+    mode.add_argument(
+        "--compare-success-constraints-only", action="store_true",
+        help="Compare minimum-mean policies with P_success >= 0.75, 0.7 and 0.6.",
+    )
+    mode.add_argument(
+        "--compare-mean-limits-only", action="store_true",
+        help="Compare maximum-success policies with mean limits 1.5, 1.9 and 2.4.",
+    )
+    mode.add_argument(
+        "--compare-policy-constraints-only", action="store_true",
+        help="Run both three-constraint comparisons and export two stacked-subfigure figures.",
+    )
+    parser.add_argument(
+        "--saturation-gain-tolerance", type=float, default=0.01, metavar="EPSILON",
+        help=("Report the earliest attempt after which overall mechanism success "
+              "changes by <= EPSILON at every later attempt. Absolute probability units: "
+              "0.01 means one percentage point (default). Diagnostic only."),
     )
     parser.add_argument(
         "--policy-plot-output-dir", type=Path, default=SPOOF_OUTPUT_DIR,
@@ -3955,7 +4219,8 @@ def parse_arguments():
         metavar="FILE",
         help=(
             "With --fixed-prefix-attempts-only, export the final-attempt "
-            "FAR, FRR, P_success_max, cumulative FRR product, and cumulative "
+            "FAR, FRR, Threshold, the complete Threshold_j sequence, P_success_max, "
+            "cumulative FRR product, and cumulative "
             "(1-FAR) product, plus the EER and one-attempt-optimum baselines "
             "for every requested k. If FILE is omitted, write to the default "
             "spoof-output directory."
@@ -4025,6 +4290,9 @@ def parse_arguments():
     parser.add_argument("--safe-end", type=float, default=0.90)
     parser.add_argument("--safe-step", type=float, default=0.01)
     args = parser.parse_args()
+    if (not np.isfinite(args.saturation_gain_tolerance)
+            or not 0 <= args.saturation_gain_tolerance <= 1):
+        parser.error("--saturation-gain-tolerance must be finite and in [0, 1].")
     if (
         args.fixed_prefix_tikz_output is not None
         and not args.fixed_prefix_attempts_only
@@ -4057,6 +4325,10 @@ def parse_arguments():
     if args.minimize_user_attempts_only:
         if min(args.k_user, args.k_attacker, args.optimizer_starts) < 1:
             parser.error("--k-user, --k-attacker and --optimizer-starts must be positive.")
+    if (args.compare_success_constraints_only or args.compare_mean_limits_only
+            or args.compare_policy_constraints_only):
+        if min(args.k_user, args.k_attacker, args.optimizer_starts) < 1:
+            parser.error("--k-user, --k-attacker and --optimizer-starts must be positive.")
     return args
 
 # =========================
@@ -4064,6 +4336,24 @@ def parse_arguments():
 # =========================
 if __name__ == "__main__":
     args = parse_arguments()
+
+    if (args.compare_success_constraints_only or args.compare_mean_limits_only
+            or args.compare_policy_constraints_only):
+        thresholds, fars, frrs, eer_threshold = load_sweep_inputs(SWEEP_INPUTS_FILE)
+        families = []
+        if args.compare_success_constraints_only or args.compare_policy_constraints_only:
+            families.append("success_constraints")
+        if args.compare_mean_limits_only or args.compare_policy_constraints_only:
+            families.append("mean_limits")
+        for family in families:
+            run_constraint_policy_comparisons(
+                thresholds, fars, frrs, eer_threshold, family=family,
+                user_attempts=args.k_user, attacker_attempts=args.k_attacker,
+                optimizer_starts=args.optimizer_starts,
+                output_dir=args.policy_plot_output_dir,
+                saturation_gain_tolerance=args.saturation_gain_tolerance,
+            )
+        raise SystemExit(0)
 
     if args.sweep_only:
         thresholds, fars, frrs, eer_threshold = load_sweep_inputs(
@@ -4160,6 +4450,7 @@ if __name__ == "__main__":
             ),
             optimizer_starts=args.optimizer_starts,
             plot_output_dir=args.policy_plot_output_dir,
+            saturation_gain_tolerance=args.saturation_gain_tolerance,
         )
         raise SystemExit(0)
 
@@ -4171,6 +4462,7 @@ if __name__ == "__main__":
             maximum_mean_attempts=args.maximize_success_with_mean_attempts,
             optimizer_starts=args.optimizer_starts,
             plot_output_dir=args.policy_plot_output_dir,
+            saturation_gain_tolerance=args.saturation_gain_tolerance,
         )
         raise SystemExit(0)
 

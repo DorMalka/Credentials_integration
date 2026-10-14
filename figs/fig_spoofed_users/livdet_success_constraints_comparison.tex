@@ -1,0 +1,77 @@
+% Preamble: \usepackage{pgfplots} and \usepackage{subcaption}
+%           \pgfplotsset{compat=1.18}
+% Override \ConstraintPolicyDataDir when using a custom output folder.
+\providecommand{\ConstraintPolicyDataDir}{figs/fig_spoofed_users}
+\begin{figure}[t]
+\centering
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.95\linewidth,height=0.55\linewidth,
+xlabel={Attempt},ylabel={Threshold},
+xmin=0.5,xmax=10.5,xtick={1,...,10},grid=major,
+legend style={at={(0.5,-0.28)},anchor=north,legend columns=3,
+font=\scriptsize,draw=black,fill=white},legend cell align=left,
+ymin=0,ymax=100]
+\addplot[blue,thick,solid,mark=o,mark size=1.8pt]
+table[x=Attempt,y=Threshold_0_75]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{$P'=0.75$}
+\addplot[red,thick,solid,mark=square*,mark size=1.8pt]
+table[x=Attempt,y=Threshold_0_7]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{$P'=0.7$}
+\addplot[teal!70!black,thick,solid,mark=triangle*,mark size=1.8pt]
+table[x=Attempt,y=Threshold_0_6]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{$P'=0.6$}
+\end{axis}
+\end{tikzpicture}
+\caption{Optimized threshold at each attempt.}
+\end{subfigure}
+\par\medskip
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.95\linewidth,height=0.55\linewidth,
+xlabel={Attempt},ylabel={Cumulative success probability},
+xmin=0.5,xmax=10.5,xtick={1,...,10},grid=major,
+legend style={at={(0.5,-0.28)},anchor=north,legend columns=2,
+font=\scriptsize,draw=black,fill=white},legend cell align=left,
+ymin=0,ymax=1]
+\addplot[blue,thick,solid,mark=o,mark size=1.8pt]
+table[x=Attempt,y=P_user_success_0_75]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{User, $P'=0.75$}
+\addplot[blue,thick,dashed,mark=square*,mark size=1.8pt]
+table[x=Attempt,y=P_attacker_success_0_75]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{Attacker, $P'=0.75$}
+\addplot[red,thick,solid,mark=o,mark size=1.8pt]
+table[x=Attempt,y=P_user_success_0_7]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{User, $P'=0.7$}
+\addplot[red,thick,dashed,mark=square*,mark size=1.8pt]
+table[x=Attempt,y=P_attacker_success_0_7]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{Attacker, $P'=0.7$}
+\addplot[teal!70!black,thick,solid,mark=o,mark size=1.8pt]
+table[x=Attempt,y=P_user_success_0_6]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{User, $P'=0.6$}
+\addplot[teal!70!black,thick,dashed,mark=square*,mark size=1.8pt]
+table[x=Attempt,y=P_attacker_success_0_6]
+{\ConstraintPolicyDataDir/livdet_success_constraints_comparison.txt};
+\addlegendentry{Attacker, $P'=0.6$}
+\end{axis}
+\end{tikzpicture}
+\caption{Cumulative user and attacker acceptance probabilities.}
+\end{subfigure}
+\par\medskip
+\caption{Policies minimizing conditional mean user attempts under three joint-success lower bounds $P'$. Here $k_u=10$ and $k_a=10$.
+Upper panels show thresholds; lower panels show user and attacker acceptance.
+Colors identify constraints; solid circles denote the user and dashed squares the attacker.
+Each curve uses one optimized full-horizon threshold sequence.
+The constraint applies to the complete policy, not to every prefix.}
+\label{fig:livdet_success_constraints_comparison}
+\end{figure}

@@ -1,0 +1,33 @@
+% Preamble: \usepackage{pgfplots}; \pgfplotsset{compat=1.18}
+% Set \AttemptPolicyDataDir to the folder containing these two TXT files.
+\providecommand{\AttemptPolicyDataDir}{figs/fig_spoofed_users}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.9\linewidth,height=0.55\linewidth,
+xlabel={Attempt},ylabel={Threshold},xtick=data,grid=major]
+\addplot[blue,thick,mark=o] table[x=Attempt,y=Threshold]
+{\AttemptPolicyDataDir/livdet_threshold_by_attempt.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Selected thresholds for the optimized policy, with $k_u=10$ and $k_a=10$.}
+\label{fig:livdet_threshold_by_attempt}
+\end{figure}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.9\linewidth,height=0.55\linewidth,
+xlabel={Attempt},ylabel={Cumulative success probability},
+xtick=data,ymin=0,ymax=1,grid=major,legend pos=south east]
+\addplot[blue,thick,mark=o] table[x=Attempt,y=P_user_success]
+{\AttemptPolicyDataDir/livdet_user_attacker_success_by_attempt.txt};
+\addlegendentry{User}
+\addplot[red,thick,mark=square*] table[x=Attempt,y=P_attacker_success]
+{\AttemptPolicyDataDir/livdet_user_attacker_success_by_attempt.txt};
+\addlegendentry{Attacker}
+\end{axis}
+\end{tikzpicture}
+\caption{Probability of at least one acceptance through each attempt.
+Each curve remains constant after its permitted attempt limit.}
+\label{fig:livdet_user_attacker_success_by_attempt}
+\end{figure}
