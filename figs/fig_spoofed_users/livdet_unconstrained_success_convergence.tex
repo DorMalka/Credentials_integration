@@ -1,0 +1,24 @@
+% Preamble: \usepackage{pgfplots}; \pgfplotsset{compat=1.18}
+\providecommand{\ConvergenceDataDir}{figs/fig_spoofed_users}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.95\linewidth,height=0.6\linewidth,
+xlabel={Number of attempts, $k$},ylabel={Overall success probability},
+xmin=1,xmax=200,ymin=0,ymax=1.02,grid=major,
+legend pos=south east]
+\addplot[blue,thick,mark=*,mark size=1.3pt,mark repeat=10]
+table[x=k,y=P_success_optimized]
+{\ConvergenceDataDir/livdet_unconstrained_success_convergence.txt};
+\addlegendentry{Optimized overall success}
+\addplot[black,dashed,thick] coordinates {(1,1) (200,1)};
+\addlegendentry{$P_{\mathrm{success}}=1$}
+\end{axis}
+\end{tikzpicture}
+\caption{Optimized overall success probability for $k_u=k_a=k$,
+with $k=1,\ldots,200$. Thresholds are optimized separately
+for each $k$ without conditional mean or success-probability constraints.
+The dashed line marks probability one; a finite simulation alone
+does not establish an infinite-attempt limit.}
+\label{fig:unconstrained_success_convergence}
+\end{figure}
