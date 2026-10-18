@@ -595,46 +595,53 @@ def select_representative_rows(
     rows: List[Dict[str, float]],
     n_rows: int = 5,
 ) -> List[Dict[str, float]]:
-    """
-    Select n_rows configurations distributed evenly across the observed
-    improvement range.
+    """Keep the EER-improvement extremes and highlight gains over atomic-only.
 
-    The first row has the smallest improvement and the last row has the
-    largest improvement.
+    The first/last rows retain the minimum/maximum failure reduction relative
+    to EER. Interior rows have the largest absolute success-probability gains:
+        max(max_AND, max_OR) - P_safe.
+    Interior rows are displayed in increasing EER-improvement order. Selection
+    uses unrounded values, and each sweep row is selected at most once.
     """
     if not rows:
         raise ValueError("Cannot create a LaTeX table from an empty row list.")
-
     if n_rows < 1:
         raise ValueError("n_rows must be at least 1.")
 
     valid_rows = [
         row for row in rows
         if np.isfinite(row["failure_improvement_ratio"])
+        and all(np.isfinite(row[key]) for key in ("P_safe", "max_AND", "max_OR"))
     ]
-
     if not valid_rows:
-        raise ValueError("No rows have a finite improvement value.")
+        raise ValueError("No rows have finite improvement and success values.")
 
     sorted_rows = sorted(
-        valid_rows,
-        key=lambda row: row["failure_improvement_ratio"],
+        valid_rows, key=lambda row: row["failure_improvement_ratio"],
     )
-
     n_rows = min(n_rows, len(sorted_rows))
+    if n_rows == 1:
+        return [sorted_rows[0]]
 
-    # Evenly spaced indices, including the minimum and maximum improvement.
-    indices = np.linspace(
-        0,
-        len(sorted_rows) - 1,
-        num=n_rows,
-        dtype=int,
-    )
+    middle_rows = sorted(
+        sorted_rows[1:-1],
+        key=lambda row: (
+            max(row["max_AND"], row["max_OR"]) - row["P_safe"],
+            row["failure_improvement_ratio"],
+        ),
+        reverse=True,
+    )[:n_rows - 2]
+    middle_rows.sort(key=lambda row: row["failure_improvement_ratio"])
+    return [sorted_rows[0], *middle_rows, sorted_rows[-1]]
 
-    # Remove accidental duplicate indices while preserving their order.
-    unique_indices = list(dict.fromkeys(indices.tolist()))
 
-    return [sorted_rows[index] for index in unique_indices]
+def format_table_number(value: float, precision: int = 4) -> str:
+    """Round for display to at most four decimal places; omit trailing zeros."""
+    precision = min(max(int(precision), 0), 4)
+    text = f"{value:.{precision}f}"
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return "0" if text == "-0" else text
 
 
 def format_comparison_pair(
@@ -655,8 +662,8 @@ def format_comparison_pair(
 
     When the values are equal, both are bolded.
     """
-    first_text = f"{first:.{precision}f}"
-    second_text = f"{second:.{precision}f}"
+    first_text = format_table_number(first, precision)
+    second_text = format_table_number(second, precision)
 
     if np.isclose(first, second):
         return latex_bold(first_text), latex_bold(second_text)
@@ -708,7 +715,7 @@ def generate_psafe_latex_table(
         r"    \caption{" + caption + r"}",
         r"    \label{" + label + r"}",
         r"    \resizebox{\textwidth}{!}{%",
-        r"    \begin{tabular}{cccccccccc}",
+        r"    \begin{tabular}{ccccccccc}",
         r"        \toprule",
         (
             r"        $\mathbf{P_{\mathrm{safe}}}$ & "
@@ -741,13 +748,13 @@ def generate_psafe_latex_table(
             precision=4,
         )
 
-        psafe_text = latex_bold(f"{row['P_safe']:.2f}")
-        ploss_text = f"{row['P_loss']:.2f}"
-        pleak_text = f"{row['P_leak']:.2f}"
-        ptheft_text = f"{row['P_theft']:.2f}"
+        psafe_text = latex_bold(format_table_number(row["P_safe"]))
+        ploss_text = format_table_number(row["P_loss"])
+        pleak_text = format_table_number(row["P_leak"])
+        ptheft_text = format_table_number(row["P_theft"])
 
         improvement_pct = 100.0 * row["failure_improvement_ratio"]
-        improvement_text = rf"{improvement_pct:.2f}\%"
+        improvement_text = format_table_number(improvement_pct) + r"\%"
 
         table_lines.append(
             "        "
@@ -1363,6 +1370,49 @@ def sweep_psafe_success(
     return all_rows, family_best, overall_best
 
 
+
+def print_best_atomic_failure_reduction(
+    all_rows: List[Dict[str, float]],
+) -> None:
+    """Print the largest relative failure reduction versus atomic-only.
+
+    For each configuration, reduction = (max(max_AND, max_OR) - P_safe)
+    / (1 - P_safe). A zero atomic-only failure probability has no defined
+    relative reduction, so those configurations are excluded.
+    """
+    candidates = [
+        row for row in all_rows
+        if all(np.isfinite(row[key]) for key in ("P_safe", "max_AND", "max_OR"))
+        and 0.0 <= row["P_safe"] < 1.0
+    ]
+    print("\n[SWEEP SUMMARY] BEST FAILURE REDUCTION VERSUS ATOMIC-ONLY")
+    if not candidates:
+        print("[i] Relative reduction is undefined: no finite configuration with P_safe < 1.")
+        return
+
+    row = max(
+        candidates,
+        key=lambda r: (max(r["max_AND"], r["max_OR"]) - r["P_safe"])
+        / (1.0 - r["P_safe"]),
+    )
+    best_kind = "AND" if row["max_AND"] >= row["max_OR"] else "OR"
+    best_success = max(row["max_AND"], row["max_OR"])
+    atomic_failure = 1.0 - row["P_safe"]
+    optimized_failure = 1.0 - best_success
+    reduction_pct = 100.0 * (best_success - row["P_safe"]) / atomic_failure
+
+    print(f"[i] Family                    : {row['family']}")
+    for key in ("P_safe", "P_loss", "P_leak", "P_theft"):
+        print(f"[i] {key:<26}: {row[key]:.4f}")
+    print(f"[i] Maximal AND               : {row['max_AND']:.4f}")
+    print(f"[i] Maximal OR                : {row['max_OR']:.4f}")
+    print(f"[i] Best composition          : {best_kind}")
+    print(f"[i] Atomic-only failure       : {atomic_failure:.4f}")
+    print(f"[i] Optimized failure         : {optimized_failure:.4f}")
+    print(f"[i] Absolute failure reduction: {100.0 * (best_success - row['P_safe']):.4f} percentage points")
+    print(f"[i] Relative failure reduction: {reduction_pct:.4f}%")
+
+
 def print_psafe_sweep_summary(
     all_rows: List[Dict[str, float]],
     family_best: Dict[str, Dict[str, float]],
@@ -1410,6 +1460,8 @@ def print_psafe_sweep_summary(
         print(f"[i] EER of maximal config     : {row['eer_of_maximal_config']:.6f}")
         print(f"[i] Failure improvement ratio : {row['failure_improvement_ratio']:.6f}")
 
+
+    print_best_atomic_failure_reduction(all_rows)
 
 def save_psafe_sweep_csv(
     all_rows: List[Dict[str, float]],
@@ -1606,7 +1658,12 @@ def run_psafe_sweep_from_inputs(
             "EER threshold and the maximal success probabilities obtained "
             "using mechanism-aware thresholds. Bold EER values indicate the "
             "worse composition, whereas bold maximal values indicate the "
-            "better composition."
+            "better composition. The first and last rows show the smallest and "
+            "largest failure reductions relative to the EER result for the "
+            "composition attaining the best optimized success probability. "
+            "The middle rows show the largest absolute gains over the "
+            r"atomic-only success probability, $P_{\mathrm{safe}}$. Improvement reports "
+            "the percentage reduction in failure relative to that EER result."
         ),
         label="tab:psafe_sweep_improvement",
     )

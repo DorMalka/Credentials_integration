@@ -1,17 +1,17 @@
 \begin{table*}[t]
     \centering
-    \caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities obtained using mechanism-aware thresholds. Bold EER values indicate the worse composition, whereas bold maximal values indicate the better composition.}
+    \caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities obtained using mechanism-aware thresholds. Bold EER values indicate the worse composition, whereas bold maximal values indicate the better composition. The first and last rows show the smallest and largest failure reductions relative to the EER result for the composition attaining the best optimized success probability. The middle rows show the largest absolute gains over the atomic-only success probability, $P_{\mathrm{safe}}$. Improvement reports the percentage reduction in failure relative to that EER result.}
     \label{tab:psafe_sweep_improvement}
     \resizebox{\textwidth}{!}{%
-    \begin{tabular}{cccccccccc}
+    \begin{tabular}{ccccccccc}
         \toprule
         $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\mathrm{theft}}$ & AND at EER & OR at EER & Max AND & Max OR & Improvement \\
         \midrule
-        \textbf{0.60} & 0.30 & 0.05 & 0.05 & \textbf{0.4523} & 0.5789 & 0.6014 & \textbf{0.6641} & 20.25\% \\
-        \textbf{0.66} & 0.05 & 0.24 & 0.05 & 0.5912 & \textbf{0.4950} & \textbf{0.7171} & 0.6616 & 30.80\% \\
-        \textbf{0.75} & 0.15 & 0.05 & 0.05 & \textbf{0.5590} & 0.6097 & 0.7500 & \textbf{0.7673} & 40.39\% \\
-        \textbf{0.82} & 0.05 & 0.08 & 0.05 & 0.6240 & \textbf{0.6088} & \textbf{0.8240} & 0.8216 & 53.20\% \\
-        \textbf{0.90} & 0.00 & 0.05 & 0.05 & 0.6658 & \textbf{0.6404} & 0.8993 & \textbf{0.9000} & 72.19\% \\
+        \textbf{0.6} & 0.3 & 0.05 & 0.05 & \textbf{0.4523} & 0.5789 & 0.6014 & \textbf{0.6641} & 20.2482\% \\
+        \textbf{0.6} & 0.05 & 0.3 & 0.05 & 0.5789 & \textbf{0.4523} & \textbf{0.6839} & 0.6016 & 24.9426\% \\
+        \textbf{0.61} & 0.05 & 0.29 & 0.05 & 0.5809 & \textbf{0.4594} & \textbf{0.6894} & 0.6116 & 25.8735\% \\
+        \textbf{0.62} & 0.05 & 0.28 & 0.05 & 0.583 & \textbf{0.4665} & \textbf{0.6948} & 0.6216 & 26.8218\% \\
+        \textbf{0.9} & 0 & 0.05 & 0.05 & 0.6658 & \textbf{0.6404} & 0.8993 & \textbf{0.9} & 72.1879\% \\
         \bottomrule
     \end{tabular}%
     }
