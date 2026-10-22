@@ -126,21 +126,17 @@ P^{2}_{\text{leak}}(t) &= \FAR(t)\bigl(1 - \FRR(t)\bigr),\\
 P^{2}_{\text{theft}}(t) &= \FAR(t) \cdot \FRR(t).
 \end{align*}
 }
-Biometric credentials are increasingly adopted in modern user devices. They rely on unique physical properties that make them difficult to forge~\cite{biometric_importance}. These properties have made them widely adopted. Broadly, biometric verification appears in~81\% of smartphones and~70\% of financial banking services, mainly through face or fingerprint verification~\cite{most_smartphones_biometric,financial_biometric} for access control. However, they were not always applicable~\cite{Anil1997} and therefore, credentials were typically \emph{atomic}, a credential was either presented correctly or not, evaluated according to a perfect match criterion.
+Biometric credentials are increasingly adopted for access control, as they appear in~81\% of smartphones and~70\% of financial banking services, mainly through face or fingerprint verification~\cite{most_smartphones_biometric,financial_biometric}. They rely on unique physical properties that make them difficult to forge~\cite{biometric_importance}. Biometric credentials are evaluated by a sensor that obtains a~\emph{sample}. It calculates a \emph{similarity score} between that sample and a~\emph{reference} stored in advance, and outputs~\emph{accept} if the score is above a set~\emph{match threshold} or \emph{reject} otherwise. This is in contrast to \emph{atomic credentials}, a credential was either presented correctly or not, evaluated according to a perfect match criterion.
 
-Biometric credentials are evaluated by a sensor. The sensor obtains a~\emph{sample}, calculates a \emph{similarity score} between that sample and a~\emph{reference} stored in advance, and outputs~\emph{accept} if the score is above a set~\emph{match threshold} or \emph{reject} otherwise.
+Previous work~$(\S\ref{sec:related})$ analyzed biometric credentials in isolation, primarily focusing on reducing the \emph{false acceptance}~(\FAR) and \emph{false rejection}~(\FRR) \emph{rates}~\cite{Anil1997,prabhakar2003,Cappelli2006}. Sarkar et al.~\cite{sarkar2020} suggest to set the threshold heuristically to obtain an Equal Error Rate (\EER, where~$\FAR = \FRR$). But these works do not analyze the integration of biometric credentials into an authentication mechanism. Other works analyze authentication mechanisms as predicates of credential possession~\cite{maram2024,mouallem2024,Eyal2021,Abhishek2013}, but treat all credentials as atomic. 
 
-Previous work~$(\S\ref{sec:related})$ has conducted extensive analysis of biometric credentials in isolation, primarily focusing on reducing the \emph{false acceptance}~(\FAR) and \emph{false rejection}~(\FRR) \emph{rates}~\cite{Anil1997,prabhakar2003,Cappelli2006}. Sarkar et al.~\cite{sarkar2020} introduce the Equal Error Rate (\EER, where~$\FAR = \FRR$), a heuristic threshold of biometric sensors. But these works do not analyze the integration of biometric credentials into an authentication mechanism. Other works analyze authentication mechanisms as predicates of credential possession~\cite{maram2024,mouallem2024,Eyal2021,Abhishek2013}, but treat all credentials as atomic. 
+In this work, we study how to design \emph{optimal mechanisms},  mechanisms with the maximum probability of success given the credentials and their states, with biometric credentials. First, we present a refined definition of the authentication problem with biometric credentials~$(\S\ref{sec:model})$. The system comprises an authentication mechanism and two players: a~\emph{user} and an~\emph{attacker}. Each player interacts with the mechanism by presenting credentials.
 
-In this work, we study how to design optimal mechanisms with biometric credentials. First, we present a refined definition of the authentication problem with biometric credentials~$(\S\ref{sec:model})$. The system comprises an authentication mechanism and two players: a~\emph{user} and an~\emph{attacker}. Each player interacts with the mechanism by presenting credentials.
+In practice, biometric sensors typically expose only this binary outcome~\cite{biometric_sensor_ibm,biometric_sensor_apple,biometric_sensor_ico,biometric_sensor_synaptics,biometric_sensor_authgear,biometric_sensor_faceheart} and do not allow the authentication mechanism to tune the match threshold~$(\S\ref{sec:sensors_review})$. We surveyed 24 commercial biometric device families produced by 18 leading manufacturers, that performs matching and emits an accept or reject decision. These sensors spanning fingerprints, face, iris and palm modalities. Among them, only 2 device families permit tuning a numeric match threshold, while the rest expose target error rates, discrete security levels, or nothing. 
 
-In practice, biometric sensors typically expose only this binary outcome~\cite{biometric_sensor_ibm,biometric_sensor_apple,biometric_sensor_ico,biometric_sensor_synaptics,biometric_sensor_authgear,biometric_sensor_faceheart} and do not allow the authentication mechanism to tune the match threshold. We surveyed 33 commercial biometric devices families produced by 22 leading manufacturers, spanning fingerprints, face, iris and palm modalities. Among them, only 2 device families permit tuning a numeric match threshold, while the rest expose target error rates, unlabeled discrete levels, or nothing.
-A \emph{genuine distribution}~$f_U(s)$ describes the score distribution of samples that belong to the legitimate user, whereas the \emph{impostor distribution}~$f_A(s)$ describes the score distribution of samples that belong to the attacker, as shown in Figure~\ref{fig:intro-fig}. These distributions establish the error metrics known as~\FAR and~\FRR. The~\FAR is the integral of the impostor distribution from the match threshold to the impostor distribution's maximum score~(red volume in Figure~\ref{fig:intro-fig}). Similarly, the~\FRR is the integral of the genuine distribution from its minimum score to the match threshold~(blue volume in Figure~\ref{fig:intro-fig}).
+These sensors aim to assign high scores to samples from legitimate users and low scores to samples from attackers. The \emph{genuine distribution} characterizes the distribution of scores obtained by comparing legitimate users' samples against the reference. In contrast, the \emph{impostor distribution} characterizes the distribution of scores obtained by comparing attackers' samples against the reference. Consequently, the genuine distribution is expected to be shifted toward higher matching scores compared to the impostor distribution, as shown in Figure~\ref{fig:intro-fig}. These distributions, establish two error probabilities that depend on the threshold. The~\FAR is the probability that the impostor score value is above the threshold~(red volume). Similarly, the~\FRR is the probability that the legitimate user's score value is below the threshold~(blue volume). These error probabilities determine the possession of the biometric credential, known as \emph{state probabilities}.
 
-We examine distribution functions that approximate a biometric credential score distribution for both players.
-Intuitively, genuine users are expected to produce higher matching scores than attackers. Therefore, the user score distribution is expected to be shifted toward higher matching scores compared to the attacker distribution. Otherwise, the attacker would be more likely to produce scores that lead to successful authentication, rendering the biometric credential ineffective. The \emph{state probabilities} of the biometric credential follow directly from the~\FAR and~\FRR metrics, which are functions of the match threshold. 
-
-An optimal mechanism has the maximum probability of success, which depends on the number of credentials and their state probabilities. We start by optimizing a single biometric credential mechanism~$(\S\ref{sec:mechanisms})$. We derive closed-form expressions of the mechanism's success probability which, in a single credential mechanism, reduces to the probability that the credential is \emph{safe}, i.e., available only to the user. We identify the optimal threshold of the biometric credential and show that, in general, the optimal threshold differs from the commonly used~\EER threshold. This difference becomes more significant when the attacker is more likely to produce higher matching scores~$s$ and when the user and attacker distributions are asymmetric.
+To identify an optimal mechanism, we derive closed-form expressions for the mechanism's success probability by approximating the biometric credential's score distributions for both players. We start by optimizing a single biometric credential mechanism~$(\S\ref{sec:mechanisms})$. In a single credential mechanism, the mechanism success probability reduces to the probability that the credential is \emph{safe}, i.e., available only to the user. We identify the optimal threshold of the biometric credential and show that, in general, the optimal threshold differs from the commonly used~\EER threshold.
 
 \begin{figure}[t]
 \centering
@@ -201,10 +197,11 @@ coordinates {(0.5,0) (0.5,4.2)};
 \label{fig:intro-fig}
 \end{figure}
 
-We extend our analysis to a more complex case that combines two credentials~$(\S\ref{sec:two_cred})$. These may include two biometric credentials, as in airport or border-control systems~\cite{multimodal_biometrics}. For example, border control authorities may~(1)~Use cameras to capture a live traveler image and compare it with the data stored in the microchip inside the e-passport and~(2)~Use fingerprint verification to check for outstanding warrants. To evaluate a mechanism comprising two biometric credentials, we consider first and second order approximations of the biometric credential distributions and use a numerical optimization algorithm to find the optimal thresholds for each biometric credential. The optimal thresholds of the biometric credentials in such a mechanism are not, in general, the same as the optimal thresholds if used individually. This difference arises as we optimize each credential with respect to the entire mechanism.
+To increase the mechanism success probability, we extend our analysis to a mechanism that combines two credentials~$(\S\ref{sec:two_cred})$. We evaluate a mechanism comprising two biometric credentials by considering first and second order approximations of the biometric credential distributions. We then use a numerical optimization algorithm to find the optimal thresholds for each biometric credential. The optimal thresholds of the biometric credentials in such a mechanism are not, in general, the same as the optimal thresholds if used individually and differs from the~\EER. This difference arises as we optimize each credential with respect to the entire mechanism.
 To demonstrate the potential impact, we present a synthetic experiment of two sampled score distributions and observe a reduction of over~66\% in the failure rate, when comparing the~\EER and the optimal threshold. 
+A mechanism that uses two biometric credentials appears in manufacturing industry or financial services~\cite{multimodal_biometrics}. For example, manufacturing facilities use control access to production floors may~(1)~use fingerprint verification to enter the manufacture building and~(2)~use facial recognition to control access for production floors. To 
 
-Another prevalent use case combines two credentials in one biometric and one atomic credential configuration, as in cloud service authentication. For example, Google~\cite{google_passkeys_2023} assumes (1)~Possession of a trusted device like a phone or computer (Atomic credential) and (2)~Authentication via biometric credentials~\cite{mahfouz2025}. We derive closed-form expressions for the mechanism's success probability and find that the optimal threshold depends on the properties of the atomic credential. Our symbolic analysis reveals that the mechanism's success can primarily depend on either the atomic credential or the biometric credential, depending on their properties.
+We then turn to analyze the second case, where a mechanism uses a biometric credential and an atomic credential. We derive closed-form expressions for the mechanism's success probability and find that the optimal threshold depends on the properties of both credentials. Our symbolic analysis reveals that the relative influence of the atomic and biometric credentials on the mechanism's success probability, depends on their individual properties. In particular, as one credential becomes increasingly reliable, its contribution to the mechanism's success may become more significant than that of the other credential. Consequently, the mechanism's success probability may become primarily determined by the stronger credential, while changes in the second credential's properties have a smaller effect on the overall outcome. Such a mechanism is prevalent in real world authentication systems, including Google's passkeys authentication process. For example, Google~\cite{google_passkeys_2023} assumes (1)~possession of a trusted device like a phone or computer (Atomic credential) and (2)~a biometric credential.
 
 Motivated by this observation, we identify the conditions under which the integration of a biometric credential with an atomic credential will always enhance the mechanism's success probability~$(\S\ref{sec:proof_success_improvement})$. First, we show that when an atomic credential can be \emph{safe} or \emph{stolen} only it is not worthwhile to integrate, as the atomic credential mechanism dominates the mechanism success probability. Then, we introduce a necessary and sufficient condition for an \emph{asymptotically separable} biometric credential: for every score above or below a match threshold, the error rates converge to zero. Suppose the atomic credential has non-zero probabilities for the states of \emph{safe} and either \emph{loss} or \emph{leak}.
 We prove that every \emph{asymptotically separable} biometric credential integrated with such an atomic credential, yields a mechanism whose success probability dominates that of the atomic credential mechanism. However, biometric credentials often exhibit a more common and weaker behavior~\cite{Slob2005,anil2004}. Thus, we introduce \emph{asymptotic dominance}: the genuine distribution dominates the impostor distribution by a factor~$c$ for every score above a specific threshold, or the impostor distribution dominates the genuine distribution by a factor~$c$ for every score below a specific threshold. We show that this is a sufficient condition.
@@ -327,6 +324,57 @@ P_{\text{Success}}(M) =
 \Pr\big[\mathrm{decide}_M(\sigma^U)=1 \wedge \mathrm{decide}_M(\sigma^A)=0\big].
 \end{equation*}
 For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants access to a player if and only if all credentials are available to the player; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for every credential~$c_i$. In an \emph{OR mechanism}, the mechanism grants access to a player if at least one credential is available to the player; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for at least one credential~$c_i$.
+\section{Biometric sensors review}
+\label{sec:sensors_review}
+
+To assess how widely the binary-output assumption holds in practice, we surveyed 33 commercially available biometric device families from 22 manufacturers.
+Devices were selected to span sensing modalities (optical, capacitive and contactless fingerprint; 2D, infrared-fusion and active-IR-stereo face; single-and dual-eye iris; palm vein; finger vein), deployment classes (embedded OEM
+modules, USB peripherals, and access-control terminals), and price points. Selection proceeded iteratively from vendor and distributor catalogues; 
+
+We classified each device along two axes. The first is \emph{decision locality}:
+whether the device performs matching and emits an accept/reject verdict itself,
+or merely captures a sample for a host matcher. Of the 33 families, 24 are self-deciding; the remaining 9 are capture-only and fall outside the threat model, as the matching threshold in those systems is by construction under the integrator's control.
+
+The second axis is \emph{threshold exposure}, for which we adopted a deliberately
+strict criterion: a device qualifies only if it accepts an arbitrary value on its
+own match-score scale as the decision boundary. We distinguish this from two
+weaker mechanisms that are frequently also labelled ``threshold''. The first is a
+\emph{target error rate}, where the integrator specifies a desired FAR or FMR and
+the device derives its own internal boundary without exposing the score scale
+(CMITech EF-45: FMR $10^{-5}$--$10^{-14}$; IDEMIA MorphoAccess SIGMA: FAR
+1\%--$10^{-7}$\%). The second is a \emph{discrete security level}, an unlabelled
+ordinal setting with no published error-rate mapping (typically 1--5, 1--9, or
+High/Medium/Low). Both appear numeric to an integrator but neither permits
+setting a specific score boundary.
+
+Applying this criterion, only 2 of the 24 self-deciding families---comprising
+6 individual models---permit setting an arbitrary numeric match-score threshold:
+ZKTeco access-control terminals (fingerprint 1:N and 1:1 thresholds, factory
+defaults 35 and 15; face thresholds in the ranges 70--120 and 55--120) and the
+Hikvision DS-K1T342 series.\footnote{Hikvision's public documentation names the
+relevant parameters but does not publish their numeric ranges or defaults;
+configurability was confirmed by direct inspection of the device.} A further
+2 families expose target error rates only, and the remaining 20 offer discrete
+levels or no threshold control at all.
+
+The classification was revised twice during the survey. The CMITech EF-45 and
+Dahua ASI series were initially classified as threshold-configurable on the basis
+of vendor language---respectively an ``adjustable threshold range'' and a
+parameter documented as affecting the false recognition rate---and were
+reclassified after closer reading established that the former exposes only a
+target error rate and that the latter's scale, default and comparison semantics
+are absent from all four available manual revisions.
+
+We observe that threshold exposure correlates with product class rather than with
+device capability or price. OEM modules sold to system integrators conceal the
+score scale irrespective of manufacturer, whereas the two qualifying families are
+both finished access-control terminals, where field tuning by installers is an
+expected part of commissioning. Suprema illustrates that this is a vendor policy
+choice rather than a technical constraint: it withholds the score scale across
+both its OEM module line and its terminal line. The practical consequence is that
+an authentication mechanism built atop a self-deciding biometric device cannot, in
+the overwhelming majority of cases, tune the operating point it inherits.
+
 \section{Mechanisms}\label{sec:mechanisms}
 We explore optimal mechanism success probability with a single biometric credential. We start with first~$(\S\ref{sec:uniform_biocred})$ and second~$(\S\ref{sec:quadratic_biocred})$ order approximations.
 
