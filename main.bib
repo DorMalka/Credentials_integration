@@ -454,3 +454,20 @@ abstract = {Fingerprint matching is often affected by the presence of intrinsica
   pages   = {68--78},
   doi     = {10.1080/01621459.1951.10500769}
 }
+
+@inproceedings{biocred_fixed_threshold,
+author = {Verheyen, Willem and Van Hamme, Tim and Joos, Sander and Preuveneers, Davy and Joosen, Wouter},
+title = {Beware the Doppelg{\"a}nger: Attacks against Adaptive Thresholds in Facial Recognition Systems},
+year = {2023},
+isbn = {9798400707728},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3600160.3600179},
+doi = {10.1145/3600160.3600179},
+abstract = {Biometric recognition systems typically use a fixed threshold to differentiate between legitimate users and imposters. Yet, this method can be problematic due to differences in individual user performance, whereas some users are more easily recognizable than others. Furthermore, fixed thresholds require extensive tuning on a large test set a priori to determine an optimal threshold value. Adaptive thresholds address these shortcomings by adjusting threshold values based on population characteristics. However, our research demonstrates that adaptive thresholds suffer from a significant weakness as they inadvertently increase the attack surface against face recognition systems. We do so by introducing a novel attack, the doppelg{\"a}nger attack, where a malicious actor inserts adversarial examples that mimic legitimate users and increase the false rejection rate for these legitimate users by 70\%. Consequently, we enhance the performance of face recognition systems by introducing identity-level thresholds and developing a defensive mechanism to prevent the enrollment of doppelg{\"a}ngers. Our novel identity-level thresholding approach customizes the threshold for each individual user in the system. We demonstrate that this approach outperforms both static thresholds and the previously proposed adaptive methodologies, even when dealing with a large number of users. These results have significant implications for the design and implementation of face recognition systems, improving their reliability and enhancing their security.},
+booktitle = {Proceedings of the 18th International Conference on Availability, Reliability and Security},
+articleno = {18},
+numpages = {11},
+location = {Benevento, Italy},
+series = {ARES '23}
+}
