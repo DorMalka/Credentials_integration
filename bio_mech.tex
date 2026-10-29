@@ -325,56 +325,21 @@ P_{\text{Success}}(M) =
 \Pr\big[\mathrm{decide}_M(\sigma^U)=1 \wedge \mathrm{decide}_M(\sigma^A)=0\big].
 \end{equation*}
 For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants access to a player if and only if all credentials are available to the player; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for every credential~$c_i$. In an \emph{OR mechanism}, the mechanism grants access to a player if at least one credential is available to the player; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for at least one credential~$c_i$.
-\section{Biometric sensors review}
+\section{Biometric Sensors Review}
 \label{sec:sensors_review}
+\noindent
+We assess how widely biometric sensors expose binary outcome, and whether they allow tuning the match threshold. We surveyed 33 commercially available biometric device families from 22 manufacturers.
+Devices were selected to span biometric features such as fingeprints, face, iris and palm. We classified each device along two axes. The first is \emph{decision locality}:
+whether the device performs matching and emits an accept/reject verdict itself, or merely captures a sample for a host matcher. Of the 33 families, 24 are self deciding while the remaining 9, are capture only and fall outside the threat model, as the matching threshold in those systems is by construction under the integrator's control~\cite{hid_digitalpersona4500,hid_uareu_sdk,secugen_hamsterpro20,secugen_fdx_sdk,suprema_biominislim2,zkteco_slk20r,mantra_mfs100,fujitsu_fproplus,hitachi_h1,cmitech_bmt20,dfrobot_sen0626}.
 
-To assess how widely the binary-output assumption holds in practice, we surveyed 33 commercially available biometric device families from 22 manufacturers.
-Devices were selected to span sensing modalities (optical, capacitive and contactless fingerprint; 2D, infrared-fusion and active-IR-stereo face; single-and dual-eye iris; palm vein; finger vein), deployment classes (embedded OEM
-modules, USB peripherals, and access-control terminals), and price points. Selection proceeded iteratively from vendor and distributor catalogues; 
+The second axis is \emph{threshold exposure}: a device qualifies only if it allows tuning the match threshold as the decision boundary over its matching score. 
+We distinguish this from three weaker mechanisms that neither permits setting a specific score boundary. The first mechanism exposes a~\emph{target error rate}, where the integrator specifies a desired~\FAR or~\FRR and the device derives its own internal boundary without exposing the score scale~\cite{cmitech_ef45,idemia_morphoaccess_sigma,idemia_sigma_lite}. 
+The second, allow choosing a \emph{discrete security level}, a labeled or an unlabelled setting typically 1-5~\cite{grow_r307,grow_r503,grow_r502a,dfrobot_id809}, 1-9~\cite{nitgen_nac3000,nitgen_fim5360,virdi_ac7000}, High/Medium/Low~\cite{realsense_id,suprema_biostation3,suprema_facestationf2} or selected~\FAR discrete values~\cite{suprema_uf_protocol,suprema_sfm5500}. 
+The third exposes no threshold parameter of any kind~\cite{adhtech_gt521f,fpc_bmlite,iritech_irishield,mofiria_fvau4st,irisid_icam7000,fujitsu_idmatch,invixium_ixm}.
 
-We classified each device along two axes. The first is \emph{decision locality}:
-whether the device performs matching and emits an accept/reject verdict itself,
-or merely captures a sample for a host matcher. Of the 33 families, 24 are self-deciding; the remaining 9 are capture-only and fall outside the threat model, as the matching threshold in those systems is by construction under the integrator's control.
+Applying the threshold exposure criterion, reduces the entire surveyed space into only 2 out of the 24 self deciding families. Those families,  comprising 6 individual models, permit setting an arbitrary numeric matching score threshold on the underlying matching score~\cite{zkteco_threshold_manual,zkteco_speedface_v5l,zkteco_terminal_manual,hikvision_dsk1t342,hikvision_isapi}.
 
-The second axis is \emph{threshold exposure}, for which we adopted a deliberately
-strict criterion: a device qualifies only if it accepts an arbitrary value on its
-own match-score scale as the decision boundary. We distinguish this from two
-weaker mechanisms that are frequently also labelled ``threshold''. The first is a
-\emph{target error rate}, where the integrator specifies a desired FAR or FMR and
-the device derives its own internal boundary without exposing the score scale
-(CMITech EF-45: FMR $10^{-5}$--$10^{-14}$; IDEMIA MorphoAccess SIGMA: FAR
-1\%--$10^{-7}$\%). The second is a \emph{discrete security level}, an unlabelled
-ordinal setting with no published error-rate mapping (typically 1--5, 1--9, or
-High/Medium/Low). Both appear numeric to an integrator but neither permits
-setting a specific score boundary.
-
-Applying this criterion, only 2 of the 24 self-deciding families---comprising
-6 individual models---permit setting an arbitrary numeric match-score threshold:
-ZKTeco access-control terminals (fingerprint 1:N and 1:1 thresholds, factory
-defaults 35 and 15; face thresholds in the ranges 70--120 and 55--120) and the
-Hikvision DS-K1T342 series.\footnote{Hikvision's public documentation names the
-relevant parameters but does not publish their numeric ranges or defaults;
-configurability was confirmed by direct inspection of the device.} A further
-2 families expose target error rates only, and the remaining 20 offer discrete
-levels or no threshold control at all.
-
-The classification was revised twice during the survey. The CMITech EF-45 and
-Dahua ASI series were initially classified as threshold-configurable on the basis
-of vendor language---respectively an ``adjustable threshold range'' and a
-parameter documented as affecting the false recognition rate---and were
-reclassified after closer reading established that the former exposes only a
-target error rate and that the latter's scale, default and comparison semantics
-are absent from all four available manual revisions.
-
-We observe that threshold exposure correlates with product class rather than with
-device capability or price. OEM modules sold to system integrators conceal the
-score scale irrespective of manufacturer, whereas the two qualifying families are
-both finished access-control terminals, where field tuning by installers is an
-expected part of commissioning. Suprema illustrates that this is a vendor policy
-choice rather than a technical constraint: it withholds the score scale across
-both its OEM module line and its terminal line. The practical consequence is that
-an authentication mechanism built atop a self-deciding biometric device cannot, in
-the overwhelming majority of cases, tune the operating point it inherits.
+The practical consequence is that today's authentication mechanisms are built atop a self-deciding biometric device and cannot, in the overwhelming majority of cases, tune the operating point it inherits. Thus, biometric sensor vendors should change the devices interface, allowing integrators to tune the match threshold of the biometric credential. This correspondant to their demands and as part of the other credentials used in the mechanism.
 
 \section{Mechanisms}\label{sec:mechanisms}
 We explore optimal mechanism success probability with a single biometric credential. We start with first~$(\S\ref{sec:uniform_biocred})$ and second~$(\S\ref{sec:quadratic_biocred})$ order approximations.

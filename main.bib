@@ -471,3 +471,355 @@ numpages = {11},
 location = {Benevento, Italy},
 series = {ARES '23}
 }
+
+% ------------------------- 1--5 ordinal scale ------------------------------
+
+@misc{grow_r307,
+  author       = {{Hangzhou Grow Technology}},
+  title        = {{R307} Optical Fingerprint Module},
+  howpublished = {\url{https://cdn-learn.adafruit.com/downloads/pdf/adafruit-optical-fingerprint-sensor.pdf}},
+  year         = {2019},
+  urldate      = {2026-09-15},
+  note         = {Security level 1--5 via \texttt{SetSysPara} parameter~5, readable via \texttt{ReadSysPara}; Match and Search responses return a match score. Vendor: \url{https://en.hzgrow.com/}. Distributor-hosted documentation}
+}
+
+@misc{grow_r503,
+  author       = {{Hangzhou Grow Technology}},
+  title        = {{R503} Fingerprint Module User Manual},
+  howpublished = {\url{https://cdn-shop.adafruit.com/product-files/4651/4651_R503+fingerprint+module+user+manual.pdf}},
+  year         = {2019},
+  urldate      = {2026-09-15},
+  note         = {Five security grades; level~1 yields the highest {FAR} and lowest {FRR}, level~5 the reverse. No published error-rate mapping per level. Vendor: \url{https://en.hzgrow.com/}. Distributor-hosted copy}
+}
+
+@misc{grow_r502a,
+  author       = {{Hangzhou Grow Technology}},
+  title        = {{R502-A} Fingerprint Module User Manual},
+  howpublished = {\url{https://en.hzgrow.com/product_detail/7.html}},
+  year         = {2020},
+  urldate      = {2026-09-15},
+  note         = {Same protocol family and 1--5 security level as the {R503}. Manual mirror: \url{http://myosuploads3.banggood.com/products/20200617/20200617011758R502-Afingerprintmoduleusermanual.pdf}}
+}
+
+@misc{dfrobot_id809,
+  author       = {{DFRobot}},
+  title        = {{SEN0348} Capacitive Fingerprint Sensor ({ID809})},
+  howpublished = {\url{https://wiki.dfrobot.com/sen0348/}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {\texttt{setSecurityLevel(1-5)} and \texttt{getSecurityLevel()}; \texttt{search()} and \texttt{verify()} return a matched identifier or zero, with no match score. Library: \url{https://github.com/DFRobot/DFRobot_ID809}}
+}
+
+% ------------------------- 1--9 ordinal scale ------------------------------
+
+@misc{nitgen_nac3000,
+  author       = {{NITGEN}},
+  title        = {{NAC-3000} Fingerprint Access Control Terminal User Manual, Rev.~H},
+  howpublished = {\url{http://www.nitgen.com/admin/cs_center/fileupload/EN\%20NAC-3000\%20Terminal\%20User\%20Manual\%20DC1-0036A\%20Rev\%20H.pdf}},
+  year         = {2018},
+  urldate      = {2026-09-15},
+  note         = {Security level 1--9, set independently for 1:1 and 1:N modes; defaults 1:N${}={}$8 and 1:1${}={}$5}
+}
+
+@misc{nitgen_fim5360,
+  author       = {{NITGEN}},
+  title        = {{FIM5360} Standalone Fingerprint Module Data Sheet, v1.04},
+  howpublished = {\url{http://www.nitgen.com/admin/cs_center/fileupload/FIM5360_DataSheet_v1.04.pdf}},
+  year         = {2017},
+  urldate      = {2026-09-15},
+  note         = {Changeable per-user verification security level. Mirror: \url{https://cdn.sparkfun.com/datasheets/Sensors/Biometric/FIM5360_DataSheet_v1.04.pdf}. Series overview covering {FIM6060}, {FIM5260} and {FIM4060}: \url{https://www.ravirajtech.com/FIM-fingerprint-module-series.html}}
+}
+
+@misc{virdi_ac7000,
+  author       = {{Union Community (ViRDI)}},
+  title        = {{AC-7000} Face and Fingerprint Terminal User Guide},
+  howpublished = {\url{https://www.intesiscon.com/ficheros/manuales-tecnicos/143-terminaldePresenciaAccesos-Virdi-AC7000l.pdf}},
+  year         = {2020},
+  urldate      = {2026-09-15},
+  note         = {``Authentication level'' displayed 1--9, with independent 1:1 and 1:N settings; authentication succeeds only if the match rate exceeds the set level. Specifications: \url{https://www.visiotechsecurity.com/en/products/access-controls/virdi/terminals/ac7000-detail}}
+}
+
+% --------------------- High / Medium / Low scale ---------------------------
+
+@misc{realsense_id,
+  author       = {{RealSense}},
+  title        = {{RealSense} {ID} {F450}/{F455} Datasheet},
+  howpublished = {\url{https://realsenseai.com/wp-content/uploads/2025/12/RealSense_ID_F45X-Datasheet-Dec-2025.pdf}},
+  year         = {2025},
+  urldate      = {2026-09-15},
+  note         = {\texttt{SecurityLevel} High/Medium/Low in \texttt{DeviceConfig}; the finer \texttt{MatcherConfidenceLevel} control was removed in a subsequent {SDK} release. Product: \url{https://www.realsenseai.com/products/realsense-id/}}
+}
+
+% ------------------ Named level, scale not enumerated ----------------------
+
+@misc{suprema_biostation3,
+  author       = {{Suprema}},
+  title        = {{BioStation}~3 User Guide, v1.02},
+  howpublished = {\url{https://supremainc.com/uploadfiles/Technical_Resources/BioStation\%203_UG_1.02_EN_230704.0.pdf}},
+  year         = {2023},
+  urldate      = {2026-09-15},
+  note         = {``Security Level'' applies to 1:N authentication only; no numeric field and no enumerated scale. Settings reference: \url{https://docs.supremainc.com/en/platform/biostar_x/settings-device-details-auth}}
+}
+
+@misc{suprema_facestationf2,
+  author       = {{Suprema}},
+  title        = {{FaceStation}~{F2} User Guide, v1.10},
+  howpublished = {\url{https://www.supremainc.com/uploadfiles/Technical_Resources/FaceStation\%20F2_ODB_UG_1.10_EN_240110.0.pdf}},
+  year         = {2024},
+  urldate      = {2026-09-15},
+  note         = {``Security Level'' for 1:N matching; vendor recommends leaving face detection settings at default. Settings reference: \url{https://docs.supremainc.com/en/device/facestation_f2/authentication}}
+}
+
+% ------------- Partial exception: FAR-denominated, per-user ----------------
+
+@misc{suprema_sfm5500,
+  author       = {{Suprema}},
+  title        = {{SFM5500} Standalone Fingerprint Access Module},
+  howpublished = {\url{https://github.com/supremainc/sfmdev/blob/master/docs/products/SFM5500.md}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {Same {FAR}-denominated, per-user security level {API} as the {SFM} Slim; no match score returned}
+}
+
+@misc{cmitech_ef45,
+  author       = {{CMITech}},
+  title        = {{EF-45} Series Dual Iris and Face Recognition Device Data Sheet},
+  howpublished = {\url{https://www.cmi-tech.com/wp-content/uploads/2020/05/cmitech-data_sheet-ef-45-vFINAL-003.pdf}},
+  year         = {2020},
+  urldate      = {2026-09-15},
+  note         = {Covers the {EF-45}, {EF-45N}, {EF-45NC} and {EF-45}~{AC} variants. Adjustable iris algorithm threshold over {FMR} $10^{-5}$ to $10^{-14}$ at {FNMR} $10^{-6}$, default $10^{-8}$. All iris encoding and matching executes on the internal {ARM} mainboard, so the error-rate target is applied without exposing the match-score scale. The datasheet states a range without specifying whether it is continuous or stepped at discrete {FMR} values. Vendor: \url{https://cmi-tech.com/}}
+}
+
+@misc{idemia_morphoaccess_sigma,
+  author       = {{IDEMIA}},
+  title        = {{MorphoAccess} {SIGMA} Series Installation Guide},
+  howpublished = {\url{https://cdn.adiglobaldistribution.us/pim/Original/10046/Upload_0M-293638856_AssemblyInstructions.pdf}},
+  year         = {2020},
+  urldate      = {2026-09-15},
+  note         = {Covers the {SIGMA} Wide, Extreme and Extreme~{TWIC} terminals. Primary source for the adjustable {FAR} range: 1\% down to $10^{-7}$\%. On-terminal 1:N identification against a local database, or 1:1 against a template held on a contactless smartcard. Distributor-hosted copy; the vendor original requires partner registration}
+}
+
+@misc{idemia_sigma_lite,
+  author       = {{IDEMIA}},
+  title        = {{MorphoAccess} {SIGMA} Lite Series Installation Guide},
+  howpublished = {\url{https://www.turnstiles.us/wp-content/uploads/2019/12/entrapass-morpho-access-sigma-lite-installation-guide.pdf}},
+  year         = {2019},
+  urldate      = {2026-09-15},
+  note         = {Covers the {SIGMA} Lite and {SIGMA} Lite+ compact fingerprint terminals. Confirms the same adjustable {FAR} range independently of the full {SIGMA} Series guide. Distributor-hosted copy}
+}
+
+@misc{suprema_uf_protocol,
+  author       = {{Suprema}},
+  title        = {{SFM} Series {UF} Protocol Manual},
+  howpublished = {\url{https://sfm.supremainc.com/documents/UF_Protocol_Manual/}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {Documents \texttt{UF\_SetSecurityLevel} and \texttt{UF\_GetSecurityLevel}, which operate per enrolled user rather than device-wide. Records that the minimum security level on the {SFM3000}/{SFM3500} series changed to 1/10{,}000 at firmware {V1.3}, indicating that levels are denominated in false-acceptance rates. Per-model level enumerations for the {SFM} Slim and {SFM5500} are not published; the full {SDK} manual requires partner registration}
+}
+
+@misc{zkteco_threshold_manual,
+  author       = {{ZKTeco}},
+  title        = {Palm Attendance Terminal User Manual: Match Threshold Configuration},
+  howpublished = {\url{https://zkteco.eu/sites/default/files/content/downloads/4.3-inch-touch-screen-palm-attendance-terminal-user-manual_zkteco.pdf}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {Primary source for the numeric match thresholds. Documents independent 1:N and 1:1 fingerprint thresholds with factory defaults of 35 and 15 respectively, face thresholds over the ranges 70--120 (1:1) and 80--120 (1:N), and the comparison semantics: verification succeeds only when the computed similarity exceeds the configured value. Also documents palm 1:1 and 1:N thresholds on the same scheme}
+}
+
+@misc{zkteco_speedface_v5l,
+  author       = {{ZKTeco}},
+  title        = {{SpeedFace-V5L} Access Control Terminal User Manual},
+  howpublished = {\url{https://www.manualslib.com/manual/1868192/Zkteco-Speedface-V5l.html?page=31}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {Sole source for the 55--120 face threshold range; see p.~31. Demonstrates that the range varies across models within the family. Third-party manual host}
+}
+
+@misc{zkteco_terminal_manual,
+  author       = {{ZKTeco}},
+  title        = {2.4-inch {TFT} Series Access Control Terminal User Manual},
+  howpublished = {\url{https://www.zkteco.me/download-file/1084}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {Covers the {F18} and related terminals; confirms the 1:N and 1:1 fingerprint threshold parameters on a second product line}
+}
+
+@misc{hikvision_dsk1t342,
+  author       = {{Hikvision}},
+  title        = {{DS-K1T342} Series Face Recognition Terminal User Manual},
+  howpublished = {\url{https://enpinfo.hikvision.com/hkwsen/unzip/20260415170733_50405_doc/}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {Documents the Face 1:1 Matching Threshold, 1:N Matching Threshold and 1:1 Face Grade Threshold parameters, configurable via the device interface and the {PC} web interface, alongside separate anti-spoofing detection level, face liveness level, pitch angle, yaw angle and picture quality grade settings. Numeric ranges and default values are NOT published in this document; threshold configurability was confirmed by direct inspection of the device. The terminal qualifies as self-deciding only in Terminal Authentication Mode; in Reader Authentication Mode the decision is delegated to an upstream access controller}
+}
+
+@misc{hikvision_isapi,
+  author       = {{Hikvision}},
+  title        = {{ISAPI} Developer Reference: Access Control},
+  howpublished = {\url{https://tpp.hikvision.com/Wiki/ISAPI/Access\%20Control\%20on\%20Person/GUID-C9A13022-0979-412F-9AA1-7485B48D1C0B.html}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {Programmatic configuration interface exposing the matching threshold parameters for fleet deployment}
+}
+
+@misc{adhtech_gt521f,
+  author       = {{ADH-Tech}},
+  title        = {{GT-521F} Series Fingerprint Module Datasheet, {V1.6}},
+  howpublished = {\url{https://www.adh-tech.com.tw/files/GT-521F\%20Series_datasheet_V1.6.pdf}},
+  year         = {2019},
+  urldate      = {2026-09-15},
+  note         = {Covers the {GT-521F32} (200 templates) and {GT-521F52} (3,000 templates). No security-level command in the protocol; Verify and Identify return a verdict only, with no match score. Hookup guide: \url{https://learn.sparkfun.com/tutorials/fingerprint-scanner-gt-521fxx-hookup-guide/all}}
+}
+
+@misc{fpc_bmlite,
+  author       = {{Fingerprint Cards AB}},
+  title        = {{FPC} {BM-Lite} {SafeTouch} Product Specification},
+  howpublished = {\url{https://www.mouser.com/datasheet/2/1147/Fingerprint_SPC26627_3_BM_LITE_Safetouch_product_s-3359761.pdf}},
+  year         = {2021},
+  urldate      = {2026-09-15},
+  note         = {Capacitive sensor with embedded processor and local match engine, up to 50 templates on-module. No security-level command appears in the public command reference; \texttt{identify} returns a match result and template identifier with no score. Vendor: \url{https://www.fpc.com/products/fingerprints/fingerprint-systems/bm-lite/}}
+}
+
+@misc{iritech_irishield,
+  author       = {{IriTech}},
+  title        = {{IriShield} {MK} 2120{UL} Product Brochure},
+  howpublished = {\url{https://iritech.com/wp-content/uploads/2022/03/IriShield-MK-2120UL-Brochure.pdf}},
+  year         = {2022},
+  urldate      = {2026-09-15},
+  note         = {Iris capture, recognition, key generation, encryption and digital signature all execute on-board. No threshold or security-level parameter is publicly documented; the {SDK} documentation requires a developer account. {STQC} certified for {UIDAI}/Aadhaar authentication}
+}
+
+@misc{mofiria_fvau4st,
+  author       = {{mofiria}},
+  title        = {{FVA-U4ST} {USB}-Connected Finger Vein Authentication Unit},
+  howpublished = {\url{https://www.mofiria.com/wp/wp-content/uploads/2022/11/FVA-U4ST_22_11_24E.pdf}},
+  year         = {2022},
+  urldate      = {2026-09-15},
+  note         = {Patented reflective dispersion method; the datasheet states the unit includes an authentication (matching) feature. No threshold parameter is publicly documented; configuration is {SDK}-level and licensed. Product page: \url{https://www.mofiria.com/en/product-2/}}
+}
+
+@misc{irisid_icam7000,
+  author       = {{Iris ID}},
+  title        = {{iCAM7000} Series User Guide},
+  howpublished = {\url{https://irisid.com/download/documentation/iData-EAC/iCAM7000\%20Series\%20User\%20Guide_new.pdf}},
+  year         = {2013},
+  urldate      = {2026-09-15},
+  note         = {On-device matching is one of three selectable operational modes; the alternatives process iris data on a {PC} workstation or an {ICU7000-2} controller. The published false accept probability of 1 in 1.2 million at a 0.325 Hamming-distance threshold describes the algorithm's operating point and is not documented as a user-settable field. The {iCAM7} series is listed as discontinued: \url{https://www.irisid.com/productssolutions/hardwareproducts/icam7-series-2/}}
+}
+
+@misc{fujitsu_idmatch,
+  author       = {{Fujitsu}},
+  title        = {White Paper: {PalmSecure} {ID} Match},
+  howpublished = {\url{https://sp.ts.fujitsu.com/dmsp/Publications/public/wp-PalmSecure-ID-Match.pdf}},
+  year         = {2015},
+  urldate      = {2026-09-15},
+  note         = {Comparison of the template held on the user's card with the presented palm takes place directly in the terminal. No threshold or security-level parameter appears in public material. Fujitsu notes that solution logic may run on the terminal or, partially or completely, on the host depending on the deployment architecture. Product page: \url{https://www.fujitsu.com/my/solutions/business-technology/security/palmsecure/id-match/}}
+}
+
+@misc{invixium_ixm,
+  author       = {{Invixium}},
+  title        = {Understanding the Device Security Feature in {IXM} {WEB}},
+  howpublished = {\url{https://www.invixium.com/wp-content/uploads/2021/03/Understanding-the-Device-Security-feature-in-IXM-WEB.pdf}},
+  year         = {2021},
+  urldate      = {2026-09-15},
+  note         = {Covers the {IXM} {TITAN}, {TOUCH}~2 and {TFACE} multimodal terminals, which match on-device. Public documentation describes credential modes, {IP} restriction and device security policy, but no numeric matching threshold or discrete security level was located. Treated as unverified rather than confirmed absent. Vendor: \url{https://www.invixium.com/}}
+}
+
+@misc{hid_digitalpersona4500,
+  author       = {{HID Global}},
+  title        = {{HID} {DigitalPersona} 4500 Fingerprint Reader Datasheet},
+  howpublished = {\url{https://www.dpsdk.jp/documents/202103\%20DS\%20En\%20U.are.U\%204500\%20Reader.pdf}},
+  year         = {2021},
+  urldate      = {2026-09-15},
+  note         = {Optical {USB} reader, 512~dpi, 14.6 x 18.1~mm capture area, 8-bit grayscale. Capture only; the FingerJet matcher runs on the host. Vendor: \url{https://www.hidglobal.com/products/4500-fingerprint-reader}}
+}
+
+@misc{hid_uareu_sdk,
+  author       = {{HID Global}},
+  title        = {{U.are.U} {SDK} Developer Guide},
+  howpublished = {\url{https://descargas.diprotec.cl/contenido/drivers/Digital-Persona/UAreU-4500/U.are.U_SDK_Developer_Guide.pdf}},
+  year         = {2019},
+  urldate      = {2026-09-15},
+  note         = {\texttt{dpfj\_identify} accepts an explicit numeric threshold on a $[0, 2^{31}-1]$ dissimilarity scale, with a published mapping (2147483 = {FPIR} 1/1,000; 214748 = 1/10,000; 21474 = 1/100,000; 2147 = 1/1,000,000). \texttt{dpfj\_compare} returns a raw dissimilarity score for calibration. Mirror copy; the vendor original is gated}
+}
+
+@misc{secugen_hamsterpro20,
+  author       = {{SecuGen}},
+  title        = {Hamster Pro 20 ({HU20}) Fingerprint Reader Datasheet},
+  howpublished = {\url{https://www.cardlogix.com/wp-content/uploads/SecuGen-Hamster-Pro-20-fingerprint-scanner-hu20-a-datasheet.pdf}},
+  year         = {2021},
+  urldate      = {2026-09-15},
+  note         = {500~{DPI} optical {USB} reader. {FBI} {PIV}-071006, {FBI} Mobile {ID} {FAP}~20, {FIPS}~201, {NIST} {MINEX} certified. Capture only; matching runs on the host. Vendor: \url{https://secugen.com/products/hamster-pro-20/}}
+}
+
+@misc{secugen_fdx_sdk,
+  author       = {{SecuGen}},
+  title        = {{FDx} {SDK} Pro for Windows Programming Manual},
+  howpublished = {\url{https://www.ravirajtech.com/downloads/FDx-SDK-Pro-for-Windows-secugen/FDx-SDK-Pro-for-Windows-v3.54/FDx\%20SDK\%20Pro\%20for\%20Windows\%20v3.54/Documents/FDxSDK-Pro-Programming-Manual-Windows-SG1-0030A-013.pdf}},
+  year         = {2020},
+  urldate      = {2026-09-15},
+  note         = {\texttt{SGFPM\_GetMatchingScore} returns a raw integer score on $[0,199]$ and makes no accept/reject decision; the manual documents setting a minimum score threshold in place of a security level. Distributor-hosted copy}
+}
+
+@misc{suprema_biominislim2,
+  author       = {{Suprema}},
+  title        = {{BioMini} Slim~2 Fingerprint Scanner Datasheet},
+  howpublished = {\url{https://www.biometricsupply.com/brochures/suprema-biomini-slim-2.pdf}},
+  year         = {2020},
+  urldate      = {2026-09-15},
+  note         = {Optical, 500~ppi, {FAP20} / {FBI} {PIV} / {FIPS}~201 certified, machine-learning live finger detection. Capture only; matching runs in the host {SDK}. Specification summary: \url{https://www.sourcesecurity.com/suprema-biomini-slim-2-access-control-reader-technical-details.html}}
+}
+
+@misc{zkteco_slk20r,
+  author       = {{ZKTeco}},
+  title        = {{SLK20R} Fingerprint Reader Datasheet},
+  howpublished = {\url{https://zkteco.eu/sites/default/files/content/downloads/slk20r_data_sheet.pdf}},
+  year         = {2021},
+  urldate      = {2026-09-15},
+  note         = {Optical reader, 500--1000~dpi, {FAP20} effective area, live finger detection. The datasheet specifies image output only; matching runs in the host {SDK}, which accepts a numeric threshold argument. The companion {ZK9500} is the variant without live finger detection: \url{https://zkteco.systems/en/product/zk9500/}}
+}
+
+@misc{mantra_mfs100,
+  author       = {{Mantra Softech}},
+  title        = {{MFS100} Fingerprint Scanner Datasheet},
+  howpublished = {\url{https://media.radiumbox.com/public/images/mantra-mfs100-datasheet.pdf}},
+  year         = {2020},
+  urldate      = {2026-09-15},
+  note         = {500~dpi optical {USB} scanner supporting the Aadhaar Authentication {API} v2.0 with a {UIDAI}-certified {RD} Service. Capture only; matching occurs via the host {SDK} or the {RD} service}
+}
+
+@misc{fujitsu_fproplus,
+  author       = {{Fujitsu Frontech}},
+  title        = {{PalmSecure}-{F} {Pro}+ Data Sheet},
+  howpublished = {\url{https://info.archives.global.fujitsu/jp/group/frontech/en/documents/solutions/business-technology/security/palmsecure/F-ProPlus_data_sheet_20250606.pdf}},
+  year         = {2025},
+  urldate      = {2026-09-15},
+  note         = {Contactless palm vein sensor. The datasheet states the device works in combination with applications that support palm vein authentication, not by the sensor itself; matching runs in the licensed host Authentication Library. Distinct from the {PalmSecure} {ID} Match terminal, which does match on-device}
+}
+
+@misc{hitachi_h1,
+  author       = {{Hitachi}},
+  title        = {Finger Vein {ID} Scanner {H-1} Data Sheet},
+  howpublished = {\url{https://digitalsecurity.hitachi.eu/wp-content/uploads/2017/06/FVID-Scanner-H1-Data-Sheet.pdf}},
+  year         = {2017},
+  urldate      = {2026-09-15},
+  note         = {Transmissive near-infrared finger vein scanner ({PC-KCA100}/{PC-KCA110}). On-board {SDRAM} holds templates transiently, but the {FVAE} matching engine and persistent template storage reside on the host. Vendor: \url{https://www.hitachi.com/products/it/veinid/products/logical_access.html}}
+}
+
+@misc{cmitech_bmt20,
+  author       = {{CMITech}},
+  title        = {{BMT-20} Binocular Dual Iris Imager Data Sheet},
+  howpublished = {\url{https://www.cmi-tech.com/wp-content/uploads/2018/06/cmitech-data_sheet-bmt-20-2019.pdf}},
+  year         = {2019},
+  urldate      = {2026-09-15},
+  note         = {Dual-iris enrollment imager, 640 x 480 8-bit per eye, {IP64}. Capture only; matching runs in the host {SDK}, for example Neurotechnology {MegaMatcher} or {VeriEye}: \url{https://neurotechnology.com/eye-iris-scanner-cmitech-bmt-20.html}}
+}
+
+@misc{dfrobot_sen0626,
+  author       = {{DFRobot}},
+  title        = {{SEN0626} Gravity Offline Edge {AI} Gesture and Face Detection Sensor},
+  howpublished = {\url{https://wiki.dfrobot.com/SKU_SEN0626_Gesture_and_Face_Detection_Module}},
+  year         = {2026},
+  urldate      = {2026-09-15},
+  note         = {Face \emph{detection} only: no template store, no identity matching and no accept/reject verdict. \texttt{setFaceDetectThreshold} (0--100, default 60) and \texttt{getFaceScore} govern detection confidence rather than authentication, so the device cannot serve as a credential. {API} reference: \url{https://wiki.dfrobot.com/sen0626/docs/23020}}
+}
