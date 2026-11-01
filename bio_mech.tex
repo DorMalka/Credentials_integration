@@ -54,17 +54,17 @@
 %%% 
 \emph{Biometric credentials} are prevalent in modern authentication: 
 Sensors evaluate a measurement and output \emph{accept} if it is above a \emph{match threshold} or \emph{reject} otherwise. 
-A large body of work improves the accuracy of biometric sensors, but the state-of-the-art uses a heuristic threshold and does not consider their integration into \emph{authentication mechanisms}. 
-Recent works design authentication mechanisms to maximize the probability that the mechanism accepts a user and rejects an attacker, but treat biometric credentials as \emph{atomic} (perfect match or reject, like passwords). 
+A large body of work improves the accuracy of biometric sensors, but the state-of-the-art uses heuristic thresholds and does not consider their integration into \emph{authentication mechanisms}. 
+Recent works design authentication mechanisms to maximize the probability that the mechanism accepts a user and rejects an attacker, but treat biometric credentials as \emph{atomic}: perfect match or reject, like passwords. 
 
-We model authentication mechanisms with both biometric and atomic credentials and prove that, in general, the optimal threshold differs from the common heuristic. 
-When the mechanism allows multiple authentication attempts, reusing a heuristic threshold reduces the success probability.
+We model authentication mechanisms with both biometric and atomic credentials and prove that, in general, the optimal threshold differs from the common heuristics. 
+When the mechanism allows multiple authentication attempts, reusing heuristic thresholds reduce the success probability.
 Moreover, the optimal threshold depends on the integration with other credentials and the number of attempts. 
 More surprisingly, combining a biometric credential with an atomic one always improves the success probability over using the atomic credential alone. 
 This holds even if the biometric credential is inaccurate.
 Using real biometric datasets, we quantify the gain from optimizing the threshold across different mechanisms.
 
-The implication is that biometric sensor vendors should change their interface so integrators can configure thresholds, resulting in better security of deployed authentication mechanisms.
+Yet, almost no commercial biometric sensor allows setting a specific threshold. Biometric sensor vendors should change their interface so integrators can configure thresholds, resulting in better security of deployed authentication mechanisms.
 \end{abstract}
 
 \section{Introduction}
