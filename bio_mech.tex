@@ -325,21 +325,6 @@ P_{\text{Success}}(M) =
 \Pr\big[\mathrm{decide}_M(\sigma^U)=1 \wedge \mathrm{decide}_M(\sigma^A)=0\big].
 \end{equation*}
 For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants access to a player if and only if all credentials are available to the player; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for every credential~$c_i$. In an \emph{OR mechanism}, the mechanism grants access to a player if at least one credential is available to the player; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for at least one credential~$c_i$.
-\section{Biometric Sensors Review}
-\label{sec:sensors_review}
-\noindent
-We assess how widely biometric sensors expose binary outcome, and whether they allow tuning the match threshold. We surveyed 32 commercially available biometric device families from 21 manufacturers.
-Devices were selected to span biometric features such as fingeprints, face, iris and palm. We classified each device along two axes. The first is \emph{decision locality}:
-whether the device performs matching and emits an accept/reject verdict itself, or merely captures a sample for a host matcher. Of the 33 families, 24 are self deciding while the remaining 9, are capture only and fall outside the threat model, as the matching threshold in those systems is by construction under the integrator's control~\cite{hid_digitalpersona4500,hid_uareu_sdk,secugen_hamsterpro20,secugen_fdx_sdk,suprema_biominislim2,zkteco_slk20r,mantra_mfs100,fujitsu_fproplus,hitachi_h1,cmitech_bmt20,dfrobot_sen0626}.
-
-The second axis is \emph{threshold exposure}: a device qualifies only if it allows tuning the match threshold as the decision boundary over its matching score. 
-We distinguish this from three weaker mechanisms that neither permits setting a specific score boundary. The first mechanism exposes a~\emph{target error rate}, where the integrator specifies a desired~\FAR or~\FRR and the device derives its own internal boundary without exposing the score scale~\cite{cmitech_ef45,idemia_morphoaccess_sigma,idemia_sigma_lite}. 
-The second, allow choosing a \emph{discrete security level}, a labeled or an unlabelled setting typically 1-5~\cite{grow_r307,grow_r503,grow_r502a,dfrobot_id809}, 1-9~\cite{nitgen_nac3000,nitgen_fim5360,virdi_ac7000}, High/Medium/Low~\cite{realsense_id,suprema_biostation3,suprema_facestationf2} or selected~\FAR discrete values~\cite{suprema_uf_protocol,suprema_sfm5500}. 
-The third mechanism exposes no threshold parameter of any kind~\cite{adhtech_gt521f,fpc_bmlite,iritech_irishield,mofiria_fvau4st,irisid_icam7000,fujitsu_idmatch,invixium_ixm}.
-
-Applying the threshold exposure criterion, reduces the entire surveyed space into only 2 out of the 24 self deciding families. Those families,  comprising 6 individual models, permit setting an arbitrary numeric matching score threshold on the underlying matching score~\cite{zkteco_threshold_manual,zkteco_speedface_v5l,zkteco_terminal_manual,hikvision_dsk1t342,hikvision_isapi}.
-
-The practical consequence is that today's authentication mechanisms are built atop a self-deciding biometric device and cannot, in the overwhelming majority of cases, tune the match threshold it inherits. Thus, biometric sensor vendors should change the devices interface, allowing integrators to tune the match threshold of the biometric credential. This correspondant to their demands and as part of the other credentials used in the mechanism.
 
 \section{Mechanisms}\label{sec:mechanisms}
 We explore optimal mechanism success probability with a single biometric credential. We start with first~$(\S\ref{sec:uniform_biocred})$ and second~$(\S\ref{sec:quadratic_biocred})$ order approximations.
@@ -3459,6 +3444,95 @@ circles represent the user and red squares represent the attacker.
 The constraint applies to the complete policy.}
 \label{fig:mean_limits_comparison}
 \end{figure}
+
+\section{Biometric Sensors Review}
+\label{sec:sensors_review}
+\noindent
+We assess how widely biometric sensors expose binary outcome, and whether they allow tuning the match threshold. 
+We iteratively searched vendors specifications for commercially available biometric sensors, spanning fingerprints, face, iris and palm. We identified 32 commercially available biometric device families from 21 manufacturers and classified each device along two criteria. The first is \emph{on sensor decision}:
+whether the device performs matching and emits an accept/reject verdict itself, or merely captures a sample for a host matcher. Of the 32 families, 23 are self deciding while the remaining 9, are capture only. A capture only sensor exposes either the biometric data, matching score or the sample itself. Exposing the biometric data or matching score, can facilitate hill-climbing attacks, in which an attacker repeatedly modifies a biometric sample based on score feedback until the system accepts it~\cite{Bringer2018PrivateByDesign}. Furthermore, exposing the biometric samples creates privacy risks, as they may be reused to identify users across services without their knowledge or consent~\cite{FIDOPrivacyPrinciples}. For these reasons, we exclude these 9 families and focus on sensors that expose only an accept/reject decision. 
+
+The second criterion is \emph{threshold exposure}: a device qualifies only if it allows tuning the match threshold.
+We distinguish this from three weaker methods, none of which permits setting a specific match threshold. The first method exposes a~\emph{target error rate}, where the integrator specifies a desired~\FAR or~\FRR value. Since~\FAR and~\FRR are functions of the match threshold, specifying a target error rate does not allow the integrator to determine the corresponding threshold, unless these functions are known. Instead, the device selects the threshold internally without exposing its value. 
+The second, allow choosing a \emph{discrete security level}, a labeled or an unlabelled setting typically~1-5,~1-9,~High/Medium/Low or selected~\FAR discrete values. 
+The third method exposes no threshold parameter of any kind.
+
+Applying the threshold exposure criterion, reduces the entire surveyed space into only 2 out of the 23 self deciding families. Those families,  comprising 6 individual models, permit setting an arbitrary numeric match threshold~(Table~\ref{tab:device_survey}). 
+
+The practical consequence is that today's authentication mechanisms are built atop a self-deciding biometric sensor and cannot, in 21 of the 23 families we surveyed, tune the match threshold it inherits. Thus, biometric sensor vendors should change the sensors interface, allowing integrators to tune the match threshold of the biometric credential. This correspondent to their demands and as part of the other credentials used in the mechanism.
+
+% ---------------------------------------------------------------------------
+% Comparison of surveyed biometric device families.
+% Requires: booktabs only. Spans both columns (table*).
+% Families sharing a manufacturer, modality and threshold mechanism share a row;
+% group headings give the family count, which exceeds the row count.
+% ---------------------------------------------------------------------------
+
+\begin{table*}[t]
+\centering
+\caption{Surveyed biometric device families, grouped by threshold exposure.
+On-sensor column indicates the device performs matching and emits an accept/reject
+verdict itself. Families from one manufacturer sharing a modality and threshold
+mechanism are listed on a single row.}
+\label{tab:device_survey}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{Device family} & \textbf{Manufacturer} & \textbf{Modality} & \textbf{On-sensor} & \textbf{Threshold exposure} & \textbf{Ref.} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Arbitrary match threshold (2 families, 6 models)}} \\
+\midrule
+{F18}, {SpeedFace-V5L}, {MultiBio700}, {SF100}, {F21} & ZKTeco & FP / face / palm & Yes & Numeric score & \cite{zkteco_threshold_manual,zkteco_speedface_v5l,zkteco_terminal_manual} \\
+{DS-K1T342} series & Hikvision & Face / FP & Yes$^{\dagger}$ & Numeric score & \cite{hikvision_dsk1t342,hikvision_isapi} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Target error rate (2 families)}} \\
+\midrule
+{EF-45}, {EF-45N}, {EF-45NC}, {EF-45}~{AC} & CMITech & Iris / face & Yes & {FMR} $10^{-5}$--$10^{-14}$ & \cite{cmitech_ef45} \\
+{MorphoAccess} {SIGMA} Lite/Lite+/Wide/Extreme & IDEMIA & FP / face & Yes & {FAR} 1\%--$10^{-7}$\% & \cite{idemia_morphoaccess_sigma,idemia_sigma_lite} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Discrete security level (12 families)}} \\
+\midrule
+{R307} / {AS608}, {R503}, {R502-A} & Hangzhou Grow & FP & Yes & Level 1--5 & \cite{grow_r307,grow_r503,grow_r502a} \\
+{ID809} ({SEN0348} / {SEN0359}) & DFRobot & FP & Yes & Level 1--5 & \cite{dfrobot_id809} \\
+{NAC-3000}, Fingkey Access & NITGEN & FP & Yes & Level 1--9, per mode & \cite{nitgen_nac3000} \\
+{FIM5360} / {FIM6060} / {FIM5260} / {FIM4060} & NITGEN & FP & Yes & Level, per user & \cite{nitgen_fim5360} \\
+{AC-7000} & Union Community & Face / FP & Yes & Level 1--9, per mode & \cite{virdi_ac7000} \\
+{ID} {F450} / {F455} & RealSense & Face & Yes & High/Med/Low & \cite{realsense_id} \\
+{BioStation}~3, {FaceStation}~{F2} & Suprema & Face / FP & Yes & Level, not enumerated & \cite{suprema_biostation3,suprema_facestationf2} \\
+{SFM} Slim, {SFM5500} & Suprema & FP & Yes & {FAR} values, per user & \cite{suprema_uf_protocol,suprema_sfm5500} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{No threshold parameter (7 families)}} \\
+\midrule
+{GT-521F32} / {GT-521F52} & ADH-Tech & FP & Yes & None & \cite{adhtech_gt521f} \\
+{BM-Lite} ({SafeTouch}) & Fingerprint Cards & FP & Yes & None & \cite{fpc_bmlite} \\
+{IriShield} {MK}~2120{U} / {UL} & IriTech & Iris & Yes & Not documented & \cite{iritech_irishield} \\
+{FVA-U4ST} & mofiria & Finger vein & Yes & Not documented & \cite{mofiria_fvau4st} \\
+{iCAM7000} series & Iris ID & Iris & Mode-dep.$^{\ddagger}$ & Not documented & \cite{irisid_icam7000} \\
+{PalmSecure} {ID} Match & Fujitsu & Palm vein & Yes & Not documented & \cite{fujitsu_idmatch} \\
+{IXM} {TITAN} / {TOUCH}~2 / {TFACE} & Invixium & Face / FP / vein & Yes & Unverified & \cite{invixium_ixm} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Capture only --- outside scope (9 families)}} \\
+\midrule
+{DigitalPersona} 4500 & HID Global & FP & No & Host: numeric & \cite{hid_digitalpersona4500,hid_uareu_sdk} \\
+Hamster Pro 20 ({HU20}) & SecuGen & FP & No & Host: score 0--199 & \cite{secugen_hamsterpro20,secugen_fdx_sdk} \\
+{BioMini} Slim~2 & Suprema & FP & No & Host {SDK} & \cite{suprema_biominislim2} \\
+{ZK9500} / {SLK20R} & ZKTeco & FP & No & Host {SDK} & \cite{zkteco_slk20r} \\
+{MFS100} & Mantra Softech & FP & No & Host {SDK} / {RD} service & \cite{mantra_mfs100} \\
+{PalmSecure}-{F} {Pro}+ & Fujitsu & Palm vein & No & Host library & \cite{fujitsu_fproplus} \\
+{H-1} ({PC-KCA100}/{110}) & Hitachi & Finger vein & No & Host engine & \cite{hitachi_h1} \\
+{BMT-20} & CMITech & Iris & No & Host {SDK} & \cite{cmitech_bmt20} \\
+{SEN0626} & DFRobot & Face & No matcher & n/a$^{\S}$ & \cite{dfrobot_sen0626} \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+\footnotesize
+$^{\dagger}$Self-deciding only in Terminal Authentication Mode; in Reader
+Authentication Mode the decision is delegated to an upstream controller.
+$^{\ddagger}$On-device matching is one of three selectable operating modes.
+$^{\S}$Face detection only: no template store and no identity decision.
+\end{table*}
 
 \section{Conclusion}\label{sec:conclusion}
 \noindent
