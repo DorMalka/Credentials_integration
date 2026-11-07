@@ -57,14 +57,9 @@ Sensors evaluate a measurement and output \emph{accept} if it is above a \emph{m
 A large body of work improves the accuracy of biometric sensors, but the state-of-the-art uses heuristic thresholds and does not consider their integration into \emph{authentication mechanisms}. 
 Recent works design authentication mechanisms to maximize the probability that the mechanism accepts a user and rejects an attacker, but treat biometric credentials as \emph{atomic}: perfect match or reject, like passwords. 
 
-We model authentication mechanisms with both biometric and atomic credentials and prove that, in general, the optimal threshold differs from the common heuristics. 
-When the mechanism allows multiple authentication attempts, reusing heuristic thresholds reduce the success probability.
-Moreover, the optimal threshold depends on the integration with other credentials and the number of attempts. 
-More surprisingly, combining a biometric credential with an atomic one always improves the success probability over using the atomic credential alone. 
-This holds even if the biometric credential is inaccurate.
-Using real biometric datasets, we quantify the gain from optimizing the threshold across different mechanisms.
+We model authentication mechanisms with both biometric and atomic credentials and show that, in general, the optimal threshold differs from the common heuristics. It should change for a single credential, but still be different depending on the mechanism. In a multiple-attempt authentication mechanism, each attempt's threshold should be different for optimal results. When the biometric credential is used with an atomic one, it can always improve the mechanism success probability over using the atomic credential alone. This holds even if the biometric credential is inaccurate. Using real biometric datasets, we find that reusing heuristic thresholds reduces the success probability across different mechanisms.
 
-Yet, almost no commercial biometric sensor allows setting a specific threshold. Biometric sensor vendors should change their interface so integrators can configure thresholds, resulting in better security of deployed authentication mechanisms.
+Yet, our survey of commercial biometric sensors finds that almost none allow setting a specific threshold. Biometric sensor vendors should change their interface so integrators can configure thresholds, resulting in better security of deployed authentication mechanisms.
 \end{abstract}
 
 \section{Introduction}
@@ -3326,96 +3321,23 @@ The constraint applies to the complete policy.}
 \label{fig:mean_limits_comparison}
 \end{figure}
 
-\section{Biometric Sensors Review}
+\section{Biometric Sensors Survey}
 \label{sec:sensors_review}
 \noindent
 We assess how widely biometric sensors expose binary outcome, and whether they allow tuning the match threshold. 
-We iteratively searched vendors specifications for commercially available biometric sensors, spanning fingerprints, face, iris and palm. We identified 32 biometric device families from 21 manufacturers and classified each family according to two criteria that reflect our model’s requirements.
+We searched online for vendors specifications of commercially available biometric sensors, spanning fingerprints, face, iris and palm. We identified 32 biometric device families from 21 manufacturers and classified each family according to two criteria that reflect our model’s requirements.
 
 The first criterion is \emph{on sensor decision}:
-whether the device performs matching and emits an accept/reject verdict itself, or merely captures a sample for a host matcher. Of the 32 families, 23 are self deciding while the remaining 9, are capture only. A capture only sensor exposes either the biometric data, matching score or the sample itself. Revealing the biometric data or matching score, can facilitate hill-climbing attacks, in which an attacker repeatedly modifies a biometric sample based on score feedback until the system accepts it~\cite{Bringer2018PrivateByDesign}. Furthermore, exposing the biometric samples creates privacy risks, as they may be reused to identify users across services without their knowledge or consent~\cite{FIDOPrivacyPrinciples}. For these reasons, we exclude these 9 families and focus on sensors that expose only an accept/reject decision. 
+whether the device performs matching and emits an accept/reject verdict itself, or merely captures a sample for a host matcher. Of the 32 families, 23 makes on sensor decision while the remaining 9 are capture only. A capture only sensor exposes either the biometric data, matching score or the sample itself. Revealing the biometric data or matching score, can facilitate hill-climbing attacks, in which an attacker repeatedly modifies a biometric sample based on score feedback until the system accepts it~\cite{Bringer2018PrivateByDesign}. Furthermore, exposing the biometric samples creates privacy risks, as they may be reused to identify users across services without their knowledge or consent~\cite{FIDOPrivacyPrinciples}. For these reasons, we exclude these 9 families and focus on sensors that expose only an accept/reject decision. 
 
 The second criterion is \emph{threshold exposure}: whether the device allows the integrator to set a numberic match threshold.
 We distinguish this capability from three weaker methods, none of which permits setting a specific match threshold. The first method exposes a~\emph{target error rate}, where the integrator specifies a desired~\FAR or~\FRR value. Since~\FAR and~\FRR are functions of the match threshold, specifying a target error rate does not allow the integrator to determine the corresponding threshold, unless these functions are known. Instead, the device selects the threshold internally without exposing its value. 
-The second method, allow choosing a \emph{discrete security level}, a labeled or an unlabelled setting, such as~1-5,~1-9,~High/Medium/Low or selected~\FAR discrete values. 
-The third method exposes no threshold parameter of any kind.
+The second method, allow choosing a \emph{discrete security level}, a labeled or an unlabelled setting, such as~1-5,~1-9,~High/Medium/Low or selected~\FAR discrete values. The integrator is therefore limited to a few fixed levels that influence the match threshold without setting it directly, and the optimal threshold may not be among them. Moreover, even when a level is labelled with its error rate, the corresponding threshold value behind it is not exposed, so no match threshold outside the vendor’s set can be reached.
+The third method exposes no threshold parameter of any kind, leaving the integrator with the single match threshold the vendor chose.
 
-Applying the threshold exposure criterion, reduces the entire surveyed space into only 2 out of the 23 self deciding families. Those families, comprising 6 individual models, permit setting an arbitrary numeric match threshold~(Table~\ref{tab:device_survey}). 
+Applying the threshold exposure criterion, reduces the entire surveyed space into only 2 out of the 23 self deciding families. Those families, comprising 6 individual models, permit setting an arbitrary numeric match threshold. The detailed list is in Appendix~\ref{app:Bio_table}. 
 
 The practical consequence is that today's authentication mechanisms are built atop a self-deciding biometric sensor and cannot, in 21 of the 23 families we surveyed, tune the match threshold it inherits. To support threshold optimization, biometric sensor vendors should provide interfaces that allow integrators to tune the match threshold of the biometric credential. This would allow integrators to select thresholds according to the their requirements, and as part of the other credentials used in the mechanism.
-
-% ---------------------------------------------------------------------------
-% Comparison of surveyed biometric device families.
-% Requires: booktabs only. Spans both columns (table*).
-% Families sharing a manufacturer, modality and threshold mechanism share a row;
-% group headings give the family count, which exceeds the row count.
-% ---------------------------------------------------------------------------
-
-\begin{table*}[t]
-\centering
-\caption{Surveyed biometric device families, grouped by threshold exposure.
-On-sensor column indicates the device performs matching and emits an accept/reject
-verdict itself. Families from one manufacturer sharing a modality and threshold
-mechanism are listed on a single row.}
-\label{tab:device_survey}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llllll@{}}
-\toprule
-\textbf{Device family} & \textbf{Manufacturer} & \textbf{Modality} & \textbf{On-sensor} & \textbf{Threshold exposure} & \textbf{Ref.} \\
-\midrule
-\multicolumn{6}{@{}l}{\textit{Arbitrary match threshold (2 families, 6 models)}} \\
-\midrule
-{F18}, {SpeedFace-V5L}, {MultiBio700}, {SF100}, {F21} & ZKTeco & FP / face / palm & Yes & Numeric score & \cite{zkteco_threshold_manual,zkteco_speedface_v5l,zkteco_terminal_manual} \\
-{DS-K1T342} series & Hikvision & Face / FP & Yes$^{\dagger}$ & Numeric score & \cite{hikvision_dsk1t342,hikvision_isapi} \\
-\midrule
-\multicolumn{6}{@{}l}{\textit{Target error rate (2 families)}} \\
-\midrule
-{EF-45}, {EF-45N}, {EF-45NC}, {EF-45}~{AC} & CMITech & Iris / face & Yes & {FMR} $10^{-5}$--$10^{-14}$ & \cite{cmitech_ef45} \\
-{MorphoAccess} {SIGMA} Lite/Lite+/Wide/Extreme & IDEMIA & FP / face & Yes & {FAR} 1\%--$10^{-7}$\% & \cite{idemia_morphoaccess_sigma,idemia_sigma_lite} \\
-\midrule
-\multicolumn{6}{@{}l}{\textit{Discrete security level (12 families)}} \\
-\midrule
-{R307} / {AS608}, {R503}, {R502-A} & Hangzhou Grow & FP & Yes & Level 1--5 & \cite{grow_r307,grow_r503,grow_r502a} \\
-{ID809} ({SEN0348} / {SEN0359}) & DFRobot & FP & Yes & Level 1--5 & \cite{dfrobot_id809} \\
-{NAC-3000}, Fingkey Access & NITGEN & FP & Yes & Level 1--9, per mode & \cite{nitgen_nac3000} \\
-{FIM5360} / {FIM6060} / {FIM5260} / {FIM4060} & NITGEN & FP & Yes & Level, per user & \cite{nitgen_fim5360} \\
-{AC-7000} & Union Community & Face / FP & Yes & Level 1--9, per mode & \cite{virdi_ac7000} \\
-{ID} {F450} / {F455} & RealSense & Face & Yes & High/Med/Low & \cite{realsense_id} \\
-{BioStation}~3, {FaceStation}~{F2} & Suprema & Face / FP & Yes & Level, not enumerated & \cite{suprema_biostation3,suprema_facestationf2} \\
-{SFM} Slim, {SFM5500} & Suprema & FP & Yes & {FAR} values, per user & \cite{suprema_uf_protocol,suprema_sfm5500} \\
-\midrule
-\multicolumn{6}{@{}l}{\textit{No threshold parameter (7 families)}} \\
-\midrule
-{GT-521F32} / {GT-521F52} & ADH-Tech & FP & Yes & None & \cite{adhtech_gt521f} \\
-{BM-Lite} ({SafeTouch}) & Fingerprint Cards & FP & Yes & None & \cite{fpc_bmlite} \\
-{IriShield} {MK}~2120{U} / {UL} & IriTech & Iris & Yes & Not documented & \cite{iritech_irishield} \\
-{FVA-U4ST} & mofiria & Finger vein & Yes & Not documented & \cite{mofiria_fvau4st} \\
-{iCAM7000} series & Iris ID & Iris & Mode-dep.$^{\ddagger}$ & Not documented & \cite{irisid_icam7000} \\
-{PalmSecure} {ID} Match & Fujitsu & Palm vein & Yes & Not documented & \cite{fujitsu_idmatch} \\
-{IXM} {TITAN} / {TOUCH}~2 / {TFACE} & Invixium & Face / FP / vein & Yes & Unverified & \cite{invixium_ixm} \\
-\midrule
-\multicolumn{6}{@{}l}{\textit{Capture only --- outside scope (9 families)}} \\
-\midrule
-{DigitalPersona} 4500 & HID Global & FP & No & Host: numeric & \cite{hid_digitalpersona4500,hid_uareu_sdk} \\
-Hamster Pro 20 ({HU20}) & SecuGen & FP & No & Host: score 0--199 & \cite{secugen_hamsterpro20,secugen_fdx_sdk} \\
-{BioMini} Slim~2 & Suprema & FP & No & Host {SDK} & \cite{suprema_biominislim2} \\
-{ZK9500} / {SLK20R} & ZKTeco & FP & No & Host {SDK} & \cite{zkteco_slk20r} \\
-{MFS100} & Mantra Softech & FP & No & Host {SDK} / {RD} service & \cite{mantra_mfs100} \\
-{PalmSecure}-{F} {Pro}+ & Fujitsu & Palm vein & No & Host library & \cite{fujitsu_fproplus} \\
-{H-1} ({PC-KCA100}/{110}) & Hitachi & Finger vein & No & Host engine & \cite{hitachi_h1} \\
-{BMT-20} & CMITech & Iris & No & Host {SDK} & \cite{cmitech_bmt20} \\
-{SEN0626} & DFRobot & Face & No matcher & n/a$^{\S}$ & \cite{dfrobot_sen0626} \\
-\bottomrule
-\end{tabular}
-
-\vspace{2pt}
-\footnotesize
-$^{\dagger}$Self-deciding only in Terminal Authentication Mode; in Reader
-Authentication Mode the decision is delegated to an upstream controller.
-$^{\ddagger}$On-device matching is one of three selectable operating modes.
-$^{\S}$Face detection only: no template store and no identity decision.
-\end{table*}
 
 \section{Conclusion}\label{sec:conclusion}
 \noindent
@@ -3499,6 +3421,82 @@ We have showed that~$\forall c>0$ either~$\frac{\FAR(t)}{1-\FRR(t)} < c$ or $\fr
 
 This proof is non trivial, as the integration of an atomic credential mechanism with another atomic credential, does not necessarily produce a new mechanism with higher success probability. Moreover, we have shown that integrating a biometric credential into an atomic credential mechanism without adjusting the match threshold~$t$ may reduce the mechanism's success probability~$(\S\ref{sec:atm_biocred})$. Thus, Proposition~\ref{thm:suf_nec_cond_for_improve} and Proposition~\ref{thm:biometric-improves-security} emphasize the importance of adjusting the threshold when adding a biometric credential into an authentication mechanism.
 The \emph{asymptotically dominated} condition reflects practical scenarios, as for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We validate this claim with real public biometric data in Section~\ref{sec:empirical_evaluation}.
+
+\section{Biometric Sensors Survey Table}\label{app:Bio_table}
+\noindent
+Table~\ref{tab:device_survey} shows all the commercially available devices we surveyed. Rows are grouped by threshold exposure, from devices permitting an arbitrary match threshold down to those exposing none, followed by the capture-only devices outside our scope. The~\emph{On-sensor} column indicates whether the device performs matching and emits an accept/reject verdict itself. The~\emph{Threshold exposure} column gives the mechanism, if any, by which an integrator may influence the decision boundary. Families from one manufacturer sharing a modality and threshold mechanism are listed on a single row, so the family counts in the group headings exceed the number of rows. Each entry cites the vendor documentation from which its classification was drawn.
+% ---------------------------------------------------------------------------
+% Comparison of surveyed biometric device families.
+% Requires: booktabs only. Spans both columns (table*).
+% Families sharing a manufacturer, modality and threshold mechanism share a row;
+% group headings give the family count, which exceeds the row count.
+% ---------------------------------------------------------------------------
+
+\begin{table*}[t]
+\centering
+\caption{Surveyed biometric device families, grouped by threshold exposure.
+On-sensor column indicates the device performs matching and emits an accept/reject
+verdict itself. Families from one manufacturer sharing a modality and threshold
+mechanism are listed on a single row.}
+\label{tab:device_survey}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{Device family} & \textbf{Manufacturer} & \textbf{Modality} & \textbf{On-sensor} & \textbf{Threshold exposure} & \textbf{Ref.} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Arbitrary match threshold (2 families, 6 models)}} \\
+\midrule
+{F18}, {SpeedFace-V5L}, {MultiBio700}, {SF100}, {F21} & ZKTeco & FP / face / palm & Yes & Numeric score & \cite{zkteco_threshold_manual,zkteco_speedface_v5l,zkteco_terminal_manual} \\
+{DS-K1T342} series & Hikvision & Face / FP & Yes$^{\dagger}$ & Numeric score & \cite{hikvision_dsk1t342,hikvision_isapi} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Target error rate (2 families)}} \\
+\midrule
+{EF-45}, {EF-45N}, {EF-45NC}, {EF-45}~{AC} & CMITech & Iris / face & Yes & {FMR} $10^{-5}$--$10^{-14}$ & \cite{cmitech_ef45} \\
+{MorphoAccess} {SIGMA} Lite/Lite+/Wide/Extreme & IDEMIA & FP / face & Yes & {FAR} 1\%--$10^{-7}$\% & \cite{idemia_morphoaccess_sigma,idemia_sigma_lite} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Discrete security level (12 families)}} \\
+\midrule
+{R307} / {AS608}, {R503}, {R502-A} & Hangzhou Grow & FP & Yes & Level 1--5 & \cite{grow_r307,grow_r503,grow_r502a} \\
+{ID809} ({SEN0348} / {SEN0359}) & DFRobot & FP & Yes & Level 1--5 & \cite{dfrobot_id809} \\
+{NAC-3000}, Fingkey Access & NITGEN & FP & Yes & Level 1--9, per mode & \cite{nitgen_nac3000} \\
+{FIM5360} / {FIM6060} / {FIM5260} / {FIM4060} & NITGEN & FP & Yes & Level, per user & \cite{nitgen_fim5360} \\
+{AC-7000} & Union Community & Face / FP & Yes & Level 1--9, per mode & \cite{virdi_ac7000} \\
+{ID} {F450} / {F455} & RealSense & Face & Yes & High/Med/Low & \cite{realsense_id} \\
+{BioStation}~3, {FaceStation}~{F2} & Suprema & Face / FP & Yes & Level, not enumerated & \cite{suprema_biostation3,suprema_facestationf2} \\
+{SFM} Slim, {SFM5500} & Suprema & FP & Yes & {FAR} values, per user & \cite{suprema_uf_protocol,suprema_sfm5500} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{No threshold parameter (7 families)}} \\
+\midrule
+{GT-521F32} / {GT-521F52} & ADH-Tech & FP & Yes & None & \cite{adhtech_gt521f} \\
+{BM-Lite} ({SafeTouch}) & Fingerprint Cards & FP & Yes & None & \cite{fpc_bmlite} \\
+{IriShield} {MK}~2120{U} / {UL} & IriTech & Iris & Yes & Not documented & \cite{iritech_irishield} \\
+{FVA-U4ST} & mofiria & Finger vein & Yes & Not documented & \cite{mofiria_fvau4st} \\
+{iCAM7000} series & Iris ID & Iris & Mode-dep.$^{\ddagger}$ & Not documented & \cite{irisid_icam7000} \\
+{PalmSecure} {ID} Match & Fujitsu & Palm vein & Yes & Not documented & \cite{fujitsu_idmatch} \\
+{IXM} {TITAN} / {TOUCH}~2 / {TFACE} & Invixium & Face / FP / vein & Yes & Unverified & \cite{invixium_ixm} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Capture only --- outside scope (9 families)}} \\
+\midrule
+{DigitalPersona} 4500 & HID Global & FP & No & Host: numeric & \cite{hid_digitalpersona4500,hid_uareu_sdk} \\
+Hamster Pro 20 ({HU20}) & SecuGen & FP & No & Host: score 0--199 & \cite{secugen_hamsterpro20,secugen_fdx_sdk} \\
+{BioMini} Slim~2 & Suprema & FP & No & Host {SDK} & \cite{suprema_biominislim2} \\
+{ZK9500} / {SLK20R} & ZKTeco & FP & No & Host {SDK} & \cite{zkteco_slk20r} \\
+{MFS100} & Mantra Softech & FP & No & Host {SDK} / {RD} service & \cite{mantra_mfs100} \\
+{PalmSecure}-{F} {Pro}+ & Fujitsu & Palm vein & No & Host library & \cite{fujitsu_fproplus} \\
+{H-1} ({PC-KCA100}/{110}) & Hitachi & Finger vein & No & Host engine & \cite{hitachi_h1} \\
+{BMT-20} & CMITech & Iris & No & Host {SDK} & \cite{cmitech_bmt20} \\
+{SEN0626} & DFRobot & Face & No matcher & n/a$^{\S}$ & \cite{dfrobot_sen0626} \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+\footnotesize
+$^{\dagger}$Self-deciding only in Terminal Authentication Mode; in Reader
+Authentication Mode the decision is delegated to an upstream controller.
+$^{\ddagger}$On-device matching is one of three selectable operating modes.
+$^{\S}$Face detection only: no template store and no identity decision.
+\end{table*}
 
 \end{document}
 \endinput
