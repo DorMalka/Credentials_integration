@@ -2042,43 +2042,13 @@ Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,
 \section{Authentication with Multiple Attempts}
 \label{sec:multiple_auth_attempts}
 \noindent
-In biometric real world authentication, a mechanism commonly allows the player to retry consecutive biometric attempts following failure~\cite{Chen2023BrutePrint}. Thus, we consider an authentication mechanism that uses a biometric credential and allows the player~$P$ to make multiple authentication attempts. We formalize a policy that imposes the same limit on the number of attempts for both the legitimate user and the attacker~$(\S\ref{sec:equal_k_attempts})$. We then analyze the user's successful authentication probability within those limits and the mean number of attempts required for a user's first successful authentication~$(\S\ref{sec:mul_attempts_success})$. Finally, we examine the tradeoff between this mean and the mechanism's success probability subject to different constraints~$(\S\ref{sec:optimization_mul_attempts})$.
+In biometric real world authentication, a mechanism commonly allows the principal to retry following failure~\cite{Chen2023BrutePrint}, typically up to a bounded number of attempts before lockout~\cite{typical_aut_attempts}. Since retries change the mechanism and raise the success probability of users and attackers alike, the single attempt threshold is no longer optimal. We therefore formalize a mechanism that limits the number of attempts~$(\S\ref{sec:equal_k_attempts})$. Within that limit, the mechanism success probability alone is not enough, since the threshold optimization may require many attempts to succeed. Then, we analyze both the mechanism's success probability and the mean number of attempts required for a user's first successful authentication~$(\S\ref{sec:mul_attempts_success})$. As these two metrics conflict, we examine their tradeoff subject to different constraints~$(\S\ref{sec:optimization_mul_attempts})$.
 
-\subsection{Equal Numbers of User and Attacker Attempts}\label{sec:equal_k_attempts}
+\subsection{Predefined Numbers of Attempts}\label{sec:equal_k_attempts}
 \noindent
-We first consider a policy in which the mechanism allows at most~$k$ attempts. The user fails to authenticate if he is rejected in all~$k$ attempts. Each attempt~$j$ is independent, and the policy may use a different threshold~$t_j$ at every attempt. Thus, the probability that the user is rejected at an arbitrary single attempt~$j$ is~$\FRR(t_j)$. Therefore, the probability that the user is rejected across all~$k$ attempts is
-
-\begin{equation*}
-\Pr[\text{user is rejected in all }k\text{ attempts}]
-=
-\prod_{j=1}^{k}\FRR(t_j).
-\end{equation*}
-Let~$\mathbf{t}=(t_1,\ldots,t_k)$ denote the threshold vector of~$k$ attempts. Then, the probability that the user is accepted at least once is
-
-\begin{equation}\label{eqn:user_accepted_lst_once}
-P_U^{(k)}(\mathbf{t})
-=
-1-
-\prod_{j=1}^{k}\FRR(t_j).
-\end{equation}
-Mechanism success requires rejecting the attacker at every attempt. Since the attacker is rejected at an arbitrary attempt~$j$ with probability~$1-\FAR(t_j)$, the probability that the attacker is rejected across all~$k$ attempts is
-
-\begin{equation}\label{eqn:attacker_rejected_all_k}
-P_A^{\mathrm{reject},(k)}(\mathbf{t})
-=
-\prod_{j=1}^{k}
-\left(1-\FAR(t_j)\right).
-\end{equation}
-
-The authentication mechanism succeeds when the user is accepted at least once and the attacker is rejected in every attempt. Therefore, the overall success probability is
-
-\begin{equation*}
-P_{\mathrm{success}}^{(k)}(\mathbf{t})
-=
-P_U^{(k)}(\mathbf{t})
-P_A^{\mathrm{reject},(k)}(\mathbf{t}).
-\end{equation*}
-Substituting the two probabilities with Equation~\ref{eqn:user_accepted_lst_once} and Equation~\ref{eqn:attacker_rejected_all_k} give
+A deployed mechanism fixes its upper attempts number bound before any authentication takes place.
+We first consider a mechanism that allows at most~$k$ attempts, and show how changing the predefined attempts number~$k$ affects the mechanism success probability. The mechnanism may use a different threshold~$t_j$ at every attempt~$j$, and the user fails to authenticate if he is rejected in all~$k$ attempts. Thus, the probability that the user is rejected at an arbitrary single attempt~$j$ is~$\FRR(t_j)$ and the probability that the user is accepted at least once, is the probability it's not rejected in all~$k$ attempts:~$1-\prod_{j=1}^{k}\FRR(t_j).$
+Mechanism success requires rejecting the attacker at every attempt. Since the attacker is rejected at each attempt~$j$ with probability~$1-\FAR(t_j)$, the probability that the attacker is rejected in all~$k$ attempts is:~$\prod_{j=1}^{k}\left(1-\FAR(t_j)\right).$ The authentication mechanism succeeds when the user is accepted at least once and the attacker is rejected in every attempt. Therefore, the overall success probability is
 
 \begin{equation*}
 P_{\mathrm{success}}^{(k)}(\mathbf{t})
@@ -2090,22 +2060,12 @@ P_{\mathrm{success}}^{(k)}(\mathbf{t})
 \prod_{j=1}^{k}
 \left(1-\FAR(t_j)\right).
 \end{equation*}
-The~$\FRR(t_j) \le 1$ and $1-\FAR(t_j) \le 1$ for every attempt~$j$ and threshold~$t_j$. Thus, the products of~$\FRR(t_j)$ and the products of $1-\FAR(t_j)$ are both monotonically decreasing functions with~$k$. As a result, for a fixed thresholds selection, increasing the attempts number~$k$ increases the user probability to be accepted, while reduces the probability of the attacker to be rejected. Increasing~$k$ can therefore help the user gain access, but also increases the risk of accepting an attacker. The thresholds selection, when optimizing the success probability, must therefore balance these two effects.
+Both the~$\FRR(t_j)$ and $\FAR(t_j)$ error rates are, by definition, lower or equal than~1, for every attempt~$j$ and threshold~$t_j$. The products of~$\FRR(t_j)$ and the products of $1-\FAR(t_j)$ are both monotonically decreasing functions with~$k$. As a result, for a fixed thresholds selection, increasing the attempts number~$k$ increases the user probability to be accepted, while reducing the probability of the attacker to be rejected. Increasing~$k$ can therefore help the user gain access, but also increases the risk of accepting an attacker. The thresholds selection, when optimizing the success probability, must therefore balance these two effects.
 
-\subsection{User Successful Authentication Within~$k$ Attempts}\label{sec:mul_attempts_success}
+\subsection{User Authentication Within~$k$ Attempts}\label{sec:mul_attempts_success}
 \noindent
-We are interested not only in whether the legitimate user eventually authenticates, but also in how many attempts are required for user successful authentication.
-
-Let~$N_U$ denote the attempt number at which the legitimate user authenticates for the first time. Formally, if the user authenticates within the permitted attempts at attempt~$j$, then
-
-\begin{equation*}
-N_U
-=
-\min \Bigl\{
-j \in \{1,\ldots,k\}
-\Bigr\}.
-\end{equation*}
-
+We are now interested not only in whether the user eventually authenticates, but also in how many attempts it takes for a user successful authentication. We proceed in three steps. First, we derive the probability that the user's first successful authentication occurs at a given attempt, which yields the probability of authenticating within~$k$ attempts. Then, we consider the conditional attempt number given that the user successfully authenticates. Finally, we take the mean of this conditional distribution, obtaining the average number of attempts a user requires.
+Let~$N_U$ denote the attempt number at which the user authenticates for the first time.
 If the mechanism rejects the user in all~$k$ attempts, we define~$N_U =\infty$.
 The event~$\{N_U=j\}$ means that the user is rejected in attempts~$1,\ldots,j-1$ and is then accepted at attempt~$j$.
 Under the assumption that every authentication attempt is independent, the probability that the user authenticates for the first time at attempt~$j$ is therefore
@@ -2119,7 +2079,7 @@ Under the assumption that every authentication attempt is independent, the proba
 \left(1-\FRR(t_j)\right).
 \end{equation}
 This is the \emph{first success probability} that the user successfully authenticates specifically at attempt~$j$, having failed every preceding attempt.
-Summing the first success probabilities over all permitted attempts gives the probability that the user successfully authenticates within~$k$ attempts:
+Summing the first success probabilities over all permitted attempts gives the probability that the user successfully authenticates within~$k$ attempts: 
 
 \begin{equation*}
 \Pr[N_U\leq k]
@@ -2136,41 +2096,7 @@ Substituting the first success probabilities yields
 \right)
 \left(1-\FRR(t_j)\right).
 \end{equation*}
-Each summand can be written as the difference of two consecutive products:
-\begin{equation*}
-\left(\prod_{i=1}^{j-1}\FRR(t_i)\right)
-\left(1-\FRR(t_j)\right)
-=
-\prod_{i=1}^{j-1}\FRR(t_i)
--
-\prod_{i=1}^{j}\FRR(t_i).
-\end{equation*}
-Using the convention that an empty product equals~$1$, we obtain
-\begin{align*}
-\Pr[N_U\leq k]
-&=
-\sum_{j=1}^{k}
-\left(
-\prod_{i=1}^{j-1}\FRR(t_i)
--
-\prod_{i=1}^{j}\FRR(t_i)
-\right)\\
-&=
-\bigl(1-\FRR(t_1)\bigr)\\
-&\quad+
-\bigl(\FRR(t_1)-\FRR(t_1)\FRR(t_2)\bigr)\\
-&\quad+\cdots\\
-&\quad+
-\left(
-\prod_{i=1}^{k-1}\FRR(t_i)
--
-\prod_{i=1}^{k}\FRR(t_i)
-\right)\\
-&=
-1-\prod_{i=1}^{k}\FRR(t_i).
-\end{align*}
-Each negative product cancels with the positive product in the next
-summand, leaving only the first and last terms, thus
+As described in the previous section, this probability equals
 \begin{equation}\label{eq:auth_within_ku}
 \Pr[N_U\leq k]
 =
@@ -2310,6 +2236,7 @@ Equivalently, the constraint is
 \geq
 P'.
 \end{equation*}
+Without the constraint, this problem has a trivial solution: set every threshold to accept everything, and the user always succeeds on the first attempt. The mean is then~1, but so is the attacker’s success rate. The constraint~$P'$ rules this out. At the optimum, the constraint holds with equality. Any solution with a strictly higher success probability could trade that slack for a more permissive threshold and a lower mean. Thus, this optimization enforces a minimum security level while maximizing the usability within it. 
 
 We next maximize the mechanism's success probability subject to an upper
 bound on the conditional mean number of user authentication attempts.
@@ -2352,10 +2279,9 @@ j\left(\prod_{i=1}^{j-1}\FRR(t_i)\right)
 \end{equation*}
 We restrict the optimization to threshold vectors for which
 $P_U(\mathbf{t})>0$, so that the conditional mean is defined.
-This optimization selects the thresholds that maximize the probability
-that the legitimate user authenticates within~$k$ attempts and the attacker is rejected across all~$k$ attempts, while ensuring that successful user authentication sessions require at most~$\mu'$ attempts on average.
-The constraint bounds this conditional average rather than the number
-of attempts in every individual session.
+This optimization maximizes the mechanism’s success probability, while ensuring that successful user authentication sessions require at most~$\mu'$ attempts on average.
+
+Here the constraint plays a different role. Without the constraint, the optimization balances both the~\FRR and~\FAR, leading to a non trivial solution as described in~$(\S\ref{sec:equal_k_attempts})$. The constraint~$\mu'$ caps how long a successful user waits. Unlike the previous problem, this constraint may not bind at all: if the optimal threshold vector already lets users authenticate within~$\mu'$ attempts on average, nothing changes. When it does bind, the optimization enforces thresholds more permissive than the unconstrained problem, leading to a reduction in the overall success probability. Thus, this optimization fixes a usability budget and maximizes the mechanism's success probability within it.
 
 
 \section{Empirical Evaluation}\label{sec:empirical_evaluation}
