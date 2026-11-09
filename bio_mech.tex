@@ -50,15 +50,15 @@
 \begin{abstract}
 Modern authentication commonly uses \emph{biometric credentials} such as fingerprints and faces: 
 A sensor evaluates each scan and accepts if its score exceeds a \emph{match threshold}. 
-A large body of work improves sensor accuracy but sets this threshold heuristically. %, typically at the equal error rate~(EER), where false acceptance and false rejection are equally likely.
+A large body of work improves sensor accuracy but sets this threshold heuristically. 
 Recent work studies \emph{authentication mechanisms} that combine credentials to maximize the probability of accepting the user and rejecting the attacker. 
 But it treats every credentials as \emph{atomic}: presented correctly or not, like a password. 
 
 We model authentication mechanisms with both biometric and atomic credentials and show that, in general, the optimal threshold differs from the heuristic and depends on the mechanism. 
 We prove that a mechanism combining an atomic credential with an optimal-threshold biometric one is better than a mechanism using only the atomic credential; this holds even if the biometric credential is inaccurate. 
-Next, we consider mechanisms that allow multiple attempts as is common, for example, in fingerprint readers. 
+Next, we consider mechanisms that allow multiple attempts, as commonly appear, for example, in fingerprint readers. 
 We find that each attempt's threshold should be different. 
-Using public biometric-authentication datasets, we find that optimal thresholds can improve the success probability of multiple-attempt mechanisms by~76\% compared to the heuristic threshold. 
+Using public biometric datasets, we find that optimal thresholds can improve the success probability of multiple-attempt mechanisms by~76\% compared to the heuristic threshold. 
 
 Yet our survey of commercial sensors finds that almost none allow setting a specific threshold. 
 Based on our results, manufacturers should change their interface so integrators can deploy optimal authentication mechanisms.
