@@ -48,18 +48,20 @@
 \tableofcontents
 
 \begin{abstract}
-%%% 
-%%% 
-%%% 
-%%% 
-\emph{Biometric credentials} are prevalent in modern authentication: 
-Sensors evaluate a measurement and output \emph{accept} if it is above a \emph{match threshold} or \emph{reject} otherwise. 
-A large body of work improves the accuracy of biometric sensors, but the state-of-the-art uses heuristic thresholds and does not consider their integration into \emph{authentication mechanisms}. 
-Recent works design authentication mechanisms to maximize the probability that a mechanism accepts a user and rejects an attacker, but treat biometric credentials as \emph{atomic}: perfect match or reject, like passwords. 
+Modern authentication commonly uses \emph{biometric credentials} such as fingerprints and faces: 
+A sensor evaluates each scan and accepts if its score exceeds a \emph{match threshold}. 
+A large body of work improves sensor accuracy but sets this threshold heuristically. %, typically at the equal error rate~(EER), where false acceptance and false rejection are equally likely.
+Recent work studies \emph{authentication mechanisms} that combine credentials to maximize the probability of accepting the user and rejecting the attacker. 
+But it treats every credentials as \emph{atomic}: presented correctly or not, like a password. 
 
-We model authentication mechanisms with both biometric and atomic credentials and show that, in general, the optimal threshold differs from the heuristic depending on the mechanism it is used in. In a multiple-attempt authentication mechanism, each attempt's threshold should be different. When the biometric credential is used with an atomic one, it can always improve the mechanism success probability over using the atomic credential alone. We prove this holds even if the biometric credential is inaccurate. Using real biometric datasets, we find that optimal thresholds improve the success probability across multiple-attempt authentication mechanisms by up to~75\% compared to a heuristic threshold.
+We model authentication mechanisms with both biometric and atomic credentials and show that, in general, the optimal threshold differs from the heuristic and depends on the mechanism. 
+We prove that a mechanism combining an atomic credential with an optimal-threshold biometric one is better than a mechanism using only the atomic credential; this holds even if the biometric credential is inaccurate. 
+Next, we consider mechanisms that allow multiple attempts as is common, for example, in fingerprint readers. 
+We find that each attempt's threshold should be different. 
+Using public biometric-authentication datasets, we find that optimal thresholds can improve the success probability of multiple-attempt mechanisms by~76\% compared to the heuristic threshold. 
 
-Yet, our survey of commercial sensors finds that almost none allow setting a specific threshold. Vendors should change their interface so integrators can deploy optimal authentication mechanisms.
+Yet our survey of commercial sensors finds that almost none allow setting a specific threshold. 
+Based on our results, manufacturers should change their interface so integrators can deploy optimal authentication mechanisms.
 \end{abstract}
 
 \section{Introduction}
