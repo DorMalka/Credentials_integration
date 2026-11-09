@@ -3341,7 +3341,9 @@ Only 2 out of the 23 in-sensor decision families satisfy the threshold tuning cr
 exposure criterion: no vendor publishes~\FAR or~\FRR functions, so an
 integrator that can set a threshold still cannot determine which value to set. The detailed list is in Appendix~\ref{app:Bio_table}. 
 
-The practical consequence is that today's authentication mechanisms are built atop in-sensor decision devices and cannot, in 21 of the 23 families we surveyed, tune the match threshold they inherit. To support threshold optimization, biometric sensor vendors should provide interfaces that allow integrators to tune the match threshold of the biometric credential. This would allow integrators to select thresholds according to their requirements, and as part of the other credentials used in the mechanism.
+The practical consequence is that today's authentication mechanisms are built atop in-sensor decision devices and cannot, in any of the 23 families we surveyed, optimize the match threshold. In 21 of the 23 families we surveyed the threshold cannot be set at all, and in the remaining two it can be set but not informed, since the error-rate functions are not published. To support threshold optimization, vendors should expose both the match threshold and the~\FAR and~\FRR functions that characterize it. This would allow integrators to select thresholds according to their requirements, and as part of the other credentials used in the mechanism.
+
+
 
 \section{Conclusion}\label{sec:conclusion}
 \noindent
