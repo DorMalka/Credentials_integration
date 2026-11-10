@@ -324,6 +324,139 @@ P_{\text{Success}}(M) =
 \end{equation*}
 For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants access to a principal if and only if all credentials are available to the principal; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for every credential~$c_i$. In an \emph{OR mechanism}, the mechanism grants access to a principal if at least one credential is available to the principal; thus,~$\mathrm{decide}_M(\sigma^P)=1$ if ~$\sigma^P_i$ equals~1 for at least one credential~$c_i$.
 
+\section{Real Data and Approximations}
+\label{sec:real_data}
+\noindent
+We evaluate our model using the public real-world~\textit{LivDet2015} dataset of fingerprints~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}.
+This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors, as well as spoof samples produced from each user's fingerprints.
+We divide each user's scans into a reference set, simulating the reference scans stored in advance, and a candidate set, simulating the scans obtained by the sensor. 
+To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. 
+This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images.
+We compute a similarity score for each candidate scan by running the algorithm against each reference image, and choose the maximum score as the candidate's final score~\cite{hong1998,Cappelli2006,max_score2009}.
+
+We produce the user and attacker distributions under two baseline attack scenarios.
+In the first, an attacker authenticates using their own fingerprints~$(\S\ref{sec:baseline_attack})$. 
+The genuine comparisons are all comparisons between a user's candidate images and that user's reference images.
+By contrast, the impostor comparisons are all comparisons between a user's reference images and the scans of the other users in the database.
+In the second, an attacker creates a fake fingerprint using spoofing techniques~$(\S\ref{sec:spoofing_attack})$. 
+We match the fake fingerprint images of each user, produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex}, against that user's reference images to obtain the impostor score distribution.
+
+To symbolically analyze different mechanisms, we need to approximate the empirical score distributions with theoretical distribution functions.
+Evaluating different mechanisms requires the biometric credential's fault probabilities which are, as shown in~\ref{eqn:safe_prob}, determined by the~\FAR and~\FRR values. 
+We assess how closely theoretical distribution functions~$(\S\ref{sec:mechanisms})$ approximate the empirical results by fitting uniform, quadratic and normal distributions to the genuine and impostor score histograms of both scenarios.
+For each fitted distribution, we calculate the Kolmogorov-Smirnov~(KS) statistic~\cite{Massey1951}. 
+This statistic measures the maximum absolute difference between the empirical and fitted cumulative distribution functions, which are the~\FRR and~\FAR curves themselves.
+Figure~\ref{fig:approximations} presents the resulting~\FAR and~\FRR curves alongside the empirical values for both scenarios.
+The KS statistics range from~$0.04$ to~$0.07$ for the genuine scores and are approximately~$0.17$ for the impostor scores, providing empirical support for using our theoretical models as approximations of the observed score distributions.
+
+\begin{figure*}[t]
+\centering
+\pgfplotsset{
+    impostor curve/.style={thick, dashed},
+    genuine curve/.style={thick, solid},
+    uniform model/.style={purple},
+    quadratic model/.style={orange},
+    normal model/.style={cyan},
+    ksaxis/.style={
+        scale only axis,
+        width=0.86\linewidth,
+        height=0.40\linewidth,
+        xlabel={Threshold (\%)},
+        ylabel={Error Rate},
+        xmin=0, xmax=100,
+        ymin=0, ymax=1,
+        grid=major
+    }
+}
+
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ksaxis,
+    legend to name=kslegend,
+    legend columns=4,
+    legend style={draw=black, fill=white, font=\scriptsize}
+]
+\addplot[only marks, red, mark=*, mark size=1.3pt]
+table[x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Empirical \FAR}
+
+\addplot[only marks, blue, mark=*, mark size=1.3pt]
+table[x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Empirical \FRR}
+
+\addplot[impostor curve, uniform model]
+table[x=T, y=FAR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Uniform \FAR}
+
+\addplot[genuine curve, uniform model]
+table[x=T, y=FRR_uniform] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Uniform \FRR}
+
+\addplot[impostor curve, quadratic model]
+table[x=T, y=FAR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Quadratic \FAR}
+
+\addplot[genuine curve, quadratic model]
+table[x=T, y=FRR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Quadratic \FRR}
+
+\addplot[impostor curve, normal model]
+table[x=T, y=FAR_normal] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Normal \FAR}
+
+\addplot[genuine curve, normal model]
+table[x=T, y=FRR_normal] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+\addlegendentry{Normal \FRR}
+\end{axis}
+\end{tikzpicture}
+\caption{Different users.}
+\label{fig:ks_different_users}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[ksaxis]
+\addplot[only marks, red, mark=*, mark size=1.3pt]
+table[x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+
+\addplot[only marks, blue, mark=*, mark size=1.3pt]
+table[x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+
+\addplot[impostor curve, uniform model]
+table[x=T, y=FAR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+
+\addplot[genuine curve, uniform model]
+table[x=T, y=FRR_uniform] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+
+\addplot[impostor curve, quadratic model]
+table[x=T, y=FAR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+
+\addplot[genuine curve, quadratic model]
+table[x=T, y=FRR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+
+\addplot[impostor curve, normal model]
+table[x=T, y=FAR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+
+\addplot[genuine curve, normal model]
+table[x=T, y=FRR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+\end{axis}
+\end{tikzpicture}
+\caption{Spoofing attack.}
+\label{fig:ks_spoofing}
+\end{subfigure}
+
+\medskip
+\pgfplotslegendfromname{kslegend}
+
+\caption{Empirical~\FAR and~\FRR as functions of the threshold, compared
+with the uniform, quadratic and normal distribution functions obtained
+from the KS fits, under both attack scenarios.}
+\label{fig:approximations}
+\end{figure*}
+
 \section{Mechanisms}\label{sec:mechanisms}
 \noindent
 We explore optimal mechanism success probability with a single biometric credential. We start with first~$(\S\ref{sec:uniform_biocred})$ and second~$(\S\ref{sec:quadratic_biocred})$ order approximations.
@@ -2285,11 +2418,11 @@ We now empirically evaluate different mechanisms that use an atomic credential a
 
 \subsection{Baseline Attack Scenario}\label{sec:baseline_attack}
 \noindent
-To simulate a biometric credential, we use the public real-world~\textit{FVC2004} dataset of fingerprints, developed for the third international Fingerprint Verification Competition to compare fingerprint verification algorithms~\cite{fvc2004}. This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors. We divide each user's scans in the dataset into a reference set, simulating the reference scans stored in advance, and a probe set, simulating the scans obtained by the sensor. To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images. We evaluate all~10 users who appear in~$\textit{FVC2004}$ dataset whose fingerprints obtained by the same sensor. For each user, we randomly select three fingerprint scan images for the reference set, while the probe set comprises the remaining images in the dataset. We compute a similarity score for each probe scan by running the algorithm against each of the three reference images, and choose the maximum score as the probe's final score~\cite{hong1998,Cappelli2006,max_score2009}. The genuine comparisons are all comparisons between the user's probe images and the user's reference images. By contrast, the imposter comparisons are all comparisons between the users' reference images and the scans of the other users in the database.
+To simulate a biometric credential, we use the public real-world~\textit{LivDet2015} dataset of fingerprints to compare fingerprint verification algorithms~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}. This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors. We divide each user's scans in the dataset into a reference set, simulating the reference scans stored in advance, and a candidate set, simulating the scans obtained by the sensor. To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images. We evaluate all users who appear in~$\textit{LivDet2015}$ dataset whose fingerprints obtained by the same sensor. For each user, we randomly select five fingerprint scan images for the reference set, while the candidate set comprises the remaining images in the dataset. We compute a similarity score for each candidate scan by running the algorithm against each of the five reference images, and choose the maximum score as the candidate's final score~\cite{hong1998,Cappelli2006,max_score2009}. The genuine comparisons are all comparisons between the user's candidate images and the user's reference images. By contrast, the imposter comparisons are all comparisons between the users' reference images and the scans of the other users in the database.
 
 Calculating the mechanism's success probability requires the biometric credential's fault probabilities, which are functions of the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of the genuine and imposter comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:sourceafis_far_frr}.
 
-Before comparing different mechanisms, we validate that the algorithm's performance is representative of the state-of-the-art fingerprint verification algorithms. The algorithm we use achieves an~\EER of approximately~2\%, similar to the best results reported in the~\textit{FVC2004} competition~\cite{fvc2004}, and to those achieved by fingerprint systems used in industry and academia when evaluating different users~\cite{Maio2002,Cappelli2006}. We calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. 
+Before comparing different mechanisms, we validate that the algorithm's performance is representative of the state-of-the-art fingerprint verification algorithms. The algorithm we use achieves an~\EER of approximately~3.8\%, similar to the best results reported in the~\textit{LivDet2015}, and to those achieved by fingerprint systems used in industry and academia when evaluating different users~\cite{Maio2002,Cappelli2006}. We calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. 
 
 \newcommand{\sourceafisplotspanel}{%
 \begin{figure*}[!t]
