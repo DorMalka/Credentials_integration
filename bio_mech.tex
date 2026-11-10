@@ -58,7 +58,7 @@ We model authentication mechanisms with both biometric and atomic credentials an
 We prove that a mechanism combining an atomic credential with an optimal-threshold biometric one is better than a mechanism using only the atomic credential; this holds even if the biometric credential is extremely inaccurate. 
 Next, we consider mechanisms that allow multiple attempts, as fingerprint readers commonly do. 
 We find that each attempt's threshold should be different. 
-Using public biometric datasets, we find that optimal thresholds can improve the success probability of multiple-attempt mechanisms by~76\% compared to the heuristic threshold. 
+Using public biometric datasets, we find that optimal thresholds can reduce the failure probability of multiple-attempt mechanisms by~75\% compared to the heuristic threshold. 
 
 Yet our survey of commercial sensors finds that almost none allow setting a specific threshold. 
 Based on our results, manufacturers should change their interfaces so integrators can deploy optimal authentication mechanisms.
@@ -329,23 +329,23 @@ For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants ac
 \noindent
 We evaluate our model using the public real-world~\textit{LivDet2015} dataset of fingerprints~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}.
 This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors, as well as spoof samples produced from each user's fingerprints.
-We divide each user's scans into a reference set, simulating the reference scans stored in advance, and a candidate set, simulating the scans obtained by the sensor. 
+We divide each user's scans into a reference set, representing reference scans stored in advance, and a candidate set, representing scans obtained by the sensor. 
 To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. 
 This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images.
-We compute a similarity score for each candidate scan by running the algorithm against each reference image, and choose the maximum score as the candidate's final score~\cite{hong1998,Cappelli2006,max_score2009}.
+We compute a similarity score for each candidate scan by comparing it against every reference image, and retaining the maximum score as the candidate's final score~\cite{hong1998,Cappelli2006,max_score2009}.
+Following the evaluation procedures of Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}, we produce histograms of genuine and imposter comparisons, to obtain the empirical score distributions of the users and attackers, respectively, under two baseline attack scenarios.
 
-We produce the user and attacker distributions under two baseline attack scenarios.
-In the first, an attacker authenticates using their own fingerprints~$(\S\ref{sec:baseline_attack})$. 
-The genuine comparisons are all comparisons between a user's candidate images and that user's reference images.
-By contrast, the impostor comparisons are all comparisons between a user's reference images and the scans of the other users in the database.
-In the second, an attacker creates a fake fingerprint using spoofing techniques~$(\S\ref{sec:spoofing_attack})$. 
-We match the fake fingerprint images of each user, produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex}, against that user's reference images to obtain the impostor score distribution.
+In the first scenario, an attacker authenticates using their own fingerprints. 
+The genuine comparisons involve comparisons between all the user's candidate images and the user's reference images.
+By contrast, the impostor comparisons involve comparisons between all the user's reference images and the scans of the other users in the database.
+With an~\EER of approximately~3.8\%, the algorithm’s performance is representative of state-of-the-art fingerprint verification~\cite{Maio2002,Cappelli2006} and the best results achieved in the~\textit{LivDet2015} competition~\cite{LivDet2015}.
+In the second scenario, an attacker creates a fake fingerprint using spoofing materials, produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex}. We match these spoof samples against the user's reference images to obtain the impostor score distribution.
 
-To symbolically analyze different mechanisms, we need to approximate the empirical score distributions with theoretical distribution functions.
-Evaluating different mechanisms requires the biometric credential's fault probabilities which are, as shown in~\ref{eqn:safe_prob}, determined by the~\FAR and~\FRR values. 
-We assess how closely theoretical distribution functions~$(\S\ref{sec:mechanisms})$ approximate the empirical results by fitting uniform, quadratic and normal distributions to the genuine and impostor score histograms of both scenarios.
+To symbolically analyze different mechanisms, we approximate the empirical score distributions using theoretical distributions.
+Evaluating different mechanisms requires the biometric credential's fault probabilities which are determined by the~\FAR and~\FRR values~(Equation~\ref{eqn:safe_prob}). 
+We evaluate the accuracy of the theoretical models introduced in~$(\S\ref{sec:mechanisms})$ by fitting uniform, quadratic, and normal distributions to the genuine and impostor score histograms in both attack scenarios.
 For each fitted distribution, we calculate the Kolmogorov-Smirnov~(KS) statistic~\cite{Massey1951}. 
-This statistic measures the maximum absolute difference between the empirical and fitted cumulative distribution functions, which are the~\FRR and~\FAR curves themselves.
+This statistic measures the maximum absolute difference between the empirical and fitted cumulative distribution functions, which correspond to the~\FRR and~\FAR curves.
 Figure~\ref{fig:approximations} presents the resulting~\FAR and~\FRR curves alongside the empirical values for both scenarios.
 The KS statistics range from~$0.04$ to~$0.07$ for the genuine scores and are approximately~$0.17$ for the impostor scores, providing empirical support for using our theoretical models as approximations of the observed score distributions.
 
@@ -554,7 +554,7 @@ table [x=s, y=PA_case3] {figs/fig_uniform/uniform_three_cases.txt};
 \label{fig:uniform_three_cases}
 \end{figure*}
 
-\subsection{Uniform Probability Biometric Credentials}\label{sec:uniform_biocred}
+\subsection{Uniformly Distributed Biometric Credentials}\label{sec:uniform_biocred}
 \noindent
 We consider uniform distribution as a first-order approximation of the biometric credential distributions.
 Denote by~$u_1 \textit{ and } u_2$ the user's PDF bounds and by~$a_1 \textit{ and } a_2$  the attacker's PDF bounds as shown in Figure~\ref{fig:uniform_three_cases}. The probability distribution functions for the user and the attacker, $f_U$ and $f_A$ are thus:
@@ -1468,6 +1468,230 @@ table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 \label{fig:gap_vs_variance_parabola_success}
 \end{figure}
 
+\subsection{Single Credential Empirical Evaluation}\label{sec:eval_single_cred}
+\noindent
+We first evaluate a mechanism that uses a biometric credential only under the baseline attack, where attackers authenticate using their own fingerprints. Calculating the mechanism’s success probability requires the biometric credential’s fault probabilities, which depend on the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms genuine and impostor comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}and calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:approximations}.
+
+Using these error rates, we calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the mechanism's success probability~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. However, the success probability of the mechanism, when operated at the optimal threshold, is not significantly greater than operating at the~\EER threshold.
+
+We next consider a more challenging scenario in which attackers use forged fingerprints to impersonate legitimate users. Unlike the baseline attack, spoofing samples can produce matching scores closer to those of genuine fingerprints, increasing the overlap between the distributions. In this evaluation, the~\EER increased significantly to 24.8\%, indicating that the biometric credential is less effective at distinguishing users from attackers. We therefore evaluate the mechanism's success probability under this attack, as shown in Figure~\ref{fig:livdet_sourceafis_success}. Nevertheless, despite the increased overlap between the user and the attacker distributions, the optimal and \EER thresholds differ, but the improvement in success probability remains small. Under the baseline attack, the success probability increases from 92.42\% to 92.54\%, while under spoofing attacks, it increases from 50.64\% to 50.88\%. Thus, the EER heuristic performs well for a single biometric credential mechanism in our evaluation.
+
+
+\begin{figure*}[t]
+\centering
+
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    legend to name=histogramlegend,
+    bar width=3pt,
+    width=0.86\linewidth,
+    height=0.40\linewidth,
+    xlabel={Normalized similarity score (\%)},
+    ylabel={Impostor count},
+    ylabel style={red},
+    grid=major,
+    xmin=0, xmax=100,
+    ymin=0, ymax=9000,
+    enlarge x limits=false,
+    enlarge y limits=false,
+    tick style={draw=none},
+    clip=true
+]
+\addplot+[ybar, fill=red, draw=black]
+table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
+\end{axis}
+
+\begin{axis}[
+    ybar,
+    bar width=3pt,
+    legend to name=histogramlegend,
+    legend columns=2,
+    width=0.86\linewidth,
+    height=0.40\linewidth,
+    xlabel={Normalized similarity score (\%)},
+    yticklabel pos=right,
+    ylabel={Genuine count},
+    ylabel style={blue},
+    grid=none,
+    xmin=0, xmax=100,
+    ymin=0, ymax=80,
+    enlarge x limits=false,
+    enlarge y limits=false,
+    tick style={draw=none},
+    clip=true
+]
+\addplot+[ybar, fill=blue, fill opacity=0.5]
+table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
+\addlegendentry{Genuine}
+
+\addlegendimage{fill=red, mark=none}
+\addlegendentry{Impostor}
+\end{axis}
+\end{tikzpicture}
+\medskip
+\pgfplotslegendfromname{histogramlegend}
+\caption{Score histogram for genuine and impostor comparisons.}
+\label{fig:sourceafis_histogram}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\linewidth,
+    height=0.40\linewidth,
+    xlabel={Threshold (\%)},
+    ylabel={Success Probability},
+    xmin=0, xmax=100,
+    ymin=0, ymax=1,
+    grid=major,
+    legend style={
+        at={(0.5,-0.30)},
+        anchor=north,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    },
+    filter discard warning=false
+]
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=P_success] {figs/fig_different_users_sourceafsi/sourceafis_p_success_data.txt};
+\addlegendentry{$P_{\mathrm{success}}(t)$}
+
+\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+table [x=T_eer, y=P_eer] {figs/fig_different_users_sourceafsi/sourceafis_p_success_points.txt};
+\addlegendentry{$P_{\mathrm{success}}(t_{\EER})$}
+
+\addplot[only marks, mark=*, mark size=1.6pt, myRed]
+table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_success_points.txt};
+\addlegendentry{Optimal point}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Single biometric credential mechanism's success.}
+\label{fig:bio_only_sourceafis_reg_scoring}
+\end{subfigure}
+
+\caption{Baseline attack evaluation of a mechanism that uses a biometric credential only.}
+\label{fig:sourceafis_success}
+\end{figure*}
+
+% ---------------------------------------------------------------------------
+% Spoofing attack: score histogram and single-credential success.
+% ---------------------------------------------------------------------------
+\begin{figure*}[t]
+\centering
+
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    legend to name=livdethistogramlegend,
+    bar width=2pt,
+    width=0.86\linewidth,
+    height=0.40\linewidth,
+    xlabel={Normalized similarity score (\%)},
+    ylabel={Impostor count},
+    ylabel style={red},
+    grid=major,
+    xmin=0, xmax=100,
+    ymin=0, ymax=600,
+    enlarge x limits=false,
+    tick style={draw=none},
+    clip=true
+]
+\addplot+[ybar, fill=red, draw=black]
+table[x=score, y=impostor]
+{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+\end{axis}
+
+\begin{axis}[
+    ybar,
+    legend to name=livdethistogramlegend,
+    legend columns=2,
+    bar width=2pt,
+    width=0.86\linewidth,
+    height=0.40\linewidth,
+    xlabel={Normalized similarity score (\%)},
+    ylabel={Genuine count},
+    ylabel style={blue},
+    yticklabel pos=right,
+    grid=none,
+    xmin=0, xmax=100,
+    ymin=0, ymax=80,
+    enlarge x limits=false,
+    tick style={draw=none},
+    clip=true
+]
+\addplot+[ybar, fill=blue, draw=blue, fill opacity=0.5]
+table[x=score, y=genuine]
+{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+\addlegendentry{Genuine}
+
+\addlegendimage{fill=red, draw=black, mark=none}
+\addlegendentry{Impostor}
+\end{axis}
+\end{tikzpicture}
+\medskip
+\pgfplotslegendfromname{livdethistogramlegend}
+\caption{Score histogram for genuine and impostor comparisons.}
+\label{fig:livdet_sourceafis_histogram}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\linewidth,
+    height=0.40\linewidth,
+    xlabel={Threshold (\%)},
+    ylabel={Success Probability},
+    xmin=0, xmax=100,
+    ymin=0, ymax=1,
+    grid=major,
+    legend style={
+        at={(0.5,-0.30)},
+        anchor=north,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    },
+    each nth point=2,
+    filter discard warning=false
+]
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=P_success] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_data.txt};
+\addlegendentry{$P_{\mathrm{success}}(t)$}
+
+\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+table [x=T_eer, y=P_eer] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_points.txt};
+\addlegendentry{$P_{\mathrm{success}}(t_{\EER})$}
+
+\addplot[only marks, mark=*, mark size=1.6pt, myRed]
+table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_points.txt};
+\addlegendentry{Optimal point}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Single biometric credential mechanism's success.}
+\label{fig:livdet_sourceafis_success}
+\end{subfigure}
+
+\caption{Spoofing attack evaluation of a mechanism that uses a biometric credential only.}
+\label{fig:livdet_single_cred_panel}
+\end{figure*}
+
+
 \section{Two Credentials}\label{sec:two_cred}
 \noindent
 We explore mechanisms that integrate two independently and identically distributed credentials, derived from either the same or different types of credentials to model real life implications exist in cloud authentication for example. We numerically analyze two biometric credentials~$(\S\ref{sec:two_biocred})$ and symbolically analyze one biometric credential and one atomic credential~$(\S\ref{sec:atm_biocred})$.
@@ -2006,6 +2230,157 @@ table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_
 \label{fig:biometric_atomic_success}
 \end{figure}
 
+\subsection{Two Credentials Empirical Evaluation}\label{sec:two_credentials_empirical_eval}
+\noindent
+We use the same biometric credential evaluated in~$(\S\ref{sec:eval_single_cred})$, and first consider the baseline attack scenario, where attackers use their own fingerprints to authenticate. The mechanisms combine this biometric credential with an atomic credential whose fault probabilities are arbitrarily set to~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. We then calculate the success probabilities of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate these probabilities as functions of the threshold~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each mechanism differs from the~\EER threshold. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of a mechanism using only the atomic credential, demonstrating the benefit of combining the two credentials.
+
+However, in this attack scenario, optimizing the thresholds provides only a small improvement over the EER threshold for both mechanisms, since the biometric credential already has a very low EER, indicating limited overlap between the genuine and impostor distributions.
+
+We next evaluate the two mechanisms under spoofing attacks, where attackers use forged fingerprints to impersonate legitimate users. As shown in the previous subsection, spoofing increases the overlap between the genuine and impostor score distributions, making authentication more challenging. We calculate the success probabilities of both mechanisms under this attack, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal threshold reduces the failure probability between~20\%-72\% compared to the~\EER threshold for the two mechanisms. Moreover, a mechanism combining both credentials at the~\EER threshold may achieve a lower success probability than a mechanism using either credential alone. These results demonstrate that using a non-optimal biometric threshold can reduce the success probability when combining credentials in an authentication mechanism. The results are summarized in Table~\ref{tab:psafe_sweep_improvement}.
+
+% ===========================================================================
+% FIGURES AND TABLE FOR sec:two_credentials_empirical_eval
+% ===========================================================================
+
+% ---------------------------------------------------------------------------
+% Baseline attack: AND and OR mechanisms.
+% ---------------------------------------------------------------------------
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.36\columnwidth,
+    xlabel={Threshold (\%)},
+    ylabel={Success Probability},
+    xmin=0, xmax=100,
+    ymin=0, ymax=1,
+    grid=major,
+    legend style={
+        at={(0.5,-0.3)},
+        anchor=north,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    },
+    filter discard warning=false
+]
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=P_and] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_data.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
+
+\addplot[thick, myOrange, mark=none]
+table [x=T, y=P_or] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_data.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
+
+\addplot[only marks, mark=*, mark size=1.5pt, blue]
+table [x=T_and_opt, y=P_and_opt] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+\addlegendentry{AND optimum}
+
+\addplot[only marks, mark=x, mark size=1.9pt, myOrange]
+table [x=T_or_opt, y=P_or_opt] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+\addlegendentry{OR optimum}
+
+\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+table [x=T_eer, y=P_and_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+\addlegendentry{AND at \EER}
+
+\addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
+table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+\addlegendentry{OR at \EER}
+
+\addplot[thick, black, dashed, domain=0:100] {0.75};
+\addlegendentry{Atomic credential only}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Baseline attack. A biometric credential integrated with an atomic credential into AND and OR mechanisms. The AND and OR mechanisms achieve success probabilities of $0.78$ and $0.82$ at the \EER point, and $0.81$ and $0.84$ at their respective optimal operating points.}
+\label{fig:bio_atm_sourceafis_reg_scoring}
+\end{figure}
+
+% ---------------------------------------------------------------------------
+% Spoofing attack: AND and OR mechanisms.
+% ---------------------------------------------------------------------------
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis,
+    width=0.82\columnwidth,
+    height=0.36\columnwidth,
+    xlabel={Threshold (\%)},
+    ylabel={Success Probability},
+    xmin=0, xmax=100,
+    ymin=0, ymax=1,
+    grid=major,
+    legend style={
+        at={(0.5,-0.3)},
+        anchor=north,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    },
+    each nth point=2,
+    filter discard warning=false
+]
+
+\addplot[thick, blue, mark=none]
+table [x=T, y=P_and] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
+
+\addplot[thick, myOrange, mark=none]
+table [x=T, y=P_or] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
+
+\addplot[only marks, mark=*, mark size=1.5pt, blue]
+table [x=T_and_opt, y=P_and_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+\addlegendentry{AND optimal point}
+
+\addplot[only marks, mark=x, mark size=1.9pt, myOrange]
+table [x=T_or_opt, y=P_or_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+\addlegendentry{OR optimal point}
+
+\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+table [x=T_eer, y=P_and_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+\addlegendentry{AND at \EER}
+
+\addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
+table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+\addlegendentry{OR at \EER}
+
+\addplot[thick, black, dashed, domain=0:100] {0.8};
+\addlegendentry{Atomic credential only}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Spoofing attack. A biometric credential integrated with an atomic credential into AND and OR mechanisms. The AND mechanism achieves a maximal success probability of $0.834$, while the OR mechanism achieves $0.816$. At the \EER operating point, the success probabilities are $0.713$ and $0.649$ for the AND and OR mechanisms, respectively.}
+\label{fig:livdet_and_or_success}
+\end{figure}
+
+% ---------------------------------------------------------------------------
+% Spoofing attack: success probability sweep over atomic state probabilities.
+% ---------------------------------------------------------------------------
+\begin{table*}[t]
+\centering
+\caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities. Bold EER values indicate the worse composition, whereas bold maximal values indicate the best composition. The bold safe column indicating the success probability of a mechanism uses an atomic credential only. The improvement column shows the percentage of improvement between the failure probability at the optimal mechanism success and the failure probability at the maximal mechanism success at EER threshold.}
+\label{tab:psafe_sweep_improvement}
+\begin{tabular}{cccccccccc}
+\toprule
+$\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\mathrm{theft}}$ & AND at EER & OR at EER & Max AND & Max OR & Improvement \\
+\midrule
+\textbf{0.60} & 0.30 & 0.05 & 0.05 & \textbf{0.45} & 0.58 & 0.60 & \textbf{0.66} & 20.25\% \\
+\textbf{0.60} & 0.05 & 0.30 & 0.05 & 0.57 & \textbf{0.45} & \textbf{0.68} & 0.60 & 24.94\% \\
+\textbf{0.75} & 0.15 & 0.05 & 0.05 & \textbf{0.56} & 0.61 & 0.75 & \textbf{0.77} & 40.39\% \\
+\textbf{0.82} & 0.05 & 0.08 & 0.05 & 0.62 & \textbf{0.61} & \textbf{0.824} & 0.82 & 53.20\% \\
+\textbf{0.90} & 0.00 & 0.05 & 0.05 & 0.66 & \textbf{0.64} & 0.89 & \textbf{0.905} & 72.19\% \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 \section{Characterizing Success Improvement}\label{sec:proof_success_improvement} 
 \noindent
 We characterize the conditions under which a mechanism that uses both a biometric credential and an atomic credential mechanism achieves greater success than a mechanism that uses only the atomic credential. We show that any mechanism using a single atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$ and a biometric credential does not achieve greater success probability than a mechanism using only this atomic credential~$(\S\ref{sec:no_success_improvement})$. Next, we present a necessary and sufficient condition for such improvement~$(\S\ref{sec:necessary_sufficient_success_condition})$, extend the results to multiple atomic credentials, and derive a more intuitive sufficient condition.
@@ -2411,680 +2786,20 @@ This optimization maximizes the mechanism’s success probability, while ensurin
 
 Here the constraint plays a different role. Without the constraint, the optimization balances both the~\FRR and~\FAR, leading to a non trivial solution as described in~$(\S\ref{sec:equal_k_attempts})$. The constraint~$\mu'$ caps how long a successful user waits. Unlike the previous problem, this constraint may not bind at all: if the optimal threshold vector already lets users authenticate within~$\mu'$ attempts on average, nothing changes. When it does bind, the optimization enforces thresholds more permissive than the unconstrained problem, leading to a reduction in the overall success probability. Thus, this optimization fixes a usability budget and maximizes the mechanism's success probability within it.
 
-
-\section{Empirical Evaluation}\label{sec:empirical_evaluation}
-\noindent
-We now empirically evaluate different mechanisms that use an atomic credential and a biometric credential under two attack scenarios. In each scenario, we compare the mechanism's success probability when the threshold is set to the~\EER and when it is optimized. We first simulate a baseline attack in which an attacker attempts to authenticate using their own fingerprints~$(\S\ref{sec:baseline_attack})$. We show that although optimizing the threshold increases the mechanism's success probability, the improvement is limited. We then present a more sophisticated attack in which an attacker creates a fake fingerprint using spoofing techniques~$(\S\ref{sec:spoofing_attack})$ and show that the improvement becomes substantially larger. To reflect real-world authentication systems, we evaluate spoofing attack when multiple attempts are allowed~$(\S\ref{sec:mul_attempts_spoofing})$. We show that in such cases, the threshold should be optimized with respect to the maximum number of allowed attempts for siginificant improvement in the mechanism's success probability.
-
-\subsection{Baseline Attack Scenario}\label{sec:baseline_attack}
-\noindent
-To simulate a biometric credential, we use the public real-world~\textit{LivDet2015} dataset of fingerprints to compare fingerprint verification algorithms~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}. This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors. We divide each user's scans in the dataset into a reference set, simulating the reference scans stored in advance, and a candidate set, simulating the scans obtained by the sensor. To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images. We evaluate all users who appear in~$\textit{LivDet2015}$ dataset whose fingerprints obtained by the same sensor. For each user, we randomly select five fingerprint scan images for the reference set, while the candidate set comprises the remaining images in the dataset. We compute a similarity score for each candidate scan by running the algorithm against each of the five reference images, and choose the maximum score as the candidate's final score~\cite{hong1998,Cappelli2006,max_score2009}. The genuine comparisons are all comparisons between the user's candidate images and the user's reference images. By contrast, the imposter comparisons are all comparisons between the users' reference images and the scans of the other users in the database.
-
-Calculating the mechanism's success probability requires the biometric credential's fault probabilities, which are functions of the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of the genuine and imposter comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:sourceafis_far_frr}.
-
-Before comparing different mechanisms, we validate that the algorithm's performance is representative of the state-of-the-art fingerprint verification algorithms. The algorithm we use achieves an~\EER of approximately~3.8\%, similar to the best results reported in the~\textit{LivDet2015}, and to those achieved by fingerprint systems used in industry and academia when evaluating different users~\cite{Maio2002,Cappelli2006}. We calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. 
-
-\newcommand{\sourceafisplotspanel}{%
-\begin{figure*}[!t]
-\centering
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    ybar,
-    legend to name=histogramlegend,
-    bar width=3pt,
-    width=0.86\linewidth,
-    height=0.40\linewidth,
-    xlabel={Normalized similarity score (\%)},
-    ylabel={Impostor count},
-    ylabel style={red},
-    grid=major,
-    xmin=0,
-    xmax=100,
-    ymin=0,
-    ymax=9000,
-    enlarge x limits=false,
-    enlarge y limits=false,
-    tick style={draw=none},
-    clip=true
-]
-
-\addplot+[ybar, fill=red, draw=black]
-table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
-
-\end{axis}
-
-\begin{axis}[
-    ybar,
-    bar width=3pt,
-    legend to name=histogramlegend,
-    legend columns=2,
-    width=0.86\linewidth,
-    height=0.40\linewidth,
-    xlabel={Normalized similarity score (\%)},
-    yticklabel pos=right,
-    ylabel={Genuine count},
-    ylabel style={blue},
-    grid=none,
-    xmin=0,
-    xmax=100,
-    ymin=0,
-    ymax=80,
-    enlarge x limits=false,
-    enlarge y limits=false,
-    tick style={draw=none},
-    clip=true
-]
-
-\addplot+[ybar, fill=blue, fill opacity=0.5]
-table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
-\addlegendentry{Genuine}
-
-\addlegendimage{fill=red, mark=none}
-\addlegendentry{Impostor}
-\end{axis}
-\end{tikzpicture}
-\medskip
-\pgfplotslegendfromname{histogramlegend}
-\caption{Score histogram for genuine and impostor comparisons.}
-\label{fig:sourceafis_histogram}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.86\linewidth,
-    height=0.40\linewidth,
-    xlabel={Threshold (\%)},
-    ylabel={Error Rate},
-    ymin=0,
-    ymax=1,
-    grid=major,
-    legend style={
-        at={(0.5,-0.30)},
-        anchor=north,
-        legend columns=2,
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    }
-]
-
-\pgfplotsset{
-    impostor curve/.style={
-        thick, dashed
-    },
-    genuine curve/.style={
-        thick, solid
-    },
-    uniform model/.style={purple},
-    quadratic model/.style={orange},
-    normal model/.style={cyan}
-}
-
-% Empirical FAR: discrete histogram integral
-\addplot[
-    only marks,
-    red,
-    mark=*,
-    mark size=1.3pt
-]
-table[x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Empirical \FAR}
-
-% Empirical FRR: discrete histogram integral
-\addplot[
-    only marks,
-    blue,
-    mark=*,
-    mark size=1.3pt
-]
-table[x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Empirical \FRR}
-
-% Uniform: squares
-\addplot[impostor curve, uniform model]
-table[x=T, y=FAR_uniform]
-{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Uniform \FAR}
-
-\addplot[genuine curve, uniform model]
-table[x=T, y=FRR_uniform]
-{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Uniform \FRR}
-
-% Quadratic: diamonds
-\addplot[impostor curve, quadratic model]
-table[x=T, y=FAR_quadratic]
-{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Quadratic \FAR}
-
-\addplot[genuine curve, quadratic model]
-table[x=T, y=FRR_quadratic]
-{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Quadratic \FRR}
-
-% Normal: triangles
-\addplot[impostor curve, normal model]
-table[x=T, y=FAR_normal]
-{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Normal \FAR}
-
-\addplot[genuine curve, normal model]
-table[x=T, y=FRR_normal]
-{figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Normal \FRR}
-
-% Empirical EER: black star
-\addplot[
-    black,
-    only marks,
-    mark=star,
-    mark size=3.5pt,
-    mark options={line width=2pt}
-]
-table[x=T_eer, y=EER]
-{figs/fig_different_users_sourceafsi/sourceafis_far_frr_points.txt};
-\addlegendentry{\EER}
-
-\end{axis}
-\end{tikzpicture}
-\caption{Empirical \FAR and \FRR as functions of the decision threshold, compared with the uniform and quadratic probabilistic distribution functions obtained from the KS fits.}
-\label{fig:sourceafis_far_frr}
-\end{subfigure}
-
-\par\medskip
-
-\pgfplotsset{
-    sourceafissuccess/.style={
-        scale only axis,
-        width=0.82\linewidth,
-        height=0.36\linewidth,
-        xlabel={Threshold (\%)},
-        ylabel={Success Probability},
-        xmin=0,
-        xmax=100,
-        ymin=0,
-        ymax=1,
-        grid=major,
-        legend style={
-            at={(0.5,-0.3)},
-            anchor=north,
-            legend columns=3,
-            draw=black,
-            fill=white,
-            font=\scriptsize
-        },
-        filter discard warning=false
-    }
-}
-
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    sourceafissuccess
-]
-
-\addplot[thick, blue, mark=none]
-table [x=T, y=P_success] {figs/fig_different_users_sourceafsi/sourceafis_p_success_data.txt};
-\addlegendentry{$P_{\mathrm{success}}(t)$}
-
-\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
-table [x=T_eer, y=P_eer] {figs/fig_different_users_sourceafsi/sourceafis_p_success_points.txt};
-\addlegendentry{$P_{\mathrm{success}}(t_{\EER})$}
-
-\addplot[only marks, mark=*, mark size=1.6pt, myRed]
-table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_success_points.txt};
-\addlegendentry{Optimal point}
-
-\end{axis}
-\end{tikzpicture}
-\caption{Single biometric credential mechanism's success.}
-\label{fig:bio_only_sourceafis_reg_scoring}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    sourceafissuccess
-]
-
-\addplot[thick, blue, mark=none]
-table [x=T, y=P_and] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
-
-\addplot[thick, myOrange, mark=none]
-table [x=T, y=P_or] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
-
-\addplot[only marks, mark=*, mark size=1.5pt, blue]
-table [x=T_and_opt, y=P_and_opt] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
-\addlegendentry{AND optimum}
-
-\addplot[only marks, mark=x, mark size=1.9pt, myOrange]
-table [x=T_or_opt, y=P_or_opt] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
-\addlegendentry{OR optimum}
-
-\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
-table [x=T_eer, y=P_and_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
-\addlegendentry{AND at \EER}
-
-\addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
-table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
-\addlegendentry{OR at \EER}
-
-\addplot[
-    thick,
-    black,
-    dashed,
-    domain=0:100,
-] {0.75};
-\addlegendentry{Atomic credential only}
-
-\end{axis}
-\end{tikzpicture}
-\caption{biometric credential integrated with an atomic credential into AND and OR mechanisms.}
-\label{fig:bio_atm_sourceafis_reg_scoring}
-\end{subfigure}
-
-% \Description{Success probability curves as a function of threshold, including \EER and optimal operating points.}
-\caption{
-Success probability as a function of the threshold.
-The AND and OR mechanisms achieve success probabilities of 
-$0.78$ and $0.82$ at the \EER point, and 
-$0.81$ and $0.84$ at their respective optimal operating points.
-}
-\label{fig:sourceafis_success}
-\end{figure*}
-}
-
-We next evaluate mechanisms that use an atomic credential and a biometric credential. We simulate an atomic credential with arbitrary fault probabilities~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. Then, we calculate the success probability of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and that of the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate the success probability functions of mechanisms, that use an atomic credential and a biometric credential as functions of~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each of the mechanisms differs from the~\EER point. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of the atomic credential only mechanism, demonstrating the benefit of using the biometric credential in addition. 
-
-However, the success probabilities of all evaluated mechanisms, when operated at their optimal thresholds, are not significantly greater than those of the corresponding mechanisms operating at the~\EER point. This can be explained by the fact that the~\EER of the biometric credential is already very low, indicating high separability between a user and an attacker and thus, leaving small room for improvement. In this scenario, we tested different users against each other. However, our main objective is to increase the mechanism's success probability in scenarios where an imposter attempts to spoof the user's templates, and authenticate to the user's account. Hence, we expect the imposter to use spoofing tools, producing samples whose score distribution is much more similar to the genuine distribution, which might lead to an increased~\EER point. 
-
-\begingroup
-\makeatletter
-\setlength{\@dblfptop}{0.5in}
-\makeatother
-\sourceafisplotspanel
-\clearpage
-\endgroup
-
-\newcommand{\livdetplotblock}{%
-\begin{strip}
-\vspace{-0.6\baselineskip}
-\centering
-\begin{minipage}{\textwidth}
-\captionsetup{type=figure}
-\centering
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-% Left axis: impostor counts
-\begin{axis}[
-    ybar,
-    legend to name=livdethistogramlegend,
-    bar width=2pt,
-    width=0.86\linewidth,
-    height=0.45\linewidth,
-    xlabel={Normalized similarity score (\%)},
-    ylabel={Impostor count},
-    ylabel style={red},
-    grid=major,
-    xmin=0,
-    xmax=100,
-    ymin=0,
-    ymax=600,
-    enlarge x limits=false,
-    tick style={draw=none},
-    clip=true
-]
-\addplot+[ybar,fill=red,draw=black]
-table[x=score,y=impostor] 
-{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
-\end{axis}
-% Right axis: genuine counts
-\begin{axis}[
-    ybar,
-    legend to name=livdethistogramlegend,
-    legend columns=2,
-    bar width=2pt,
-    width=0.86\linewidth,
-    height=0.45\linewidth,
-    xlabel={Normalized similarity score (\%)},
-    ylabel={Genuine count},
-    ylabel style={blue},
-    yticklabel pos=right,
-    grid=none,
-    xmin=0,
-    xmax=100,
-    ymin=0,
-    ymax=80,
-    enlarge x limits=false,
-    tick style={draw=none},
-    clip=true
-]
-\addplot+[ybar,fill=blue,draw=blue,fill opacity=0.5]
-table[x=score,y=genuine] 
-{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
-\addlegendentry{Genuine}
-\addlegendimage{fill=red,draw=black,mark=none}
-\addlegendentry{Impostor}
-\end{axis}
-\end{tikzpicture}
-\smallskip
-\pgfplotslegendfromname{livdethistogramlegend}
-\caption{LivDet score histogram using the best score over probe templates.}
-\label{fig:livdet_sourceafis_histogram}
-\end{subfigure}\hfill%
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.86\linewidth,
-    height=0.45\linewidth,
-    xlabel={Similarity score},
-    ylabel={Probability density},
-    xmin=0,
-    xmax=100,
-    ymin=0,
-    grid=major,
-    legend style={font=\small},
-]
-
-% Genuine: fitted normal PDF
-\addplot[blue, thick, domain=0:100, samples=300]
-{1/(17.7711*sqrt(2*pi))*exp(-0.5*((x-30.975)/17.7711)^2)};
-\addlegendentry{Genuine: normal}
-
-% Impostor: fitted normal PDF
-\addplot[red, thick, domain=0:100, samples=300]
-{1/(11.5956*sqrt(2*pi))*exp(-0.5*((x-10.37179232)/11.5956)^2)};
-\addlegendentry{Impostor: normal}
-
-\end{axis}
-\end{tikzpicture}
-\caption{Normal probability-density functions fitted to the genuine and impostor scores using the KS estimation.}
-\label{fig:livdet_ks_estimation}
-\end{subfigure}
-
-
-
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.86\linewidth,
-    height=0.4\linewidth,
-    xlabel={Threshold (\%)},
-    ylabel={Error Rate},
-    xmin=0,
-    xmax=100,
-    ymin=0,
-    ymax=1,
-    grid=major,
-    legend style={
-        at={(0.5,-0.45)},
-        anchor=north,
-        legend columns=2,
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    }
-]
-
-\pgfplotsset{
-    impostor curve/.style={
-        thick, dashed
-    },
-    genuine curve/.style={
-        thick, solid
-    },
-    uniform model/.style={purple},
-    quadratic model/.style={orange},
-    normal model/.style={cyan}
-}
-
-% Empirical FAR: discrete histogram integral
-\addplot[
-    only marks,
-    red,
-    mark=*,
-    mark size=1.3pt
-]
-table[x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{Empirical \FAR}
-
-% Empirical FRR: discrete histogram integral
-\addplot[
-    only marks,
-    blue,
-    mark=*,
-    mark size=1.3pt
-]
-table[x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{Empirical \FRR}
-
-% Uniform: squares
-\addplot[impostor curve, uniform model]
-table[x=T, y=FAR_uniform]
-{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{Uniform \FAR}
-
-\addplot[genuine curve, uniform model]
-table[x=T, y=FRR_uniform]
-{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{Uniform \FRR}
-
-% Quadratic: diamonds
-\addplot[impostor curve, quadratic model]
-table[x=T, y=FAR_quadratic]
-{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{Quadratic \FAR}
-
-\addplot[genuine curve, quadratic model]
-table[x=T, y=FRR_quadratic]
-{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{Quadratic \FRR}
-
-% Normal: triangles
-\addplot[impostor curve, normal model]
-table[x=T, y=FAR_normal]
-{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{Normal \FAR}
-
-\addplot[genuine curve, normal model]
-table[x=T, y=FRR_normal]
-{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
-\addlegendentry{Normal \FRR}
-
-% Empirical EER: black star
-\addplot[
-    black,
-    only marks,
-    mark=star,
-    mark size=3.5pt,
-    mark options={line width=2pt}
-]
-table[x=T_eer, y=EER]
-{figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_points.txt};
-\addlegendentry{\EER}
-
-\end{axis}
-\end{tikzpicture}
-
-\caption{Empirical \FAR and \FRR as functions of the threshold, compared with the uniform and quadratic PDFs obtained from the KS fits. The empirical \EER point is marked and occurs at $\approx 24.8\%$.}
-\label{fig:livdet_sourceafis_far_frr}
-\end{subfigure}\hfill%
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\raisebox{7\baselineskip}[0pt][0pt]{%
-\begin{minipage}[t]{\linewidth}
-\centering
-
-\pgfplotsset{
-    livdetsuccess/.style={
-        scale only axis,
-        width=0.82\linewidth,
-        height=0.25\linewidth,
-        xlabel={Threshold (\%)},
-        ylabel={Success Probability},
-        xmin=0,
-        xmax=100,
-        ymin=0,
-        ymax=1,
-        grid=major,
-        legend pos=north east,
-        legend style={
-            legend columns=3,
-            at={(0.5,-0.45)},
-            anchor=north,
-            draw=black, 
-            fill=white, 
-            font=\scriptsize},
-        each nth point=2,
-        filter discard warning=false
-    }
-}
-
-\begin{tikzpicture}
-\begin{axis}[livdetsuccess, xlabel={}]
-
-\addplot[thick, blue, mark=none]
-table [x=T, y=P_success] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_data.txt};
-\addlegendentry{$P_{\mathrm{success}}(t)$}
-
-\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
-table [x=T_eer, y=P_eer] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_points.txt};
-\addlegendentry{$P_{\mathrm{success}}(t_{\EER})$}
-
-\addplot[only marks, mark=*, mark size=1.6pt, myRed]
-table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_points.txt};
-\addlegendentry{Optimal point}
-
-\end{axis}
-\end{tikzpicture}
-\par\scriptsize Single biometric credential.\par
-
-\smallskip
-
-\begin{tikzpicture}
-\begin{axis}[livdetsuccess]
-
-\addplot[thick, blue, mark=none]
-table [x=T, y=P_and] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
-
-\addplot[thick, myOrange, mark=none]
-table [x=T, y=P_or] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
-
-\addplot[only marks, mark=*, mark size=1.5pt, blue]
-table [x=T_and_opt, y=P_and_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
-\addlegendentry{AND optimal point}
-
-\addplot[only marks, mark=x, mark size=1.9pt, myOrange]
-table [x=T_or_opt, y=P_or_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
-\addlegendentry{OR optimal point}
-
-\addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
-table [x=T_eer, y=P_and_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
-\addlegendentry{AND at \EER}
-
-\addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
-table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
-\addlegendentry{OR at \EER}
-
-\addplot[
-    thick,
-    black,
-    dashed,
-    domain=0:100,
-] {0.8};
-\addlegendentry{Atomic credential only}
-
-\end{axis}
-\end{tikzpicture}
-\par\scriptsize AND and OR mechanisms.\par
-
-% \Description{Success probability as a function of threshold for the LivDet SourceAFIS scores using the best score over probe templates.}
-\caption{
-Success probability as a function of the decision threshold using the best score over probe templates.
-The AND mechanism achieves a maximal success probability of $0.834$, while the OR mechanism achieves $0.816$.
-At the \EER operating point, the success probabilities are $0.713$ and $0.649$ for the AND and OR mechanisms, respectively.
-}
-\label{fig:livdet_sourceafis_success}
-\end{minipage}%
-}%
-\end{subfigure}
-\par\vspace{9\baselineskip}% Reserve space for the raised right-hand panel and its caption.
-\caption{LivDet spoofing-attack evaluation using the best score over probe templates.}
-\label{fig:livdet_evaluation_panel}
-\end{minipage}
-\end{strip}
-}
-
-\raggedbottom
-\refstepcounter{subsection}
-\subsection*{\thesubsection.\quad Spoofing Attack Scenario}\label{sec:spoofing_attack}
-\makeatletter
-\immediate\write\@auxout{\string\newlabel{sec:spoofing_attack}{{\thesubsection}{\thepage}{Spoofing Attack Scenario}{\@currentHref}{}}}
-\immediate\write\@auxout{\string\@writefile{toc}{\string\contentsline {subsection}{\string\numberline {\thesubsection}Spoofing Attack Scenario}{\thepage}{\@currentHref}\string\protected@file@percent}}
-\makeatother
-\noindent
-To support this claim, we use the LivDet2015 database \cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale live and spoof fingerprint samples. 
-We follow the same methodology as before and use the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As reference images, we randomly select six Digital Persona scanner images of each user in the database, while the probe set of each user comprises the remaining real and fake images. The geniune comparisons are all comparisons between the reference and real images in the probe set.
-For each probe image, we define the similarity score as the maximum score among 6 reference images. 
-We simulate a spoofing attack by using fake fingerprint images of each user produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the reference images to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR error rates to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}).
-We assess how closely the theoretical models~$(\S\ref{sec:mechanisms})$ approximate the empirical results by fitting uniform, quadratic, and normal distributions to the genuine and impostor score histograms. For each fitted distribution, we calculate the Kolmogorov-Smirnov~(KS) statistic, which measures the maximum absolute difference between the empirical and fitted cumulative distribution functions~\cite{Massey1951}. The ruslting KS statistics range from $0.04$ to $0.07$ for the genuine scores and are approximately $0.17$ for the impostor scores, providing empirical support for using our theoretical models as approximations of the observed score distributions. 
-As we expect, the~\EER increased significantly to 22.1\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 20\% to 72\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only. These results demonstrating that non-optimizing the threshold of the biometric credential, when using multiple credentials in a mechanism, might drawback the mechanism's success probability. These results are summarized in Table~\ref   {tab:psafe_sweep_improvement}.
-
-\livdetplotblock
-\clearpage
-
-\begin{strip}
-\centering
-\begin{minipage}{\textwidth}
-\captionsetup{type=table}
-    \centering
-    \caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities. Bold EER values indicate the worse composition, whereas bold maximal values indicate the best composition. The bold safe column indicating the success probability of a mechanism uses an atomic credential only. The improvement column shows the percentage of improvement between the failure probability at the optimal mechanism success and the failure probability at the maximal mechanism success at EER threshold.}
-    \label{tab:psafe_sweep_improvement}
-    \begin{tabular}{cccccccccc}
-        \toprule
-        $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\mathrm{theft}}$ & AND at EER & OR at EER & Max AND & Max OR & Improvement \\
-        \midrule
-        \textbf{0.60} & 0.30 & 0.05 & 0.05 & \textbf{0.45} & 0.58 & 0.60 & \textbf{0.66} & 20.25\% \\
-        \textbf{0.60} & 0.05 & 0.30 & 0.05 & 0.57 & \textbf{0.45} & \textbf{0.68} & 0.60 & 24.94\% \\
-        \textbf{0.75} & 0.15 & 0.05 & 0.05 & \textbf{0.56} & 0.61 & 0.75 & \textbf{0.77} & 40.39\% \\
-        \textbf{0.82} & 0.05 & 0.08 & 0.05 & 0.62 & \textbf{0.61} & \textbf{0.824} & 0.82 & 53.20\% \\
-        \textbf{0.90} & 0.00 & 0.05 & 0.05 & 0.66 & \textbf{0.64} & 0.89 & \textbf{0.905} & 72.19\% \\
-        \bottomrule
-    \end{tabular}
-\end{minipage}
-\end{strip}
-\flushbottom
-
 \subsection{Spoofing Attack With Multiple Attempts}\label{sec:mul_attempts_spoofing}
 \noindent
-We simulate a spoofing attack scenario in which a principal has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the previous section~$(\S\ref{sec:spoofing_attack})$ using the LivDet2015 database. 
+We simulate a spoofing attack scenario in which a principal has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the spoofing attack scenario using the LivDet2015 database. 
 
-We follow the theoretical analysis in~$(\S\ref{sec:multiple_auth_attempts})$, and calculate the success probability under multiple attempts of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:success_multiple_attempts}). We then simulate several authentication attempts of a principal~$P$. For each number of attempts~$k$, we calculate the mechanism's success probability as the probability that the user is accepted at least once, while the attacker is rejected on all~$k$ attempts. As the success probability depends on the number of attempts~$k$, we compare the mechanism's success probability under three threshold selections baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the single attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}. The first two baselines represent biometric authentication systems that use a fixed threshold across multiple authentication attempts, either the~\EER threshold or the single attempt optimal threshold, without optimizing it for multiple attempts.
+We follow the theoretical analysis and calculate the success probability under multiple attempts of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:success_multiple_attempts}). We then simulate several authentication attempts by a principal~$P$. For each number of attempts~$k$, we calculate the mechanism's success probability as the probability that the user is accepted at least once, while the attacker is rejected on all~$k$ attempts. As the success probability depends on the number of attempts~$k$, we compare the mechanism's success probability under three thresholds selections baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the single-attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}. The first two baselines represent biometric authentication systems that use a fixed threshold across multiple authentication attempts, either the~\EER threshold or the single-attempt optimal threshold, without optimizing it for multiple attempts.
 
-We find that the success probability of this mechanism, which uses a biometric credential only, increases with the number of attempts~$k$ and converges to 1, when optimizing the threshold over all~$k$ attempts~(Figure~\ref{fig:unconstrained_success_convergence}). The optimization suggests that the threshold should remain constant across all~$k$ attempts, but vary with the total number of attempts~$k$. Furthermore, our findings reveal that reusing a single threshold through all~$k$ attempts, either the~\EER threshold or the single attempt optimal threshold, leads to a significant reduction in the mechanism's success probability. This reduction indicates that the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
+We find that the success probability of this mechanism, which uses a biometric credential only, increases with the number of attempts~$k$ and converges to 1 when optimizing the threshold over all~$k$ attempts~(Figure~\ref{fig:unconstrained_success_convergence}). The optimization suggests that the threshold should vary with the total number of attempts~$k$. Furthermore, our findings reveal that reusing a single threshold in all~$k$ attempts, either the~\EER threshold or the single-attempt optimal threshold, leads to a reduction of up to 75\% in the mechanism's failure probability. This reduction indicates that the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
 
-Previously, we noted that for each number of attempts~$k$, the optimal threshold is constant across all~$k$ attempts and increases with~$k$. Thus, we investigate how the optimal threshold selections are affected when we constrain the mean number of attempts, seeking to maximize the mechanism's success probability. We find that the optimal threshold increases with the number of attempts~$k$, and that the mechanism's success probability increases as the mean number of attempts increases. Nevertheless, system designers seek to minimize the mean number of a user's authentication attempts. 
+Previously, we noted that for each number of attempts~$k$, the optimal threshold varies with~$k$. Thus, we investigate how the optimal threshold selections are affected when we constrain the mean number of attempts, seeking to maximize the mechanism's success probability. We find that the optimal threshold increases with the number of attempts~$k$, and that the mechanism's success probability increases as the mean number of attempts increases. Nevertheless, system designers seek to minimize the mean number of a user's authentication attempts. 
 
-We explore the tradeoff between the mean number of attempts and the mechanism's success probability. First, we identify the optimal threshold selections that minimize the mean number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P_{\mathrm{success}}^{\min}$. This analysis shows that the greater the required mechanism's success probability~$P_{\mathrm{success}}^{\min}$, the greater the mean number of user authentication attempts~$\mathbb{E}[N_U]$ required to achieve it. In addition, our findings reveal that a higher success probability constraint leads to a greater cumulative user success probability and a lower cumulative attacker success probability. This behavior indicates that the selected thresholds tend to be stricter in the initial attempts, with smaller differences between successive thresholds as the attempt index increases. In this way, the mechanism limits the probability of a successful spoofing attack, while relying on the user's cumulative success probability to increase with the number of attempts. These findigns are summarized in Figure~\ref{fig:success_constraints_comparison}.
+We explore the tradeoff between the mean number of attempts and the mechanism's success probability. First, we identify the optimal threshold selections that minimize the mean number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P_{\mathrm{success}}^{\min}$. This analysis shows that the greater the required success probability~$P_{\mathrm{success}}^{\min}$, the greater the mean number of user authentication attempts~$\mathbb{E}[N_U]$ required to achieve it. Moreover, as presented in the theoretical analysis, the mechanism's success probability is equal to the success constraint. In addition, our findings reveal that a higher success probability constraint leads to a greater cumulative user success probability and a lower cumulative attacker success probability. This behavior indicates that the selected thresholds tend to be stricter in the initial attempts, with smaller differences between successive thresholds as the attempt index increases. In this way, the mechanism limits the probability of a successful spoofing attack, while relying on the user's cumulative success probability to increase with the number of attempts. These findings are summarized in Figure~\ref{fig:success_constraints_comparison}.
 
-We also analyze the reverse direction, in which a system designer seeks to maximize the achievable security under the usability constraint. Specifically, we constrain the mean number of user authentication attempts~$\mathbb{E}[N_U]$, and seek to maximize the mechanism's success probability. We find that allowing a greater mean number of user authentication attempts~$\mathbb{E}[N_U]$, leads to a lower cumulative success probability for the attacker. 
-A higher limit on the mean number of attempts leads to stricter threshold selections in the initial authentication attempts. In this way, the mechanism prioritizes preventing the attacker from spoofing the biometric credential, over accepting the user in the initial attempts. Thus, the user's cumulative authentication probability is initially lower than under a lower limit on the mean number of attempts, but increases significantly over subsequent attempts as the user has more opportunities to obtain a score above the threshold.
-These findings are shown in Figure~\ref{fig:mean_limits_comparison}. 
+We also analyze the reverse direction, in which a system designer seeks to maximize the achievable security under a usability constraint. Specifically, we constrain the mean number of user authentication attempts~$\mathbb{E}[N_U]$, and seek to maximize the mechanism's success probability. We find that allowing a greater mean number of user authentication attempts~$\mathbb{E}[N_U]$, leads to a lower cumulative success probability for the attacker. 
+A higher limit on the mean number of attempts leads to stricter threshold selections in the initial authentication attempts. In this way, the mechanism prioritizes preventing the attacker from spoofing the biometric credential, over accepting the user in the initial attempts. Thus, the user's cumulative authentication probability is initially lower than under a lower limit on the mean number of attempts. However, it increases significantly over subsequent attempts, as the user has more opportunities to obtain a score above the threshold. These findings are shown in Figure~\ref{fig:mean_limits_comparison}. 
 
 \begin{figure}[t]
 \centering
@@ -3453,6 +3168,1049 @@ circles represent the user and red squares represent the attacker.
 The constraint applies to the complete policy.}
 \label{fig:mean_limits_comparison}
 \end{figure}
+
+
+% \section{Empirical Evaluation}\label{sec:empirical_evaluation}
+% \noindent
+% We now empirically evaluate different mechanisms that use an atomic credential and a biometric credential under two attack scenarios. In each scenario, we compare the mechanism's success probability when the threshold is set to the~\EER and when it is optimized. We first simulate a baseline attack in which an attacker attempts to authenticate using their own fingerprints~$(\S\ref{sec:baseline_attack})$. We show that although optimizing the threshold increases the mechanism's success probability, the improvement is limited. We then present a more sophisticated attack in which an attacker creates a fake fingerprint using spoofing techniques~$(\S\ref{sec:spoofing_attack})$ and show that the improvement becomes substantially larger. To reflect real-world authentication systems, we evaluate spoofing attack when multiple attempts are allowed~$(\S\ref{sec:mul_attempts_spoofing})$. We show that in such cases, the threshold should be optimized with respect to the maximum number of allowed attempts for siginificant improvement in the mechanism's success probability.
+
+% \subsection{Baseline Attack Scenario}\label{sec:baseline_attack}
+% \noindent
+% To simulate a biometric credential, we use the public real-world~\textit{LivDet2015} dataset of fingerprints to compare fingerprint verification algorithms~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}. This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors. We divide each user's scans in the dataset into a reference set, simulating the reference scans stored in advance, and a candidate set, simulating the scans obtained by the sensor. To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images. We evaluate all users who appear in~$\textit{LivDet2015}$ dataset whose fingerprints obtained by the same sensor. For each user, we randomly select five fingerprint scan images for the reference set, while the candidate set comprises the remaining images in the dataset. We compute a similarity score for each candidate scan by running the algorithm against each of the five reference images, and choose the maximum score as the candidate's final score~\cite{hong1998,Cappelli2006,max_score2009}. The genuine comparisons are all comparisons between the user's candidate images and the user's reference images. By contrast, the imposter comparisons are all comparisons between the users' reference images and the scans of the other users in the database.
+
+% Calculating the mechanism's success probability requires the biometric credential's fault probabilities, which are functions of the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of the genuine and imposter comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}. Then, we calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:sourceafis_far_frr}.
+
+% Before comparing different mechanisms, we validate that the algorithm's performance is representative of the state-of-the-art fingerprint verification algorithms. The algorithm we use achieves an~\EER of approximately~3.8\%, similar to the best results reported in the~\textit{LivDet2015}, and to those achieved by fingerprint systems used in industry and academia when evaluating different users~\cite{Maio2002,Cappelli2006}. We calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the success probability of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. 
+
+% \newcommand{\sourceafisplotspanel}{%
+% \begin{figure*}[!t]
+% \centering
+% \begin{subfigure}[t]{0.48\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     ybar,
+%     legend to name=histogramlegend,
+%     bar width=3pt,
+%     width=0.86\linewidth,
+%     height=0.40\linewidth,
+%     xlabel={Normalized similarity score (\%)},
+%     ylabel={Impostor count},
+%     ylabel style={red},
+%     grid=major,
+%     xmin=0,
+%     xmax=100,
+%     ymin=0,
+%     ymax=9000,
+%     enlarge x limits=false,
+%     enlarge y limits=false,
+%     tick style={draw=none},
+%     clip=true
+% ]
+
+% \addplot+[ybar, fill=red, draw=black]
+% table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
+
+% \end{axis}
+
+% \begin{axis}[
+%     ybar,
+%     bar width=3pt,
+%     legend to name=histogramlegend,
+%     legend columns=2,
+%     width=0.86\linewidth,
+%     height=0.40\linewidth,
+%     xlabel={Normalized similarity score (\%)},
+%     yticklabel pos=right,
+%     ylabel={Genuine count},
+%     ylabel style={blue},
+%     grid=none,
+%     xmin=0,
+%     xmax=100,
+%     ymin=0,
+%     ymax=80,
+%     enlarge x limits=false,
+%     enlarge y limits=false,
+%     tick style={draw=none},
+%     clip=true
+% ]
+
+% \addplot+[ybar, fill=blue, fill opacity=0.5]
+% table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
+% \addlegendentry{Genuine}
+
+% \addlegendimage{fill=red, mark=none}
+% \addlegendentry{Impostor}
+% \end{axis}
+% \end{tikzpicture}
+% \medskip
+% \pgfplotslegendfromname{histogramlegend}
+% \caption{Score histogram for genuine and impostor comparisons.}
+% \label{fig:sourceafis_histogram}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.48\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.86\linewidth,
+%     height=0.40\linewidth,
+%     xlabel={Threshold (\%)},
+%     ylabel={Error Rate},
+%     ymin=0,
+%     ymax=1,
+%     grid=major,
+%     legend style={
+%         at={(0.5,-0.30)},
+%         anchor=north,
+%         legend columns=2,
+%         draw=black,
+%         fill=white,
+%         font=\scriptsize
+%     }
+% ]
+
+% \pgfplotsset{
+%     impostor curve/.style={
+%         thick, dashed
+%     },
+%     genuine curve/.style={
+%         thick, solid
+%     },
+%     uniform model/.style={purple},
+%     quadratic model/.style={orange},
+%     normal model/.style={cyan}
+% }
+
+% % Empirical FAR: discrete histogram integral
+% \addplot[
+%     only marks,
+%     red,
+%     mark=*,
+%     mark size=1.3pt
+% ]
+% table[x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Empirical \FAR}
+
+% % Empirical FRR: discrete histogram integral
+% \addplot[
+%     only marks,
+%     blue,
+%     mark=*,
+%     mark size=1.3pt
+% ]
+% table[x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Empirical \FRR}
+
+% % Uniform: squares
+% \addplot[impostor curve, uniform model]
+% table[x=T, y=FAR_uniform]
+% {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Uniform \FAR}
+
+% \addplot[genuine curve, uniform model]
+% table[x=T, y=FRR_uniform]
+% {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Uniform \FRR}
+
+% % Quadratic: diamonds
+% \addplot[impostor curve, quadratic model]
+% table[x=T, y=FAR_quadratic]
+% {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Quadratic \FAR}
+
+% \addplot[genuine curve, quadratic model]
+% table[x=T, y=FRR_quadratic]
+% {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Quadratic \FRR}
+
+% % Normal: triangles
+% \addplot[impostor curve, normal model]
+% table[x=T, y=FAR_normal]
+% {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Normal \FAR}
+
+% \addplot[genuine curve, normal model]
+% table[x=T, y=FRR_normal]
+% {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Normal \FRR}
+
+% % Empirical EER: black star
+% \addplot[
+%     black,
+%     only marks,
+%     mark=star,
+%     mark size=3.5pt,
+%     mark options={line width=2pt}
+% ]
+% table[x=T_eer, y=EER]
+% {figs/fig_different_users_sourceafsi/sourceafis_far_frr_points.txt};
+% \addlegendentry{\EER}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Empirical \FAR and \FRR as functions of the decision threshold, compared with the uniform and quadratic probabilistic distribution functions obtained from the KS fits.}
+% \label{fig:sourceafis_far_frr}
+% \end{subfigure}
+
+% \par\medskip
+
+% \pgfplotsset{
+%     sourceafissuccess/.style={
+%         scale only axis,
+%         width=0.82\linewidth,
+%         height=0.36\linewidth,
+%         xlabel={Threshold (\%)},
+%         ylabel={Success Probability},
+%         xmin=0,
+%         xmax=100,
+%         ymin=0,
+%         ymax=1,
+%         grid=major,
+%         legend style={
+%             at={(0.5,-0.3)},
+%             anchor=north,
+%             legend columns=3,
+%             draw=black,
+%             fill=white,
+%             font=\scriptsize
+%         },
+%         filter discard warning=false
+%     }
+% }
+
+% \begin{subfigure}[t]{0.48\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     sourceafissuccess
+% ]
+
+% \addplot[thick, blue, mark=none]
+% table [x=T, y=P_success] {figs/fig_different_users_sourceafsi/sourceafis_p_success_data.txt};
+% \addlegendentry{$P_{\mathrm{success}}(t)$}
+
+% \addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+% table [x=T_eer, y=P_eer] {figs/fig_different_users_sourceafsi/sourceafis_p_success_points.txt};
+% \addlegendentry{$P_{\mathrm{success}}(t_{\EER})$}
+
+% \addplot[only marks, mark=*, mark size=1.6pt, myRed]
+% table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_success_points.txt};
+% \addlegendentry{Optimal point}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Single biometric credential mechanism's success.}
+% \label{fig:bio_only_sourceafis_reg_scoring}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.48\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     sourceafissuccess
+% ]
+
+% \addplot[thick, blue, mark=none]
+% table [x=T, y=P_and] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_data.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
+
+% \addplot[thick, myOrange, mark=none]
+% table [x=T, y=P_or] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_data.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
+
+% \addplot[only marks, mark=*, mark size=1.5pt, blue]
+% table [x=T_and_opt, y=P_and_opt] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+% \addlegendentry{AND optimum}
+
+% \addplot[only marks, mark=x, mark size=1.9pt, myOrange]
+% table [x=T_or_opt, y=P_or_opt] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+% \addlegendentry{OR optimum}
+
+% \addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+% table [x=T_eer, y=P_and_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+% \addlegendentry{AND at \EER}
+
+% \addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
+% table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
+% \addlegendentry{OR at \EER}
+
+% \addplot[
+%     thick,
+%     black,
+%     dashed,
+%     domain=0:100,
+% ] {0.75};
+% \addlegendentry{Atomic credential only}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{biometric credential integrated with an atomic credential into AND and OR mechanisms.}
+% \label{fig:bio_atm_sourceafis_reg_scoring}
+% \end{subfigure}
+
+% % \Description{Success probability curves as a function of threshold, including \EER and optimal operating points.}
+% \caption{
+% Success probability as a function of the threshold.
+% The AND and OR mechanisms achieve success probabilities of 
+% $0.78$ and $0.82$ at the \EER point, and 
+% $0.81$ and $0.84$ at their respective optimal operating points.
+% }
+% \label{fig:sourceafis_success}
+% \end{figure*}
+% }
+
+% We next evaluate mechanisms that use an atomic credential and a biometric credential. We simulate an atomic credential with arbitrary fault probabilities~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. Then, we calculate the success probability of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and that of the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate the success probability functions of mechanisms, that use an atomic credential and a biometric credential as functions of~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each of the mechanisms differs from the~\EER point. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of the atomic credential only mechanism, demonstrating the benefit of using the biometric credential in addition. 
+
+% However, the success probabilities of all evaluated mechanisms, when operated at their optimal thresholds, are not significantly greater than those of the corresponding mechanisms operating at the~\EER point. This can be explained by the fact that the~\EER of the biometric credential is already very low, indicating high separability between a user and an attacker and thus, leaving small room for improvement. In this scenario, we tested different users against each other. However, our main objective is to increase the mechanism's success probability in scenarios where an imposter attempts to spoof the user's templates, and authenticate to the user's account. Hence, we expect the imposter to use spoofing tools, producing samples whose score distribution is much more similar to the genuine distribution, which might lead to an increased~\EER point. 
+
+% \begingroup
+% \makeatletter
+% \setlength{\@dblfptop}{0.5in}
+% \makeatother
+% \sourceafisplotspanel
+% \clearpage
+% \endgroup
+
+% \newcommand{\livdetplotblock}{%
+% \begin{strip}
+% \vspace{-0.6\baselineskip}
+% \centering
+% \begin{minipage}{\textwidth}
+% \captionsetup{type=figure}
+% \centering
+% \begin{subfigure}[t]{0.48\textwidth}
+% \centering
+% \begin{tikzpicture}
+% % Left axis: impostor counts
+% \begin{axis}[
+%     ybar,
+%     legend to name=livdethistogramlegend,
+%     bar width=2pt,
+%     width=0.86\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={Normalized similarity score (\%)},
+%     ylabel={Impostor count},
+%     ylabel style={red},
+%     grid=major,
+%     xmin=0,
+%     xmax=100,
+%     ymin=0,
+%     ymax=600,
+%     enlarge x limits=false,
+%     tick style={draw=none},
+%     clip=true
+% ]
+% \addplot+[ybar,fill=red,draw=black]
+% table[x=score,y=impostor] 
+% {figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+% \end{axis}
+% % Right axis: genuine counts
+% \begin{axis}[
+%     ybar,
+%     legend to name=livdethistogramlegend,
+%     legend columns=2,
+%     bar width=2pt,
+%     width=0.86\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={Normalized similarity score (\%)},
+%     ylabel={Genuine count},
+%     ylabel style={blue},
+%     yticklabel pos=right,
+%     grid=none,
+%     xmin=0,
+%     xmax=100,
+%     ymin=0,
+%     ymax=80,
+%     enlarge x limits=false,
+%     tick style={draw=none},
+%     clip=true
+% ]
+% \addplot+[ybar,fill=blue,draw=blue,fill opacity=0.5]
+% table[x=score,y=genuine] 
+% {figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
+% \addlegendentry{Genuine}
+% \addlegendimage{fill=red,draw=black,mark=none}
+% \addlegendentry{Impostor}
+% \end{axis}
+% \end{tikzpicture}
+% \smallskip
+% \pgfplotslegendfromname{livdethistogramlegend}
+% \caption{LivDet score histogram using the best score over probe templates.}
+% \label{fig:livdet_sourceafis_histogram}
+% \end{subfigure}\hfill%
+% \begin{subfigure}[t]{0.48\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=0.86\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={Similarity score},
+%     ylabel={Probability density},
+%     xmin=0,
+%     xmax=100,
+%     ymin=0,
+%     grid=major,
+%     legend style={font=\small},
+% ]
+
+% % Genuine: fitted normal PDF
+% \addplot[blue, thick, domain=0:100, samples=300]
+% {1/(17.7711*sqrt(2*pi))*exp(-0.5*((x-30.975)/17.7711)^2)};
+% \addlegendentry{Genuine: normal}
+
+% % Impostor: fitted normal PDF
+% \addplot[red, thick, domain=0:100, samples=300]
+% {1/(11.5956*sqrt(2*pi))*exp(-0.5*((x-10.37179232)/11.5956)^2)};
+% \addlegendentry{Impostor: normal}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Normal probability-density functions fitted to the genuine and impostor scores using the KS estimation.}
+% \label{fig:livdet_ks_estimation}
+% \end{subfigure}
+
+
+
+% \begin{subfigure}[t]{0.48\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.86\linewidth,
+%     height=0.4\linewidth,
+%     xlabel={Threshold (\%)},
+%     ylabel={Error Rate},
+%     xmin=0,
+%     xmax=100,
+%     ymin=0,
+%     ymax=1,
+%     grid=major,
+%     legend style={
+%         at={(0.5,-0.45)},
+%         anchor=north,
+%         legend columns=2,
+%         draw=black,
+%         fill=white,
+%         font=\scriptsize
+%     }
+% ]
+
+% \pgfplotsset{
+%     impostor curve/.style={
+%         thick, dashed
+%     },
+%     genuine curve/.style={
+%         thick, solid
+%     },
+%     uniform model/.style={purple},
+%     quadratic model/.style={orange},
+%     normal model/.style={cyan}
+% }
+
+% % Empirical FAR: discrete histogram integral
+% \addplot[
+%     only marks,
+%     red,
+%     mark=*,
+%     mark size=1.3pt
+% ]
+% table[x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addlegendentry{Empirical \FAR}
+
+% % Empirical FRR: discrete histogram integral
+% \addplot[
+%     only marks,
+%     blue,
+%     mark=*,
+%     mark size=1.3pt
+% ]
+% table[x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addlegendentry{Empirical \FRR}
+
+% % Uniform: squares
+% \addplot[impostor curve, uniform model]
+% table[x=T, y=FAR_uniform]
+% {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addlegendentry{Uniform \FAR}
+
+% \addplot[genuine curve, uniform model]
+% table[x=T, y=FRR_uniform]
+% {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addlegendentry{Uniform \FRR}
+
+% % Quadratic: diamonds
+% \addplot[impostor curve, quadratic model]
+% table[x=T, y=FAR_quadratic]
+% {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addlegendentry{Quadratic \FAR}
+
+% \addplot[genuine curve, quadratic model]
+% table[x=T, y=FRR_quadratic]
+% {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addlegendentry{Quadratic \FRR}
+
+% % Normal: triangles
+% \addplot[impostor curve, normal model]
+% table[x=T, y=FAR_normal]
+% {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addlegendentry{Normal \FAR}
+
+% \addplot[genuine curve, normal model]
+% table[x=T, y=FRR_normal]
+% {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addlegendentry{Normal \FRR}
+
+% % Empirical EER: black star
+% \addplot[
+%     black,
+%     only marks,
+%     mark=star,
+%     mark size=3.5pt,
+%     mark options={line width=2pt}
+% ]
+% table[x=T_eer, y=EER]
+% {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_points.txt};
+% \addlegendentry{\EER}
+
+% \end{axis}
+% \end{tikzpicture}
+
+% \caption{Empirical \FAR and \FRR as functions of the threshold, compared with the uniform and quadratic PDFs obtained from the KS fits. The empirical \EER point is marked and occurs at $\approx 24.8\%$.}
+% \label{fig:livdet_sourceafis_far_frr}
+% \end{subfigure}\hfill%
+% \begin{subfigure}[t]{0.48\textwidth}
+% \centering
+% \raisebox{7\baselineskip}[0pt][0pt]{%
+% \begin{minipage}[t]{\linewidth}
+% \centering
+
+% \pgfplotsset{
+%     livdetsuccess/.style={
+%         scale only axis,
+%         width=0.82\linewidth,
+%         height=0.25\linewidth,
+%         xlabel={Threshold (\%)},
+%         ylabel={Success Probability},
+%         xmin=0,
+%         xmax=100,
+%         ymin=0,
+%         ymax=1,
+%         grid=major,
+%         legend pos=north east,
+%         legend style={
+%             legend columns=3,
+%             at={(0.5,-0.45)},
+%             anchor=north,
+%             draw=black, 
+%             fill=white, 
+%             font=\scriptsize},
+%         each nth point=2,
+%         filter discard warning=false
+%     }
+% }
+
+% \begin{tikzpicture}
+% \begin{axis}[livdetsuccess, xlabel={}]
+
+% \addplot[thick, blue, mark=none]
+% table [x=T, y=P_success] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_data.txt};
+% \addlegendentry{$P_{\mathrm{success}}(t)$}
+
+% \addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+% table [x=T_eer, y=P_eer] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_points.txt};
+% \addlegendentry{$P_{\mathrm{success}}(t_{\EER})$}
+
+% \addplot[only marks, mark=*, mark size=1.6pt, myRed]
+% table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_best_of_probes_points.txt};
+% \addlegendentry{Optimal point}
+
+% \end{axis}
+% \end{tikzpicture}
+% \par\scriptsize Single biometric credential.\par
+
+% \smallskip
+
+% \begin{tikzpicture}
+% \begin{axis}[livdetsuccess]
+
+% \addplot[thick, blue, mark=none]
+% table [x=T, y=P_and] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
+
+% \addplot[thick, myOrange, mark=none]
+% table [x=T, y=P_or] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
+
+% \addplot[only marks, mark=*, mark size=1.5pt, blue]
+% table [x=T_and_opt, y=P_and_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+% \addlegendentry{AND optimal point}
+
+% \addplot[only marks, mark=x, mark size=1.9pt, myOrange]
+% table [x=T_or_opt, y=P_or_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+% \addlegendentry{OR optimal point}
+
+% \addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
+% table [x=T_eer, y=P_and_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+% \addlegendentry{AND at \EER}
+
+% \addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
+% table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
+% \addlegendentry{OR at \EER}
+
+% \addplot[
+%     thick,
+%     black,
+%     dashed,
+%     domain=0:100,
+% ] {0.8};
+% \addlegendentry{Atomic credential only}
+
+% \end{axis}
+% \end{tikzpicture}
+% \par\scriptsize AND and OR mechanisms.\par
+
+% % \Description{Success probability as a function of threshold for the LivDet SourceAFIS scores using the best score over probe templates.}
+% \caption{
+% Success probability as a function of the decision threshold using the best score over probe templates.
+% The AND mechanism achieves a maximal success probability of $0.834$, while the OR mechanism achieves $0.816$.
+% At the \EER operating point, the success probabilities are $0.713$ and $0.649$ for the AND and OR mechanisms, respectively.
+% }
+% \label{fig:livdet_sourceafis_success}
+% \end{minipage}%
+% }%
+% \end{subfigure}
+% \par\vspace{9\baselineskip}% Reserve space for the raised right-hand panel and its caption.
+% \caption{LivDet spoofing-attack evaluation using the best score over probe templates.}
+% \label{fig:livdet_evaluation_panel}
+% \end{minipage}
+% \end{strip}
+% }
+
+% \raggedbottom
+% \refstepcounter{subsection}
+% \subsection*{\thesubsection.\quad Spoofing Attack Scenario}\label{sec:spoofing_attack}
+% \makeatletter
+% \immediate\write\@auxout{\string\newlabel{sec:spoofing_attack}{{\thesubsection}{\thepage}{Spoofing Attack Scenario}{\@currentHref}{}}}
+% \immediate\write\@auxout{\string\@writefile{toc}{\string\contentsline {subsection}{\string\numberline {\thesubsection}Spoofing Attack Scenario}{\thepage}{\@currentHref}\string\protected@file@percent}}
+% \makeatother
+% \noindent
+% To support this claim, we use the LivDet2015 database \cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}, which contains a large-scale live and spoof fingerprint samples. 
+% We follow the same methodology as before and use the $\text{SourceAFIS}$ algorithm~\cite{sourceafis}. As reference images, we randomly select six Digital Persona scanner images of each user in the database, while the probe set of each user comprises the remaining real and fake images. The geniune comparisons are all comparisons between the reference and real images in the probe set.
+% For each probe image, we define the similarity score as the maximum score among 6 reference images. 
+% We simulate a spoofing attack by using fake fingerprint images of each user produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex} and match them against the reference images to obtain the imposter score distribution. We build the resulting histogram of a user and an imposter (Figure~\ref{fig:livdet_sourceafis_histogram}) and then calculate the~\FAR-\FRR error rates to compute the~\EER point (Figure~\ref{fig:livdet_sourceafis_far_frr}).
+% We assess how closely the theoretical models~$(\S\ref{sec:mechanisms})$ approximate the empirical results by fitting uniform, quadratic, and normal distributions to the genuine and impostor score histograms. For each fitted distribution, we calculate the Kolmogorov-Smirnov~(KS) statistic, which measures the maximum absolute difference between the empirical and fitted cumulative distribution functions~\cite{Massey1951}. The ruslting KS statistics range from $0.04$ to $0.07$ for the genuine scores and are approximately $0.17$ for the impostor scores, providing empirical support for using our theoretical models as approximations of the observed score distributions. 
+% As we expect, the~\EER increased significantly to 22.1\% indicating the user and imposter distributions are less separable and more overlapping in spoofing attacks. To understand the implications of a spoofing attack, we calculate the success probability of a mechanism uses a biometric credential and a mechanism uses an atomic credential and a biometric credential, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal operating point reducing the failure probability between 20\% to 72\% compared to the~\EER point when the mechanism uses both an atomic and a biometric credential. Moreover, we find that a mechanism uses an atomic credential and a biometric credential at the~\EER threshold, might achieve lower success probability than that of a mechanism uses an atomic credential only, or a biometric credential only. These results demonstrating that non-optimizing the threshold of the biometric credential, when using multiple credentials in a mechanism, might drawback the mechanism's success probability. These results are summarized in Table~\ref   {tab:psafe_sweep_improvement}.
+
+% \livdetplotblock
+% \clearpage
+
+% \begin{strip}
+% \centering
+% \begin{minipage}{\textwidth}
+% \captionsetup{type=table}
+%     \centering
+%     \caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities. Bold EER values indicate the worse composition, whereas bold maximal values indicate the best composition. The bold safe column indicating the success probability of a mechanism uses an atomic credential only. The improvement column shows the percentage of improvement between the failure probability at the optimal mechanism success and the failure probability at the maximal mechanism success at EER threshold.}
+%     \label{tab:psafe_sweep_improvement}
+%     \begin{tabular}{cccccccccc}
+%         \toprule
+%         $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\mathrm{theft}}$ & AND at EER & OR at EER & Max AND & Max OR & Improvement \\
+%         \midrule
+%         \textbf{0.60} & 0.30 & 0.05 & 0.05 & \textbf{0.45} & 0.58 & 0.60 & \textbf{0.66} & 20.25\% \\
+%         \textbf{0.60} & 0.05 & 0.30 & 0.05 & 0.57 & \textbf{0.45} & \textbf{0.68} & 0.60 & 24.94\% \\
+%         \textbf{0.75} & 0.15 & 0.05 & 0.05 & \textbf{0.56} & 0.61 & 0.75 & \textbf{0.77} & 40.39\% \\
+%         \textbf{0.82} & 0.05 & 0.08 & 0.05 & 0.62 & \textbf{0.61} & \textbf{0.824} & 0.82 & 53.20\% \\
+%         \textbf{0.90} & 0.00 & 0.05 & 0.05 & 0.66 & \textbf{0.64} & 0.89 & \textbf{0.905} & 72.19\% \\
+%         \bottomrule
+%     \end{tabular}
+% \end{minipage}
+% \end{strip}
+% \flushbottom
+
+% \subsection{Spoofing Attack With Multiple Attempts}\label{sec:mul_attempts_spoofing}
+% \noindent
+% We simulate a spoofing attack scenario in which a principal has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the previous section~$(\S\ref{sec:spoofing_attack})$ using the LivDet2015 database. 
+
+% We follow the theoretical analysis in~$(\S\ref{sec:multiple_auth_attempts})$, and calculate the success probability under multiple attempts of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:success_multiple_attempts}). We then simulate several authentication attempts of a principal~$P$. For each number of attempts~$k$, we calculate the mechanism's success probability as the probability that the user is accepted at least once, while the attacker is rejected on all~$k$ attempts. As the success probability depends on the number of attempts~$k$, we compare the mechanism's success probability under three threshold selections baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the single attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}. The first two baselines represent biometric authentication systems that use a fixed threshold across multiple authentication attempts, either the~\EER threshold or the single attempt optimal threshold, without optimizing it for multiple attempts.
+
+% We find that the success probability of this mechanism, which uses a biometric credential only, increases with the number of attempts~$k$ and converges to 1, when optimizing the threshold over all~$k$ attempts~(Figure~\ref{fig:unconstrained_success_convergence}). The optimization suggests that the threshold should remain constant across all~$k$ attempts, but vary with the total number of attempts~$k$. Furthermore, our findings reveal that reusing a single threshold through all~$k$ attempts, either the~\EER threshold or the single attempt optimal threshold, leads to a significant reduction in the mechanism's success probability. This reduction indicates that the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
+
+% Previously, we noted that for each number of attempts~$k$, the optimal threshold is constant across all~$k$ attempts and increases with~$k$. Thus, we investigate how the optimal threshold selections are affected when we constrain the mean number of attempts, seeking to maximize the mechanism's success probability. We find that the optimal threshold increases with the number of attempts~$k$, and that the mechanism's success probability increases as the mean number of attempts increases. Nevertheless, system designers seek to minimize the mean number of a user's authentication attempts. 
+
+% We explore the tradeoff between the mean number of attempts and the mechanism's success probability. First, we identify the optimal threshold selections that minimize the mean number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P_{\mathrm{success}}^{\min}$. This analysis shows that the greater the required mechanism's success probability~$P_{\mathrm{success}}^{\min}$, the greater the mean number of user authentication attempts~$\mathbb{E}[N_U]$ required to achieve it. In addition, our findings reveal that a higher success probability constraint leads to a greater cumulative user success probability and a lower cumulative attacker success probability. This behavior indicates that the selected thresholds tend to be stricter in the initial attempts, with smaller differences between successive thresholds as the attempt index increases. In this way, the mechanism limits the probability of a successful spoofing attack, while relying on the user's cumulative success probability to increase with the number of attempts. These findigns are summarized in Figure~\ref{fig:success_constraints_comparison}.
+
+% We also analyze the reverse direction, in which a system designer seeks to maximize the achievable security under the usability constraint. Specifically, we constrain the mean number of user authentication attempts~$\mathbb{E}[N_U]$, and seek to maximize the mechanism's success probability. We find that allowing a greater mean number of user authentication attempts~$\mathbb{E}[N_U]$, leads to a lower cumulative success probability for the attacker. 
+% A higher limit on the mean number of attempts leads to stricter threshold selections in the initial authentication attempts. In this way, the mechanism prioritizes preventing the attacker from spoofing the biometric credential, over accepting the user in the initial attempts. Thus, the user's cumulative authentication probability is initially lower than under a lower limit on the mean number of attempts, but increases significantly over subsequent attempts as the user has more opportunities to obtain a score above the threshold.
+% These findings are shown in Figure~\ref{fig:mean_limits_comparison}. 
+
+% \begin{figure}[t]
+% \centering
+
+% % Upper subfigure: probabilities versus maximum attempt count
+% \begin{subfigure}{\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=0.95\linewidth,
+%     height=0.65\linewidth,
+%     xlabel={Number of attempts, $k$},
+%     ylabel={Probability},
+%     xmin=1,
+%     xmax=10,
+%     ymin=0,
+%     ymax=1,
+%     xtick=data,
+%     grid=major,
+%     line width=1pt,
+%     mark size=1.6pt,
+%     legend style={
+%         at={(0.5,-0.28)},
+%         anchor=north,
+%         legend columns=3,
+%         draw=black,
+%         fill=white,
+%         font=\scriptsize
+%     }
+% ]
+
+% \addplot[green!60!black, solid, mark=*]
+% table[x=k, y=P_success_max]
+% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+% \addlegendentry{$P_{\mathrm{success}}^{\max}$}
+
+% \addplot[blue, dashed, mark=square*]
+% table[x=k, y=P_success_EER]
+% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+% \addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{EER}})$}
+
+% \addplot[red, densely dotted, mark=triangle*]
+% table[x=k, y=P_success_single_attempt_optimum]
+% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+% \addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{opt}}^{(1)})$}
+
+% \addplot[orange, solid, mark=diamond*]
+% table[x=k, y=product_FRR]
+% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+% \addlegendentry{$\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+% \addplot[purple, solid, mark=pentagon*]
+% table[x=k, y=product_1_minus_FAR]
+% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+% \addlegendentry{$\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Cumulative success and rejection probabilities.}
+% \label{fig:Success_probability_by_k_probabilities}
+% \end{subfigure}
+
+% \medskip
+
+% % Lower subfigure: final applied threshold for each k-attempt policy
+% \begin{subfigure}{\columnwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=0.95\linewidth,
+%     height=0.50\linewidth,
+%     xlabel={Number of attempts, $k$},
+%     ylabel={Selected threshold, $t_k^{(k)}$},
+%     xmin=1,
+%     xmax=10,
+%     xtick=data,
+%     grid=major,
+%     line width=1pt,
+%     mark size=1.6pt
+% ]
+
+% \addplot[green!60!black, solid, mark=*]
+% table[x=k, y=Threshold]
+% {figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Threshold applied at the final attempt of each policy.}
+% \label{fig:Success_probability_by_k_thresholds}
+% \end{subfigure}
+
+% \caption{Success probabilities and selected thresholds as a function
+% of the maximum number of authentication attempts~$k$.
+% (a)~The optimized cumulative success probability, compared with
+% reusing the \EER threshold and the single-attempt optimal threshold,
+% together with the products of user-rejection and attacker-rejection
+% probabilities.
+% (b)~The threshold applied at attempt~$k$ of the corresponding
+% $k$-attempt fixed-prefix policy.
+% Each value of~$k$ represents a separately optimized policy.}
+% \label{fig:Success_probability_by_k}
+% \end{figure}
+
+% \pgfplotsset{compat=1.18}
+
+% % Document
+% \begin{figure}[t]
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     width=0.95\columnwidth,
+%     height=0.65\columnwidth,
+%     xlabel={Number of attempts, $k$},
+%     ylabel={Overall success probability},
+%     xmin=1, xmax=200,
+%     ymin=0, ymax=1.02,
+%     xtick={1,25,50,75,100,125,150,175,200},
+%     ytick={0,0.2,0.4,0.6,0.8,1},
+%     grid=major,
+%     legend style={
+%         at={(0.5,-0.31)},
+%         anchor=north,
+%         legend columns=1,
+%         draw=black,
+%         fill=white,
+%         font=\scriptsize
+%     },
+%     legend cell align=left
+% ]
+
+% \addplot[
+%     blue,
+%     thick,
+%     mark=o,
+%     mark size=1.8pt,
+%     mark repeat=10,
+%     mark options={solid}
+% ]
+% table[
+%     x=k,
+%     y=P_success_optimized
+% ] {figs/fig_spoofed_users/livdet_unconstrained_success_convergence.txt};
+% \addlegendentry{Optimized overall success}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Optimized mechanism success probability as a function of
+% the number of authentication attempts~$k$.
+% The threshold policy is optimized separately for each~$k$,
+% without constraints on the conditional mean number of attempts
+% or the success probability. The dashed line marks probability one.}
+% \label{fig:unconstrained_success_convergence}
+% \end{figure}
+
+% \pgfplotsset{compat=1.18}
+
+% \pgfplotsset{
+%     constraint axis/.style={
+%         width=0.9\linewidth,
+%         height=0.55\linewidth,
+%         xlabel={Attempt},
+%         xmin=1, xmax=10,
+%         xtick={1,...,10},
+%         grid=major,
+%         mark size=2pt,
+%         legend style={
+%             at={(0.5,-0.31)},
+%             anchor=north,
+%             draw=black,
+%             fill=white,
+%             font=\scriptsize
+%         },
+%         legend cell align=left
+%     },
+%     player axis/.style={
+%         constraint axis,
+%         ylabel={Cumulative success probability},
+%         ymin=0, ymax=1,
+%         legend columns=3,
+%         every axis plot/.append style={forget plot}
+%     }
+% }
+
+% % Two-row legend:
+% % Row 1: three constraint values and their line styles.
+% % Row 2: user and attacker markers.
+% \newcommand{\TwoRowConstraintLegend}[3]{%
+%     \addlegendimage{black, thick, solid, mark=none}
+%     \addlegendentry{#1}
+%     \addlegendimage{black, thick, densely dotted, mark=none}
+%     \addlegendentry{#2}
+%     \addlegendimage{black, thick, dashed, mark=none}
+%     \addlegendentry{#3}
+%     \addlegendimage{blue, only marks, mark=o, mark size=2pt}
+%     \addlegendentry{User}
+%     \addlegendimage{red, only marks, mark=square, mark size=2pt}
+%     \addlegendentry{Attacker}
+%     \addlegendimage{empty legend}
+%     \addlegendentry{}
+% }
+
+% % =========================================================
+% % Figure 1: minimize mean attempts under success constraints
+% % =========================================================
+
+% \begin{figure}[t]
+% \centering
+% \def\PolicyData{figs/fig_spoofed_users/livdet_success_constraints_comparison.txt}
+
+% % Upper: threshold versus attempt
+% \begin{subfigure}{\linewidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     constraint axis,
+%     ylabel={Threshold},
+%     ymin=0, ymax=100
+% ]
+
+% \addplot[black, thick, solid, mark=*, mark size=1pt, mark options={solid}]
+% table[x=Attempt, y=Threshold_0_6] {\PolicyData};
+
+% \addplot[black, thick, densely dotted, mark=*, mark size=1pt, mark options={solid}]
+% table[x=Attempt, y=Threshold_0_7] {\PolicyData};
+
+% \addplot[black, thick, dashed, mark=*, mark size=1pt, mark options={solid}]
+% table[x=Attempt, y=Threshold_0_75] {\PolicyData};
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Selected thresholds.}
+% \label{fig:success_constraints_thresholds}
+% \end{subfigure}
+
+% \par\medskip
+
+% % Lower: user and attacker success versus attempt
+% \begin{subfigure}{\linewidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[player axis]
+
+% % Lowest constraint: solid
+% \addplot[blue, thick, solid, mark=o, mark options={solid}]
+% table[x=Attempt, y=P_user_success_0_6] {\PolicyData};
+
+% \addplot[red, thick, solid, mark=square, mark options={solid}]
+% table[x=Attempt, y=P_attacker_success_0_6] {\PolicyData};
+
+% % Middle constraint: dotted
+% \addplot[blue, thick, densely dotted, mark=o, mark options={solid}]
+% table[x=Attempt, y=P_user_success_0_7] {\PolicyData};
+
+% \addplot[red, thick, densely dotted, mark=square, mark options={solid}]
+% table[x=Attempt, y=P_attacker_success_0_7] {\PolicyData};
+
+% % Highest constraint: dashed
+% \addplot[blue, thick, dashed, mark=o, mark options={solid}]
+% table[x=Attempt, y=P_user_success_0_75] {\PolicyData};
+
+% \addplot[red, thick, dashed, mark=square, mark options={solid}]
+% table[x=Attempt, y=P_attacker_success_0_75] {\PolicyData};
+
+% \TwoRowConstraintLegend
+%     {$P'=0.6$}
+%     {$P'=0.7$}
+%     {$P'=0.75$}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Cumulative user and attacker acceptance probabilities.}
+% \label{fig:success_constraints_probabilities}
+% \end{subfigure}
+
+% \caption{Policies minimizing the conditional mean number of user
+% authentication attempts subject to
+% $P_{\mathrm{success}}\geq P'$, with $k=10$.
+% The upper panel shows selected thresholds; the lower panel shows
+% the probability of at least one user or attacker acceptance through
+% each attempt. Line styles identify constraint values, while blue
+% circles represent the user and red squares represent the attacker.
+% The constraint applies to the complete policy.}
+% \label{fig:success_constraints_comparison}
+% \end{figure}
+
+% % =========================================================
+% % Figure 2: maximize success under mean-attempt constraints
+% % =========================================================
+
+% \begin{figure}[t]
+% \centering
+% \def\PolicyData{figs/fig_spoofed_users/livdet_mean_limits_comparison.txt}
+
+% % Upper: threshold versus attempt
+% \begin{subfigure}{\linewidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     constraint axis,
+%     ylabel={Threshold},
+%     ymin=0, ymax=100
+% ]
+
+% \addplot[black, thick, solid, mark=*, mark size=1pt, mark options={solid}]
+% table[x=Attempt, y=Threshold_1_5] {\PolicyData};
+
+% \addplot[black, thick, densely dotted, mark=*, mark size=1pt, mark options={solid}]
+% table[x=Attempt, y=Threshold_1_9] {\PolicyData};
+
+% \addplot[black, thick, dashed, mark=*, mark size=1pt, mark options={solid}]
+% table[x=Attempt, y=Threshold_2_4] {\PolicyData};
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Selected thresholds.}
+% \label{fig:mean_limits_thresholds}
+% \end{subfigure}
+
+% \par\medskip
+
+% % Lower: user and attacker success versus attempt
+% \begin{subfigure}{\linewidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[player axis]
+
+% % Lowest constraint: solid
+% \addplot[blue, thick, solid, mark=o, mark options={solid}]
+% table[x=Attempt, y=P_user_success_1_5] {\PolicyData};
+
+% \addplot[red, thick, solid, mark=square, mark options={solid}]
+% table[x=Attempt, y=P_attacker_success_1_5] {\PolicyData};
+
+% % Middle constraint: dotted
+% \addplot[blue, thick, densely dotted, mark=o, mark options={solid}]
+% table[x=Attempt, y=P_user_success_1_9] {\PolicyData};
+
+% \addplot[red, thick, densely dotted, mark=square, mark options={solid}]
+% table[x=Attempt, y=P_attacker_success_1_9] {\PolicyData};
+
+% % Highest constraint: dashed
+% \addplot[blue, thick, dashed, mark=o, mark options={solid}]
+% table[x=Attempt, y=P_user_success_2_4] {\PolicyData};
+
+% \addplot[red, thick, dashed, mark=square, mark options={solid}]
+% table[x=Attempt, y=P_attacker_success_2_4] {\PolicyData};
+
+% \TwoRowConstraintLegend
+%     {$\mu'=1.5$}
+%     {$\mu'=1.9$}
+%     {$\mu'=2.4$}
+
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Cumulative user and attacker acceptance probabilities.}
+% \label{fig:mean_limits_probabilities}
+% \end{subfigure}
+
+% \caption{Policies maximizing the mechanism's success probability
+% subject to $\mathbb{E}[N_U\mid N_U\leq k]\leq\mu'$,
+% with $k=10$.
+% The upper panel shows selected thresholds; the lower panel shows
+% the probability of at least one user or attacker acceptance through
+% each attempt. Line styles identify constraint values, while blue
+% circles represent the user and red squares represent the attacker.
+% The constraint applies to the complete policy.}
+% \label{fig:mean_limits_comparison}
+% \end{figure}
 
 \section{Biometric Sensors Survey}
 \label{sec:sensors_review}
