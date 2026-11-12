@@ -1941,6 +1941,9 @@ However, in this attack scenario, optimizing the thresholds provides only a smal
 
 We next evaluate the two mechanisms under spoofing attacks, where attackers use forged fingerprints to impersonate legitimate users. As shown in the previous subsection, spoofing increases the overlap between the genuine and impostor score distributions, making authentication more challenging. We calculate the success probabilities of both mechanisms under this attack, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal threshold reduces the failure probability between~20\%-72\% compared to the~\EER threshold for the two mechanisms. Moreover, a mechanism combining both credentials at the~\EER threshold may achieve a lower success probability than a mechanism using either credential alone. These results demonstrate that using a non-optimal biometric threshold can reduce the success probability when combining credentials in an authentication mechanism. The results are summarized in Table~\ref{tab:psafe_sweep_improvement}.
 
+Since threshold selection can either reduce or improve the mechanism's success, the threshold of the biometric credential must be selected in the context of the mechanism.
+This motivates us to characterize when combining a biometric credential with an atomic credential improves the mechanism at all.
+
 % ===========================================================================
 % FIGURES AND TABLE FOR sec:two_credentials_empirical_eval
 % ===========================================================================

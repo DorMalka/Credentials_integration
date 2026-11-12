@@ -1742,215 +1742,45 @@ L(t),
 \end{cases}
 \]
 
-We analyze the success probability $P_{\text{success}}(t)$ by partitioning the threshold domain into five intervals.
-
-The first interval, $t \le a_1$, corresponds to the case in which the threshold is lower than the minimum value of the attacker distribution. In this regime, the \FAR is equal to~1, while the \FRR is equal to~0. Consequently, the safe probability of the biometric credential is zero, and the success probability converges to $P^{1}_{\text{safe}}$. Since $P^{1}_{\text{safe}}$ is constant in this interval, no interior maximum exists.
-
-The second interval, $a_1 < t \le u_1$, corresponds to the case in which the threshold lies between the minimum value of the attacker distribution and the minimum value of the user distribution. In this region, the \FAR decreases linearly as a function of~$t$, while the \FRR remains equal to~0. As a result, $P^2_{safe}$ and $P^2_{leak}$ of the biometric credential are $1-\FAR(t)$ and $\FAR(t)$, respectively. In this interval, $P_{\text{success}}(t)$ is a strictly increasing function, as its derivative is a constant positive value, and therefore the maximum is attained at the boundary point: $t_{\text{opt},2} = u_1$.
-
-
-The third interval, $u_1 < t \le a_2$, corresponds to the case in which the threshold lies between the minimum value of the user distribution and the maximum value of the attacker distribution. In this region, both \FAR and \FRR vary linearly with~$t$, resulting in a success probability that is quadratic as a function of~$t$. Differentiating $P_{\text{success}}(t)$ yields a single critical point inside the interval,
-\[
-t_{\text{opt}}^\prime
+The success probability is constant in the first interval, strictly increasing in the second, quadratic in the third, strictly decreasing in the fourth, and zero in the fifth.
+The global optimum therefore lies in the third interval, $u_1 < t \le a_2$, where the user and attacker distributions overlap and the success function attains an interior maximum:
+\begin{equation*}
+t_{\text{opt}}^{\mathrm{AND}}
 =
 \frac{
 u_2 + a_2
 - (a_2 - a_1)\,\dfrac{P^{1}_{\text{safe}} + P^{1}_{\text{leak}}}{P^{1}_{\text{leak}}}
-}{2}
-\]
-
-Since this expression is valid only for the interval~$u_1 < t \le a_2$, the effective maximizer within this interval is obtained by clipping the optimum to the interval boundaries, as follows:
-\[
-t_{\text{opt},3}
-=
-\min\!\left(
-a_2,\;
-\max\!\left(u_1,\; t_{\text{opt}}^\prime\right)
-\right).
-\]
-In particular, if~$t_{\text{opt},3} < u_1$, the maximum over this interval is  attained at~$t=u_1$, whereas if~$t_{\text{opt},3} > a_2$, the maximum is attained at~$t=a_2$. Evaluating the success probability at the user threshold~$t=u_1$ yields
-\[
-P_{\text{success}}(u_1)
-=
-P^{1}_{\text{safe}} + P^{1}_{\text{leak}}(1
-- \frac{a_2 - u_1}{a_2 - a_1}).
-\]
-Since we are analyzing the overlapping case where~$u_1 > a_1$, it follows that
-\[
-P_{\text{success}}(u_1) > P^{1}_{\text{safe}}.
-\]
-This demonstrates that integrating the biometric credential strictly improves the mechanism’s success compared to using the atomic credential alone.
-
-By examining the optimal point in this interval under \emph{AND} mechanism, we can deduce that as the variance of the attacker distribution increases, the optimal threshold $t_{\text{opt},3}$ shifts toward the lower boundry of the interval, $u_1$. Moreover, for an atomic credential with high safe values $P^{1}_{\text{safe}}$, and low leak values $P^{1}_{\text{leak}}$, the optimal threshold shifts toward the lower boundary as well. Thus, in such case, the success of the mechnaims becomes mainly dependent on the atomic credential. Conversely, an atomic credential with high leak values $P^{1}_{\text{leak}}$ and low safe values $P^{1}_{\text{safe}}$ causes the optimal threshold to shift toward the upper boundary of the interval, $a_2$. In this case, the success of the mechanism relies more heavily on the biometric credential.
-
-The fourth interval,~$a_2 < t \le u_2$, corresponds to the case in which the threshold exceeds the maximum value of the attacker distribution. In this regime, the~\FAR is equal to~0, while the~\FRR increases linearly with~$t$. Consequently, $P_{\text{success}}(t)$ is a strictly decreasing function in this interval, and the maximum is attained at the boundary point
-\[
-t_{\text{opt},4} = a_2 .
-\]
-
-Finally, the fifth interval,~$t > u_2$, corresponds to the case in which the threshold exceeds the maximum value of the user and the attacker distributions, leaving the success probability equal to~0.
-
-To determine the global optimal operating point, we compare all stationary points and boundary maxima obtained in the valid intervals. The optimal threshold is achieved in the third interval, where the attacker and user distributions overlap and the success function attains an interior maximum. Substituting $t_{\text{opt}}=t_{\text{opt},3}$ into $P_{\text{success}}(t)$ yields
-\begin{equation*}
-P_{\text{success}}(t_{\text{opt},3})=
-\frac{
-\left(
-a_2 P^{1}_{\text{safe}} - a_1 \big(P^{1}_{\text{safe}} + P^{1}_{\text{leak}}\big)
-+ P^{1}_{\text{leak}}\, u_2
-\right)^2
-}{
-4 P^{1}_{\text{leak}} (a_2 - a_1)(u_2 - u_1)
-}.
+}{2},
 \end{equation*}
-We do similar analysis for the \emph{OR} mechanism. We find the probability of success for the \emph{OR} mechanism. Denote: 
-\[
-Q(t) = \dfrac{t - a_1}{a_2 - a_1}
-\left[
-P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{loss}}(1 - \dfrac{t - u_1}{u_2 - u_1})
-\right].
-\]
-\[
-P_{\text{success}}(t) =
-\begin{cases}
-0,
-& t \le a_1 \\[8pt]
+clipped to the interval boundaries.
+Evaluating at the lower boundary gives $P_{\text{success}}(u_1) > P^{1}_{\text{safe}}$, so integrating the biometric credential strictly improves the mechanism over using the atomic credential alone.
 
-\dfrac{t - a_1}{a_2 - a_1}\,(P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{loss}}),
-& a_1 < t \le u_1 \\[10pt]
+The optimum's position reveals which credential the mechanism relies on.
+As the variance of the attacker distribution increases,~$t_{\text{opt}}^{\mathrm{AND}}$ shifts toward the lower boundary~$u_1$.
+An atomic credential with high~$P^{1}_{\text{safe}}$ and low~$P^{1}_{\text{leak}}$ shifts it toward $u_1$ as well, and the mechanism's success then depends mainly on the atomic credential.
+Conversely, high~$P^{1}_{\text{leak}}$ and low~$P^{1}_{\text{safe}}$ shift it toward the upper boundary~$a_2$, and the mechanism relies more heavily on the biometric credential.
 
-Q(t),
-& u_1 < t \le a_2 \\[12pt]
+We obtain a similar analysis for the \emph{OR} mechanism, with~$P^{1}_{\mathrm{loss}}$ in place of~$P^{1}_{\mathrm{leak}}$.
+Its global optimum lies in the same third interval:
+\begin{equation*}
+t_{\text{opt}}^{\mathrm{OR}} = \frac{a_1 P^{1}_{\mathrm{loss}} + u_2 (P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{loss}}) - P^{1}_{\mathrm{safe}} u_1}{2 P^{1}_{\mathrm{loss}}}.
+\end{equation*}
+For both mechanisms the optimal threshold differs from the~\EER threshold,~$t_{\EER} = (a_1 u_1 - a_2 u_2)/(a_1 - a_2 + u_1 - u_2)$.
 
-P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{loss}}(1 - \dfrac{t - u_1}{u_2 - u_1}),
-& a_2 < t \le u_2 \\[10pt]
-
-P^{1}_{\mathrm{safe}},
-& t > u_2 .
-\end{cases}
-\]
-We illustrate the mechanism's success probability for both \emph{OR} mechanism in figure~\ref{fig:OR_mechanism_success} and \emph{AND} mechanism in Figure~\ref{fig:AND_mechanism_success}. The figure marks the optimal operating point and the~\EER point on each curve demonstrating significant improvement from~\EER using optimal threshold. Moreover, the figure shows that when integrating a biometric credential and determining the threshold~$t$ to~\EER, the integration reduces mechanism's success compared to using the atomic credential alone. However, by optimizing the threshold, the integration of the biometric credential improves the mechanism's success over using the atomic credential alone.  
-By differentiating every interval and identifying the critical points, we found that the optimal threshold that leads to the maximum probability of success lies in the third interval where~$u_1 < t \le a_2$:
-\[t_{\text{opt}} = \frac{a_1\cdot{P^{1}_{\mathrm{loss}}} + u_2\cdot({P^{1}_{\mathrm{safe}}} + {P^{1}_{\mathrm{loss}}}) - P^{1}_{\mathrm{safe}}\cdot u_1}{2{P^{1}_{\mathrm{loss}}}}\]
-And the maximum probability of success at this point is:
-\[P_{\text{success}}(t_{\text{opt}}) = \frac{\big(a_1 {P^{1}_{\mathrm{loss}}} - u_2 ({P^{1}_{\mathrm{safe}}} + {P^{1}_{\mathrm{loss}}}) + {P^{1}_{\mathrm{safe}}} u_1\big)^2}
-{4 {P^{1}_{\mathrm{loss}}} (a_2 - a_1)(u_2 - u_1)}\]
-
-we calculate the~\EER point and show that the optimal operating point $t_{\text{opt}}$ differs from the equal error rate (\EER) point $t_{\EER}$.
-\[t_{\EER} = \frac{a_1 u_1 - a_2 u_2}{a_1 - a_2 + u_1 - u_2} \neq t_{\text{opt}}.\]
-
-
-\begin{figure}[t]
-\centering
-
-\pgfplotsset{
-    mechsuccessplot/.style={
-        scale only axis,
-        width=0.75\columnwidth,
-        height=0.5\columnwidth,
-        xlabel={$t$},
-        ylabel={$P_{\mathrm{success}}(t)$},
-        ymin=-0.05,
-        ymax=1.05,
-        grid=major,
-        each nth point=2,
-        filter discard warning=false,
-    }
-}
-
-% Read the points file
-\pgfplotstableread{figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt}{\successpoints}
-
-% Extract OR values
-\pgfplotstablegetelem{0}{P_opt_or}\of{\successpoints}
-\edef\PoptOR{\pgfplotsretval}
-\pgfplotstablegetelem{0}{P_or_eer}\of{\successpoints}
-\edef\PeerOR{\pgfplotsretval}
-
-% Extract AND values
-\pgfplotstablegetelem{0}{P_opt_and}\of{\successpoints}
-\edef\PoptAND{\pgfplotsretval}
-\pgfplotstablegetelem{0}{P_and_eer}\of{\successpoints}
-\edef\PeerAND{\pgfplotsretval}
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    mechsuccessplot,
-    legend to name=biometricatomlegend,
-    legend columns=4,
-    legend style={draw=black, fill=white, font=\scriptsize},
-    extra y ticks={\PeerOR,\PoptOR},
-    extra y tick labels={$\PeerOR$,$\PoptOR$},
-    extra y tick style={
-        tick label style={font=\scriptsize},
-        grid=major
-    }
-]
-
-\addplot[thick, myOrange, mark=none]
-table [x=T, y=P_or] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
-
-\addlegendimage{thick, blue, mark=none}
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
-
-\addplot[only marks, mark=square*, mark size=1.3pt, myGreen]
-table [x=T_eer, y=P_or_eer] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt};
-\addlegendentry{\EER}
-
-\addplot[only marks, mark=*, mark size=1.5pt, black]
-table [x=T_opt_or, y=P_opt_or] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt};
-\addlegendentry{Optimal point}
-
-\end{axis}
-\end{tikzpicture}
-\caption{OR mechanism.}
-\label{fig:OR_mechanism_success}
-\end{subfigure}
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    mechsuccessplot,
-    extra y ticks={\PeerAND,\PoptAND},
-    extra y tick labels={$\PeerAND$,$\PoptAND$},
-    extra y tick style={
-        tick label style={font=\scriptsize},
-        grid=major
-    }
-]
-
-\addplot[thick, blue, mark=none]
-table [x=T, y=P_and] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_data.txt};
-
-\addplot[only marks, mark=square*, mark size=1.3pt, myGreen]
-table [x=T_eer, y=P_and_eer] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt};
-
-\addplot[only marks, mark=*, mark size=1.5pt, black]
-table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_1con_success_points.txt};
-
-\end{axis}
-\end{tikzpicture}
-\caption{AND mechanism.}
-\label{fig:AND_mechanism_success}
-\end{subfigure}
-
-\medskip
-\pgfplotslegendfromname{biometricatomlegend}
-
-\caption{Success probability as a function of the threshold for the OR and AND mechanisms composed of an atomic credential with state probabilities $P^{1}_{\mathrm{safe}} = 0.8$, $P^{1}_{\mathrm{loss}} = 0.05$, $P^{1}_{\mathrm{leak}} = 0.1$, $P^{1}_{\mathrm{theft}} = 0.05$, and a biometric credential.}
-\label{fig:biometric_atomic_success}
-\end{figure}
+We observe that the optimal threshold of the biometric credential in both mechanisms is not, in general, the same as its optimal threshold when used without the atomic credential.
+An integrator must therefore set the threshold with respect to the mechanism it is deployed in, and not treat the biometric credential in isolation.
+The full interval analysis and the resulting success probabilities are in the full version of this report~\cite{biometric_full_version}.
 
 \subsection{Two Credentials Empirical Evaluation}\label{sec:two_credentials_empirical_eval}
 \noindent
 We use the same biometric credential evaluated in~$(\S\ref{sec:eval_single_cred})$, and first consider the baseline attack scenario, where attackers use their own fingerprints to authenticate. The mechanisms combine this biometric credential with an atomic credential whose fault probabilities are arbitrarily set to~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. We then calculate the success probabilities of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate these probabilities as functions of the threshold~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each mechanism differs from the~\EER threshold. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of a mechanism using only the atomic credential, demonstrating the benefit of combining the two credentials.
 
-However, in this attack scenario, optimizing the thresholds provides only a small improvement over the EER threshold for both mechanisms, since the biometric credential already has a very low EER, indicating limited overlap between the genuine and impostor distributions.
+However, in this attack scenario, optimizing the thresholds provides only a small improvement over the \EER threshold for both mechanisms, since the biometric credential already has a very low \EER, indicating limited overlap between the genuine and impostor distributions.
 
-We next evaluate the two mechanisms under spoofing attacks, where attackers use forged fingerprints to impersonate legitimate users. As shown in the previous subsection, spoofing increases the overlap between the genuine and impostor score distributions, making authentication more challenging. We calculate the success probabilities of both mechanisms under this attack, as shown in Figure~\ref{fig:livdet_sourceafis_success}. We find that the optimal threshold reduces the failure probability between~20\%-72\% compared to the~\EER threshold for the two mechanisms. Moreover, a mechanism combining both credentials at the~\EER threshold may achieve a lower success probability than a mechanism using either credential alone. These results demonstrate that using a non-optimal biometric threshold can reduce the success probability when combining credentials in an authentication mechanism. The results are summarized in Table~\ref{tab:psafe_sweep_improvement}.
+We next evaluate the two mechanisms under spoofing attacks, where attackers use forged fingerprints to impersonate legitimate users. As shown in the previous subsection, spoofing increases the overlap between the genuine and impostor score distributions, making authentication more challenging. We calculate the success probabilities of both mechanisms under this attack, as shown in Figure~\ref{fig:livdet_and_or_success}. We find that the optimal threshold reduces the failure probability between~20\%-72\% compared to the~\EER threshold for the two mechanisms. Moreover, a mechanism combining both credentials at the~\EER threshold may achieve a lower success probability than a mechanism using either credential alone. These results demonstrate that using a non-optimal biometric threshold can reduce the success probability when combining credentials in an authentication mechanism. The results are summarized in Table~\ref{tab:psafe_sweep_improvement}.
+
+Since threshold selection can either reduce or improve the mechanism's success, the threshold of the biometric credential must be selected in the context of the mechanism.
+This motivates us to characterize when combining a biometric credential with an atomic credential improves the mechanism at all.
 
 % ===========================================================================
 % FIGURES AND TABLE FOR sec:two_credentials_empirical_eval
