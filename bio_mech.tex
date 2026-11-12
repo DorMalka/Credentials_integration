@@ -1685,309 +1685,23 @@ table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_bes
 
 \section{Two Credentials}\label{sec:two_cred}
 \noindent
-We explore mechanisms that integrate two independently and identically distributed credentials. We numerically analyze two biometric credentials~$(\S\ref{sec:two_biocred})$ and symbolically analyze one biometric credential and one atomic credential~$(\S\ref{sec:atm_biocred})$.
+We explore mechanisms that combine a biometric credential and an atomic credential. We symbolically analyze such mechanisms~$(\S\ref{sec:atm_biocred})$ and evaluate them on public datasets~$(\S\ref{sec:two_credentials_empirical_eval})$. We then characterize when such mechanisms achieve greater success than a mechanism using the atomic credential alone. We show they never do when the atomic credential can only be safe or stolen~$(\S\ref{sec:no_success_improvement})$. Finally, we present a necessary and sufficient condition for improvement~$(\S\ref{sec:necessary_sufficient_success_condition})$ and extend it to multiple atomic credentials.
 
-\subsection{Two Biometric Credentials}\label{sec:two_biocred}
+\subsection{One Atomic and One Biometric Credential}\label{sec:atm_biocred}
 \noindent
-To analyze the case of a mechanism $M$ comprises two biometric credentials. We conduct a numerical study over several probability distribution functions. We start with a Gaussian distribution as a third-order approximation of a biometric credential's, as seen in Figure~\ref{fig:approximations}. To derive the optimal operating point for each possible mechanism composition, we maximize the respective success probabilities using a LBFGS optimization algorithm. We additionally compare the optimal operating point to the~\EER point, thereby characterizing the conditions under which the \emph{AND} or \emph{OR} mechanisms yields superior performance. 
-We defined the user and attacker distributions as~$f_U(s) = \mathcal{N}(\mu_u, \sigma_u^2)$ and~$f_A(s) = \mathcal{N}(\mu_a, \sigma_a^2)$ respectively. We randomly generate the Gaussian parameters to construct a user and an attacker PDF's closely resemble the empirical findings of Slobodan~\cite{Slob2005}. We focus on the overlapping case between the user and attacker distributions, as this represents the common case among real-world scenarios. For the first credential as~$\mu_u = 0.8$, $\sigma_u = 0.12$, $\mu_a = 0.3, \sigma_a = 1$ and for the second credential~$\mu_u = 1.0$, $\sigma_u = 0.2$, $\mu_a = 0.4, \sigma_a = 0.18$ as shown in Figure~\ref{fig:01_gaussians}.
-\begin{figure}[t]
-\centering
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.45\columnwidth,
-    xlabel={$s$},
-    ylabel={Density},
-    grid=none,
-    legend style={
-        at={(0.98,0.98)},
-        anchor=north east,
-        draw=black,
-        fill=white
-    }
-]
-
-\addplot[blue, thick, mark=none]
-table [x=s, y=PU1] {figs/fig_2continuous/gaussians_2cred_data.txt};
-\addlegendentry{$f_U(s)$}
-
-\addplot[red, thick, mark=none]
-table [x=s, y=PA1] {figs/fig_2continuous/gaussians_2cred_data.txt};
-\addlegendentry{$f_A(s)$}
-
-\end{axis}
-\end{tikzpicture}
-\end{subfigure}
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.45\columnwidth,
-    xlabel={$s$},
-    ylabel={Density},
-    grid=none,
-]
-
-\addplot[blue, thick, mark=none]
-table [x=s, y=PU2] {figs/fig_2continuous/gaussians_2cred_data.txt};
-
-\addplot[red, thick, mark=none]
-table [x=s, y=PA2] {figs/fig_2continuous/gaussians_2cred_data.txt};
-
-\end{axis}
-\end{tikzpicture}
-\end{subfigure}
-
-% \Description{Two Gaussian density plots for two biometric credentials, each showing user and attacker score distributions.}
-\caption{Gaussian user and attacker distributions.}
-\label{fig:01_gaussians}
-\end{figure}
-
-For a mechanism~$M$ comprises two independently and identically distributed credentials, we defined mechanism's success under two scenarios:
-a. \emph{AND}: The user can access both credentials, while the attacker cannot access least one of the credentials. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the leak state. Conversely, if either credential is in the lost or stolen state, the user cannot satisfy the mechanism, and the mechanism fails.
+For a mechanism~$M$ combining two independently and identically distributed credentials, we defined mechanism's success under two scenarios:
+a. \emph{AND}: The user can access both credentials, while the attacker cannot access at least one of the credentials. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the leak state. Conversely, if either credential is in the lost or stolen state, the user cannot satisfy the mechanism, and the mechanism fails.
 \begin{equation}
     \label{eqn:andsuccess}
 P_{\text{Success}}(M^{\text{AND}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{leak}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{leak}}
 \end{equation}
-
-b. \emph{OR}: The user can access at least one credential, while the attacker cannot access either of them. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the lost state. If either credential is leak or stolen, an attacker can satisfy the mechanism and thus the mechanism fails.
+\noindent
+b. \emph{OR}: The user can access at least one credential, while the attacker cannot access either of them. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the lost state. If either credential is leaked or stolen, an attacker can satisfy the mechanism and thus the mechanism fails.
 \begin{equation}
     \label{eqn:orsuccess}
 P_{\text{Success}}(M^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{loss}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{loss}}
 \end{equation}
 
-We calculate the error metrics of each credential, which are given by Equations~\ref{eqn:FAR} and~\ref{eqn:FRR} as a function of the threshold $t$. We then use these metrics to derive the credential's fault probabilities, as defined in Section~\ref{sec:credentials}.
-\begin{equation*}
-\FAR(t) = \int_{-\infty}^{t} \frac{1}{\sigma_{a,i}\sqrt{2\pi}}
-\exp\left(
--\frac{(s-\mu_{a,i})^2}{2\sigma_{a,i}^2}
-\right)
-ds, \textit{ and}  
-\end{equation*}
-\begin{equation*}
-\FRR(t) = \int_{t}^{\infty} \frac{1}{\sigma_{u,i}\sqrt{2\pi}}
-\exp\left(
--\frac{(s-\mu_{u,i})^2}{2\sigma_{u,i}^2}
-\right)
-ds.
-\end{equation*}
-We analyze both~\emph{AND} and~\emph{OR} mechanisms success probability given by Equations~\ref{eqn:andsuccess} and~\ref{eqn:orsuccess} and find their optimal threshold~$t$, using LBFGS optimization algorithm. We also compute the~\EER threshold of each credential and find the corresponding success probability at this point.
-
-The optimal threshold for both mechaninsms' types differ from the~\EER, yielding higher success probabilities than those obtained at the~\EER. Moreover, we find that the optimal points of both the \emph{AND} and \emph{OR} mechanisms are not necessarily the same as the optimal threshold if used individually. This finding suggest that integrators of a biometric credential should determine its threshold as function of the other credentials integrated into the mechanism. Figure~\ref{fig:02_far_vs_frr} illustrates the~\FAR vs. \FRR curves for both credentials, and marks the optimal points of both \emph{AND} and \emph{OR} mechanisms, as well as the~\EER and the standalone optimum of the biometric credential. The figure highlights the gap between different threhsolds. In the first credential, the threshold leads to high~\FRR and low~\FAR values, while in the second credential the threshold leads to low~\FRR and high~\FAR values. This demonstrates that the  \emph{AND} and \emph{OR} mechanisms balance the two error rates differently across credentials.
-
-We also find that the integration of a biometric credential to a mechanism already comprises a biometric credential, improves both \emph{AND} and \emph{OR} mechanism success. Hence, integrating two biometric credentials into a mechanism improves its success over using them individually. Figure~\ref{fig:04_success_functions} illustrate the success probability of both \emph{AND} and \emph{OR} mechanisms. We fix a credential to its optimum and show how the success probability varies as a function of the thresholds of the other credential.
-
-We numerically analyze first and second order approximations of the biometric credential's distribution and calculate the success probabilities of both \emph{AND} and \emph{OR} mechanisms at different thresholds. We quantify the improvement achieved by integrating two biometric credentials and the improvement of using the optimal threshold over the~\EER threshold. In conclusion, all numerical results are summarized in Table~\ref{tab:mechanism_success_gaussian}.
-
-\begin{figure}[t]
-\centering
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.45\columnwidth,
-    xlabel={$\FAR$},
-    ylabel={$\FRR$},
-    xmin=0, xmax=0.5,
-    ymin=0, ymax=0.5,
-    grid=major,
-    legend to name=farfrrtwocredlegend,
-    legend columns=2,
-    legend style={draw=black, fill=white}
-]
-
-\addplot[thick, myPurple, mark=none]
-table [x=FAR1, y=FRR1] {figs/fig_2continuous/far_vs_frr_2cred_data.txt};
-\addlegendentry{Operating Curve}
-
-\addplot[only marks,  mark=*, mark size=1.3pt]
-table [x=FAR1_and, y=FRR1_and] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
-\addlegendentry{AND Optimum}
-
-\addplot[only marks, myOrange, mark=x, mark size=1.8pt]
-table [x=FAR1_or, y=FRR1_or] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
-\addlegendentry{OR Optimum}
-
-\addplot[only marks, myGreen, mark=square*, mark size=1.3pt]
-table [x=FAR1_eer, y=FRR1_eer] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
-\addlegendentry{\EER}
-
-\addplot[only marks, myRed, mark=triangle*, mark size=1.5pt]
-table [x=FAR1_safe, y=FRR1_safe] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
-\addlegendentry{Safe-opt}
-
-\end{axis}
-\end{tikzpicture}
-\end{subfigure}
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.45\columnwidth,
-    xlabel={$\FAR$},
-    ylabel={$\FRR$},
-    xmin=0, xmax=0.5,
-    ymin=0, ymax=0.5,
-    grid=major
-]
-
-\addplot[thick, myPurple, mark=none]
-table [x=FAR2, y=FRR2] {figs/fig_2continuous/far_vs_frr_2cred_data.txt};
-
-\addplot[only marks, mark=*, mark size=1.3pt]
-table [x=FAR2_and, y=FRR2_and] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
-
-\addplot[only marks, myOrange, mark=x, mark size=1.8pt]
-table [x=FAR2_or, y=FRR2_or] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
-
-\addplot[only marks, myGreen, mark=square*, mark size=1.3pt]
-table [x=FAR2_eer, y=FRR2_eer] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
-
-\addplot[only marks, myRed, mark=triangle*, mark size=1.5pt]
-table [x=FAR2_safe, y=FRR2_safe] {figs/fig_2continuous/far_vs_frr_2cred_points.txt};
-
-\end{axis}
-\end{tikzpicture}
-\end{subfigure}
-
-\medskip
-
-\pgfplotslegendfromname{farfrrtwocredlegend}
-
-% \Description{Two \FAR versus \FRR operating curves for two Gaussian credentials, with AND optimum, OR optimum, \EER, and standalone safe-opt points marked.}
-\caption{\FAR vs. \FRR operating curves for two biometric credentials.}
-\label{fig:02_far_vs_frr}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-
-\pgfplotsset{
-    successplot/.style={
-        scale only axis,
-        width=0.82\columnwidth,
-        height=0.45\columnwidth,
-        ylabel={$P_{\mathrm{success}}$},
-        grid=major,
-        each nth point=2,
-        filter discard warning=false,
-    }
-}
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    successplot,
-    xlabel={$T_1$},
-    legend to name=success2credlegend,
-    legend columns=2,
-    legend style={draw=black, fill=white}
-]
-
-\addplot[thick, blue, mark=none]
-table [x=T1, y=P_and_T1] {figs/fig_2continuous/success_functions_2cred_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}$}
-
-\addplot[thick, myOrange, mark=none]
-table [x=T1, y=P_or_T1] {figs/fig_2continuous/success_functions_2cred_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}$}
-
-\addplot[only marks, mark=*, mark size=1.3pt, blue]
-table [x=T1_and, y=P_and_opt] {figs/fig_2continuous/success_functions_2cred_points.txt};
-\addlegendentry{AND Optimum}
-
-\addplot[only marks, mark=x, mark size=1.8pt, myOrange]
-table [x=T1_or, y=P_or_opt] {figs/fig_2continuous/success_functions_2cred_points.txt};
-\addlegendentry{OR Optimum}
-
-\addplot[only marks, mark=square*, mark size=1.3pt, myGreen]
-table [x=T1_eer, y=P_and_T1_eer] {figs/fig_2continuous/success_functions_2cred_points.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(T_{\EER})$}
-
-\addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
-table [x=T1_eer, y=P_or_T1_eer] {figs/fig_2continuous/success_functions_2cred_points.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(T_{\EER})$}
-
-\end{axis}
-\end{tikzpicture}
-\caption{Biometric credential 1 sweep.}
-\end{subfigure}
-
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    successplot,
-    xlabel={$T_2$}
-]
-
-\addplot[thick, blue, mark=none]
-table [x=T2, y=P_and_T2] {figs/fig_2continuous/success_functions_2cred_data.txt};
-
-\addplot[thick, myOrange, mark=none]
-table [x=T2, y=P_or_T2] {figs/fig_2continuous/success_functions_2cred_data.txt};
-
-\addplot[only marks, mark=*, mark size=1.3pt, blue]
-table [x=T2_and, y=P_and_opt2] {figs/fig_2continuous/success_functions_2cred_points.txt};
-
-\addplot[only marks, mark=x, mark size=1.8pt, myOrange]
-table [x=T2_or, y=P_or_opt2] {figs/fig_2continuous/success_functions_2cred_points.txt};
-
-\addplot[only marks, mark=square*, mark size=1.3pt, myGreen]
-table [x=T2_eer, y=P_and_T2_eer] {figs/fig_2continuous/success_functions_2cred_points.txt};
-
-\addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
-table [x=T2_eer, y=P_or_T2_eer] {figs/fig_2continuous/success_functions_2cred_points.txt};
-
-\end{axis}
-\end{tikzpicture}
-\caption{Biometric credential 2 sweep.}
-\end{subfigure}
-
-\medskip
-\pgfplotslegendfromname{success2credlegend}
-
-% \Description{Two success probability curves for threshold sweeps over two biometric credentials, showing AND and OR mechanisms with optimum and \EER thresholds.}
-\caption{Success probability as a function of the threshold for two biometric credentials.}
-\label{fig:04_success_functions}
-\end{figure}
-
-\begin{table*}[t]
-\centering
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lccccccccc}
-\toprule
-Distribution & $P_{c_1}(\mathrm{safe})$ & $P_{c_2}(\mathrm{safe})$ & $P_{\mathrm{AND}}(t_{\EER})$ & $P_{\mathrm{OR}}(t_{\EER})$ & $P_{\mathrm{AND}}(t_1^{\mathrm{safe}})$ & $P_{\mathrm{OR}}(t_2^{\mathrm{safe}})$ & $\mathbf{P_{\mathrm{AND}}(t_{\mathrm{opt}})}$ & $\mathbf{P_{\mathrm{OR}}(t_{\mathrm{opt}})}$ & Improvement \\
-\midrule
-Gaussian & 0.937 & 0.889 & 0.911 & 0.911 & 0.912 & 0.911 & \textbf{0.964} & \textbf{0.963} & 5.90\% / 5.66\% \\
-Uniform & 1.000 & 0.916 & 0.956 & 0.956 & 0.917 & 0.999 & \textbf{1.000} & \textbf{1.000} & 4.63\% / 4.61\% \\
-Parabolic & 0.959 & 0.887 & 0.921 & 0.921 & 0.920 & 0.923 & \textbf{0.987} & \textbf{0.985} & 7.25\% / 6.99\% \\
-\bottomrule
-\end{tabular}
-
-\caption{Mechanism success under two biometric credentials with Gaussian, Uniform and Parabolic distributions at four reference operating points: $\mathrm{safe}$ success of a single biometric credential mechanism,~\EER-pair $(t_1^{\EER},t_2^{\EER})$, individual optimum pair $(t_1^{\mathrm{safe}},t_2^{\mathrm{safe}})$, and joint optima (AND at $(t_1^{*},t_2^{*})_{\mathrm{AND}}$ and OR at $(t_1^{*},t_2^{*})_{\mathrm{OR}}$)}. The improvement is measured between the optimal operating point and the~\EER point.
-\label{tab:mechanism_success_gaussian}
-\end{table*}
-
-From~Table~\ref{tab:mechanism_success_gaussian}, we observe that the optimal operating point yields a higher success probability than the \EER point by between 5\% to 7\%. 
-
-\subsection{One Atomic and One Biometric Credential}\label{sec:atm_biocred}
-\noindent
 We start by analyzing the case of an \emph{AND} mechanism comprises an atomic credential and a biometric credential. 
 We define the atomic credential with a constant value of each probabilities' states as:~$P^1_{safe}$, $P^1_{loss}$, $P^1_{leak}$, $P^1_{theft}$ corrsponding respectively to each one of the states:~${\text{safe}}$,~${\text{loss}}$,~${\text{leak}}$ and~${\text{theft}}$. 
 We define the biometric credential by its PDFs for the user and the attacker,~$f_U$ and~$f_A$ respectively. We consider uniform distribution as a first-order approximation of a biometric credential's distribution. Denote by~$u_1, u_2$ the user's PDF bounds and~$a_1, a_2$ the attacker's PDF bounds, as shown in Figure~\ref{fig:uniform_three_cases}. The state probabilities of the biometric credential are defined by the error metrics~\FAR and~\FRR as done in Section~\ref{sec:credentials}. Moreover, we consider the overlapping case between the user and attacker distributions, as this represents the common case among real-world scenarios. Thus, we assume that~$a_1 < u_1 < a_2 < u_2$.
@@ -2370,9 +2084,6 @@ $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\
 \end{tabular}
 \end{table*}
 
-\section{Characterizing Success Improvement}\label{sec:proof_success_improvement} 
-\noindent
-We characterize the conditions under which a mechanism that uses both a biometric credential and an atomic credential mechanism achieves greater success than a mechanism that uses only the atomic credential. We show that any mechanism using a single atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$ and a biometric credential does not achieve greater success probability than a mechanism using only this atomic credential~$(\S\ref{sec:no_success_improvement})$. Next, we present a necessary and sufficient condition for such improvement~$(\S\ref{sec:necessary_sufficient_success_condition})$, extend the results to multiple atomic credentials, and derive a more intuitive sufficient condition.
 \subsection{No Improvement In Mechanism Success}\label{sec:no_success_improvement}
 \noindent
 We first consider an atomic credential that is always either safe or stolen, never lost or leaked. This case admits no benefit from producing a mechanism that uses an atomic credential in this setting and a biometric credential. The following proposition formalizes this result.
@@ -2490,7 +2201,11 @@ We showed that \emph{asymptotic separability} is a sufficient condition. We now 
     This contradicts the fact that, for every atomic credential~$c_1$, the success probability of~$\bar{M}$ is strictly greater than that of~$M$, as presented in both Equation~\ref{eqn:necessary term_1} and Equation~\ref{eqn:necessary term_2}. Therefore, the biometric credential must be asymptotically separable.
 \end{proof}
 \noindent
-We showed that~$\bar{M}$ achieves greater success probability than that of~$M$ the biometric credential is \emph{asymptotically separable} and the atomic credential has~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$. We also presented that asymptotic separability is a necessary condition for~$\bar{M}$ achieving greater success probability than every atomic credential mechanism. We extend our proof to a mechanism that uses a biometric credential and~$k$ atomic credentials and show that the mechanism achieves greater success probability than that of a mechanism using only the atomic credentials. First, every authentication mechanism~$M$ can be represented as a sum of products, i.e., a disjunctive normal form~(DNF)~\cite{Mendelson1997}. Then, we define a \emph{consolidated credential} of~$k$ atomic credentials as if it were itself a single atomic credential.
+We showed that~$\bar{M}$ achieves greater success probability than~$M$ when the biometric credential is \emph{asymptotically separable}, and the atomic credential has~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$.
+We also showed that asymptotic separability is necessary for~$\bar{M}$ to achieve greater success probability than every atomic credential mechanism.
+We extend our proof to a mechanism that uses a biometric credential and~$k$ atomic credentials, and show that it achieves greater success probability than a mechanism using only the atomic credentials.
+
+First, every authentication mechanism~$M$ can be represented as a sum of products, i.e., a disjunctive normal form~(DNF)~\cite{Mendelson1997}. Then, we define a \emph{consolidated credential} of~$k$ atomic credentials as if it were itself a single atomic credential.
 
 \begin{definition}
 Let~$M$ be an authentication mechanism over~$k$ atomic credentials. The \emph{consolidated credential} of~$M$ is the single abstract credential whose availability to the user and attacker is determined by the outputs of~$M$ on their respective availability vectors~$\sigma^U,\sigma^A\in\{0,1\}^k$. The fault probabilities of the consolidated credential are thus
@@ -2529,9 +2244,9 @@ P^M_{\text{stolen}}
     The mechanism~$M$ induces a reduction of the~$k$ credentials into a single consolidated credential. The consolidated credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$. Then,~$\bar{M}$ is a mechanism using the consolidated credential of~$M$ and the biometric credential. By Proposition~\ref{thm:nec_cond_for_improve}, the biometric credential must be asymptotically separable.
 \end{proof}
 
-Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential achieves a greater success probability than that of a single atomic credential mechanism~$M$, and show it is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}). 
+Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential, achieves a greater success probability than that of a single atomic credential mechanism~$M$. We prove that this is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}). 
 
-\section{Authentication with Multiple Attempts}
+\section{Multiple Attempts}
 \label{sec:multiple_auth_attempts}
 \noindent
 In biometric real world authentication, a mechanism commonly allows the principal to retry following failure~\cite{Chen2023BrutePrint}, typically up to a bounded number of attempts before lockout~\cite{typical_aut_attempts}. Since retries change the mechanism and raise the success probability of users and attackers alike, the single attempt threshold is no longer optimal. We therefore formalize a mechanism that limits the number of attempts~$(\S\ref{sec:equal_k_attempts})$. Within that limit, the mechanism success probability alone is not enough, since the threshold optimization may require many attempts to succeed. Then, we analyze both the mechanism's success probability and the mean number of attempts required for a user's first successful authentication~$(\S\ref{sec:mul_attempts_success})$. As these two metrics conflict, we examine their tradeoff subject to different constraints~$(\S\ref{sec:optimization_mul_attempts})$.
