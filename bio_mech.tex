@@ -3806,24 +3806,27 @@ The constraint applies to the complete policy.}
 \section{Biometric Sensors Survey}
 \label{sec:sensors_review}
 \noindent
-We assess whether biometric sensors allow tuning the match threshold. 
-We review vendors' specifications of commercially available biometric sensors, spanning fingerprints, face, iris and palm. We identify 32 device families from 21 manufacturers and classify each family according to two criteria that reflect our model’s requirements.
+We review manufacturers' specifications of commercially available biometric sensors, spanning fingerprints, face, iris and palm.
+We identify 32 device families from 21 manufacturers and classify each family according to three criteria that reflect our model's requirements.
 
-The first criterion is \emph{in-sensor decision}:
-whether the device performs matching and emits an accept/reject verdict itself, or merely captures a sample for a host matcher. Of the 32 families, 23 make an in-sensor decision while the remaining 9 are capture only. A capture-only sensor exposes either the biometric data, matching score or the sample itself. Revealing the biometric data or matching score can facilitate hill-climbing attacks, in which an attacker repeatedly modifies a biometric sample based on score feedback until the system accepts it~\cite{Bringer2018PrivateByDesign}. Furthermore, exposing the biometric samples creates privacy risks, as they may be reused to identify users across services without their knowledge or consent~\cite{FIDOPrivacyPrinciples}. For these reasons, we exclude these 9 families and focus on sensors that expose only an accept/reject decision. 
+The first criterion is \emph{in-sensor decision}: whether the device performs matching and emits an accept/reject verdict itself, or merely captures a sample for a host matcher.
+Of the 32 families, 23 make an in-sensor decision while the remaining 9 are capture only.
+A capture-only sensor exposes the biometric sample or the matching score, which can facilitate hill-climbing attacks~\cite{Bringer2018PrivateByDesign} and creates privacy risks, as third parties may reuse the samples to identify users across services~\cite{FIDOPrivacyPrinciples}.
 
 The second criterion is \emph{threshold tuning}: whether the device allows the integrator to set a numeric match threshold.
-We distinguish this capability from three weaker methods, none of which permits setting a specific match threshold. The first method tunes a~\emph{target error rate}, where the integrator specifies a desired~\FAR or~\FRR value within a predetermined range. The error rates the integrator requires may lie outside that range entirely. Moreover, since~\FAR and~\FRR are functions of the match threshold, specifying a target error rate does not allow the integrator to determine the corresponding threshold, unless these functions are known. Instead, the device selects the threshold internally without exposing its value. 
-The second method allows choosing a \emph{discrete security level} such as~1-5,~1-9,~High/Medium/Low or selected~\FAR discrete values. The integrator is therefore limited to a few fixed levels that influence the match threshold without setting it directly, and the optimal threshold may not be among them. Moreover, even when a level is labelled with its error rate, the corresponding threshold value behind it is not exposed, so no match threshold outside the vendor’s set can be reached.
-The third method exposes no threshold parameter of any kind, leaving the integrator with the single match threshold the vendor chose.
+Only 2 of the 23 in-sensor decision families do, comprising 6 individual models.
+The remaining families offer weaker methods that do not permit setting a specific threshold: a target error rate within a predetermined range, a discrete security level such as~1--5 or High/Medium/Low, or no threshold parameter at all.
+In each case the integrator is left with a threshold the sensor derives internally and never exposes.
 
-The third criterion is \emph{error-rate exposure}: whether the vendor publishes the~\FAR and~\FRR for the device. Setting a threshold is necessary but not sufficient for optimization. Without knowing the~\FAR and~\FRR functions, the integrator can set~$t$ to a specific value, but cannot determine the error rates it induces.
+The third criterion is \emph{error-rate exposure}: whether the manufacturer publishes the~\FAR and~\FRR functions for the device.
+Setting a threshold is necessary but not sufficient for optimization, since without these functions the integrator cannot determine the error rates a threshold induces.
+None of the 23 families satisfies this criterion.
+The detailed list is in Appendix~\ref{app:Bio_table}.
 
-Only 2 out of the 23 in-sensor decision families satisfy the threshold tuning criterion. Those families, comprising 6 individual models, permit setting an arbitrary numeric match threshold. None of the 23 satisfies the error-rate
-exposure criterion: no vendor publishes~\FAR or~\FRR functions, so an
-integrator that can set a threshold still cannot determine which value to set. The detailed list is in Appendix~\ref{app:Bio_table}. 
-
-The practical consequence is that today's authentication mechanisms are built atop in-sensor decision devices and cannot, in any of the 23 families we surveyed, optimize the match threshold. In 21 of the 23 families we surveyed the threshold cannot be set at all, and in the remaining two it can be set but not informed, since the error-rate functions are not published. To support threshold optimization, vendors should expose both the match threshold and the~\FAR and~\FRR functions that characterize it. This would allow integrators to select thresholds according to their requirements, and as part of the other credentials used in the mechanism.
+The practical consequence is that today's authentication mechanisms cannot optimize the match threshold they inherit.
+In 21 of the 23 families we surveyed the threshold cannot be set at all, and in the remaining two it can be set but not informed, since the error-rate functions are not published.
+To support threshold optimization, manufacturers should expose both the match threshold and the~\FAR and~\FRR functions that characterize it.
+This would allow integrators to select thresholds according to their requirements, and as part of the other credentials used in the mechanism.
 
 \section{Conclusion}\label{sec:conclusion}
 \noindent
