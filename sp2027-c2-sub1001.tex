@@ -1696,7 +1696,7 @@ table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_bes
 
 \section{Two Credentials}\label{sec:two_cred}
 \noindent
-We explore mechanisms that combine a biometric credential and an atomic credential. We symbolically analyze such mechanisms~$(\S\ref{sec:atm_biocred})$ and evaluate them on public datasets~$(\S\ref{sec:two_credentials_empirical_eval})$. We then characterize when such mechanisms achieve greater success than one using the atomic credential alone. We show they never do when the atomic credential can only be safe or stolen~$(\S\ref{sec:no_success_improvement})$. Finally, we present a necessary and sufficient condition for improvement~$(\S\ref{sec:necessary_sufficient_success_condition})$ and extend it to multiple atomic credentials.
+We explore mechanisms that combine a biometric credential and an atomic credential. We symbolically analyze such mechanisms~$(\S\ref{sec:atm_biocred})$ and evaluate them on public datasets~$(\S\ref{sec:two_credentials_empirical_eval})$. We then characterize when such mechanisms achieve greater success than a mechanism using the atomic credential alone. We show they never do when the atomic credential can only be safe or stolen~$(\S\ref{sec:no_success_improvement})$. Finally, we present a necessary and sufficient condition for improvement~$(\S\ref{sec:necessary_sufficient_success_condition})$ and extend it to multiple atomic credentials.
 
 
 % \subsection{Two Biometric Credentials}\label{sec:two_biocred}
@@ -1987,14 +1987,14 @@ We explore mechanisms that combine a biometric credential and an atomic credenti
 
 \subsection{One Atomic and One Biometric Credential}\label{sec:atm_biocred}
 \noindent
-For a mechanism~$M$ comprises two independently and identically distributed credentials, we defined mechanism's success under two scenarios:
-a. \emph{AND}: The user can access both credentials, while the attacker cannot access least one of the credentials. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the leak state. Conversely, if either credential is in the lost or stolen state, the user cannot satisfy the mechanism, and the mechanism fails.
+For a mechanism~$M$ combining two independently and identically distributed credentials, we defined mechanism's success under two scenarios:
+a. \emph{AND}: The user can access both credentials, while the attacker cannot access at least one of the credentials. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the leak state. Conversely, if either credential is in the lost or stolen state, the user cannot satisfy the mechanism, and the mechanism fails.
 \begin{equation}
     \label{eqn:andsuccess}
 P_{\text{Success}}(M^{\text{AND}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{leak}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{leak}}
 \end{equation}
-
-b. \emph{OR}: The user can access at least one credential, while the attacker cannot access either of them. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the lost state. If either credential is leak or stolen, an attacker can satisfy the mechanism and thus the mechanism fails.
+\noindent
+b. \emph{OR}: The user can access at least one credential, while the attacker cannot access either of them. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the lost state. If either credential is leaked or stolen, an attacker can satisfy the mechanism and thus the mechanism fails.
 \begin{equation}
     \label{eqn:orsuccess}
 P_{\text{Success}}(M^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{loss}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{loss}}
@@ -2482,7 +2482,7 @@ P^M_{\text{stolen}}
     The mechanism~$M$ induces a reduction of the~$k$ credentials into a single consolidated credential. The consolidated credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$. Then,~$\bar{M}$ is a mechanism using the consolidated credential of~$M$ and the biometric credential. By Proposition~\ref{thm:nec_cond_for_improve}, the biometric credential must be asymptotically separable.
 \end{proof}
 
-Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential achieves a greater success probability than that of a single atomic credential mechanism~$M$, and show it is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}). 
+Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential, achieves a greater success probability than that of a single atomic credential mechanism~$M$. We prove that this is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}). 
 
 \section{Multiple Attempts}
 \label{sec:multiple_auth_attempts}
