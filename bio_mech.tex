@@ -1000,7 +1000,7 @@ R(t),
 & \beta_2 \le t \le \alpha_2.
 \end{cases}
 \end{equation*}
-In the second interval, the derivative has a single critical point at $t=\beta_{1}$. Since the derivative is strictly positive for all $t>\beta_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $t=\alpha_{2}$, and the derivative is strictly negative for all $t<\alpha_{2}$. Therefore, this interval contains no maximum either. We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at~$t=\beta_{1}$ and~$t=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution cannot be simplified beyond a complex expression. Thus, we denote the solution as $t_{\text{cubic}}$.
+In the second interval, the derivative has a single critical point at $t=\beta_{1}$. Since the derivative is strictly positive for all $t>\beta_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $t=\alpha_{2}$, and the derivative is strictly negative for all $t<\alpha_{2}$. Therefore, this interval contains no maximum either. We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at~$t=\beta_{1}$ and~$t=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution cannot be simplified beyond a complex expression~(see Appendix~\ref{app:quad_opt_thr}). Thus, we denote the solution as $t_{\text{cubic}}$.
 
 \begin{figure*}[t]
 \centering
@@ -1306,10 +1306,11 @@ To demonstrate that this optimal threshold differs from the Equal Error Rate (\E
 \begin{equation*}
 t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2}
 \end{equation*}
-We can observe that the~\EER threshold is not equal to the~$t_{\text{opt}}$. To evaluate the difference between the~$t_{\text{opt}}$ and the~\EER, we illustrate different attacker distributions, each spanning a wider interval~$(\beta_1,\beta_2)$, which corresponds to increasing the variance, as shown in Figure~\ref{fig:different_attackers_pdf_1_quadratic_cred}.
+We can observe that the two thresholds differ.
+To evaluate the difference between the~$t_{\text{opt}}$ and the~\EER, we illustrate different attacker distributions, each spanning a wider interval~$(\beta_1,\beta_2)$, which corresponds to increasing the variance, as shown in Figure~\ref{fig:different_attackers_pdf_1_quadratic_cred}.
 Comparing each case with its corresponding success probability curve, we observe that the optimal threshold~$t_{\text{opt}}$ becomes more distinct from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases and the more asymmetric the user and attacker distributions become. 
 
-Moreover, increasing the variance of an attacker distribution shifts the optimal threshold~$t_{\text{opt}}$ towards~$\alpha_1$, reducing the~\FRR to zero. In contrast, the~\EER threshold remains fixed balancing between the~\FAR and~\FRR. This shift indicates that when increasing the variance, the optimal threshold prioritizes minimizing the false rejection rate, rather than balancing both error rates, as shown in Figure~\ref{fig:FAR_FRR_1_quadratic_cred}.
+Moreover, increasing the variance of an attacker distribution shifts the optimal threshold~$t_{\text{opt}}$ towards~$\alpha_1$, reducing the~\FRR to zero. In contrast, the~\EER threshold remains fixed balancing between the~\FAR and~\FRR. This shift indicates that when increasing the variance, the optimal threshold prioritizes minimizing the false rejection rate, rather than balancing both error rates, as shown in Figure~\ref{fig:success_per_attacker_1_quadratic_cred}.
 
 To quantify the effect of the variance on the deviation between the optimal threshold~$t_{\text{opt}}$ and~\EER threshold~$t_{\EER}$, we numerically computed this gap as a function of the attacker's variance. The simulation indicates that higher attacker variance enlarges the gap between the two success probabilities, as shown in Figure~\ref{fig:gap_vs_variance_parabola_success}. Operating at~$t_{\text{opt}}$ rather than the~\EER threshold is therefore most valuable when the attacker distribution spans a wide interval.
 
@@ -1990,7 +1991,7 @@ We first consider an atomic credential that is always either safe or stolen, nev
     \end{equation*}
     Each state probability of the biometric credential is strictly less than one; in particular,~$P^2_{\text{safe}}(t) \le 1$ for all values of~$t$. Therefore,~$P_{\text{success}}(t) \le P^1_\text{safe}$ and thus, adding a biometric credential does not produce a new mechanism~$\bar{M}$ whose success probability is greater than that of a single atomic credential mechanism.
 \end{proof}
-\subsection{Necessary and Sufficient Condition for Integrating Biometric Credentials}\label{sec:necessary_sufficient_success_condition}
+\subsection{Necessary and Sufficient Condition}\label{sec:necessary_sufficient_success_condition}
 \noindent 
 We turn to the general case of an atomic credential that can also be lost or leaked. Then, we identify a biometric credential that is \emph{asymptotically separable}. We show that this is a necessary and sufficient condition for a mechanism using an atomic credential and a biometric credential to achieve strictly greater success probability than a mechanism using only the atomic credential.
 Intuitively, asymptotic separability means that there exists a threshold~$t$ such that the error rate is negligible with respect to the correctness rate, making the user and attacker distributions effectively separated.
@@ -3981,6 +3982,29 @@ Authentication Mode the decision is delegated to an upstream controller.
 $^{\ddagger}$On-device matching is one of three selectable operating modes.
 $^{\S}$Face detection only: no template store and no identity decision.
 \end{table*}
+
+\section{Closed Form of the Quadratic Optimal Threshold}\label{app:quad_opt_thr}
+\noindent
+We derive the optimal threshold for a quadratic distribution, which is a second-order approximation of a biometric credential score distribution. As shown in~$(\S\ref{sec:quadratic_biocred})$, the optimal threshold is the single real root of the cubic in the third interval.
+Let
+\begin{align*}
+p &= 13\alpha_1^2 - 2\alpha_1(13\alpha_2 + \beta_1 - \beta_2) + 25\alpha_2^2 \\
+  &\quad - 2\alpha_2(11\beta_1 + \beta_2) + 25\beta_1^2 - 26\beta_1\beta_2 + 13\beta_2^2, \\[4pt]
+r &= 19\alpha_1^2 + 2\alpha_1(35\alpha_2 - 55\beta_1 + \beta_2) - 125\alpha_2^2 \\
+  &\quad + 10\alpha_2(29\beta_1 - 11\beta_2) - (25\beta_1 - 19\beta_2)(5\beta_1 + \beta_2), \\[4pt]
+w &= 19\alpha_1^3 + 3\alpha_1^2(17\alpha_2 - 43\beta_1 + 7\beta_2) \\
+  &\quad + 3\alpha_1\bigl(-5(13\alpha_2^2 - 22\alpha_2\beta_1 + \beta_1^2) \\
+  &\quad\quad - 14\beta_2(\alpha_2 + \beta_1) + 7\beta_2^2\bigr) \\
+  &\quad + 125\alpha_2^3 - 165\alpha_2^2\beta_1 - 15\alpha_2^2\beta_2 - 165\alpha_2\beta_1^2 \\
+  &\quad + 330\alpha_2\beta_1\beta_2 - 129\alpha_2\beta_2^2 + 125\beta_1^3 \\
+  &\quad - 195\beta_1^2\beta_2 + 51\beta_1\beta_2^2 + 19\beta_2^3, \\[4pt]
+D &= \sqrt{-p^3 + (\alpha_1 - \alpha_2 - \beta_1 + \beta_2)^2 r^2}, \\[4pt]
+C &= \sqrt[3]{w + D}.
+\end{align*}
+The optimal threshold is then
+\begin{equation*}
+t_{\text{opt}} = \frac{1}{12}\left(C + \frac{p}{C} + \alpha_1 + 5\alpha_2 + 5\beta_1 + \beta_2\right).
+\end{equation*}
 
 \end{document}
 \endinput
