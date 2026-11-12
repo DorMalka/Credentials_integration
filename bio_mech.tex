@@ -1933,7 +1933,7 @@ table [x=T_opt_and, y=P_opt_and] {figs/fig_1continuous_1discrete/mechanism_1dis_
 \label{fig:biometric_atomic_success}
 \end{figure}
 
-\subsection{Two Credentials Empirical Evaluation}\label{sec:two_credentials_empirical_eval}
+\subsection{Empirical Evaluation}\label{sec:two_credentials_empirical_eval}
 \noindent
 We use the same biometric credential evaluated in~$(\S\ref{sec:eval_single_cred})$, and first consider the baseline attack scenario, where attackers use their own fingerprints to authenticate. The mechanisms combine this biometric credential with an atomic credential whose fault probabilities are arbitrarily set to~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. We then calculate the success probabilities of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate these probabilities as functions of the threshold~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each mechanism differs from the~\EER threshold. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of a mechanism using only the atomic credential, demonstrating the benefit of combining the two credentials.
 
