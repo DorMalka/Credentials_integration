@@ -329,33 +329,29 @@ For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants ac
 \section{Real Data and Approximations}
 \label{sec:real_data}
 \noindent
-We evaluate our model using the public real-world~\textit{LivDet2015} dataset of fingerprints~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}.
-This dataset contains multiple fingerprint scans of each user, acquired using different types of biometric sensors, as well as spoof samples produced from each user's fingerprints.
-We divide each user's scans into a reference set, representing reference scans stored in advance, and a candidate set, representing scans obtained by the sensor. 
-To score the fingerprint scan images, we use the standard fingerprint verification algorithm~\textit{SourceAFIS}~\cite{sourceafis}. 
-This algorithm compares the relative positions and orientations of fingerprint ridge endings and bifurcations across two images.
-We compute a similarity score for each candidate scan by comparing it against every reference image, and retaining the maximum score as the candidate's final score~\cite{hong1998,Cappelli2006,max_score2009}.
-Following the evaluation procedures of Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}, we produce histograms of genuine and imposter comparisons, to obtain the empirical score distributions of the users and attackers, respectively, under two baseline attack scenarios.
+We evaluate our model using~\textit{LivDet2015}, a real-world dataset~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}.
+It contains multiple fingerprint scans of each user, acquired using different types of sensors, as well as spoof samples produced from each user's fingerprints.
+We divide each user's scans into reference scans and candidate scans. 
+To score the fingerprint scan images, we use a standard fingerprint verification algorithm, namely~\textit{SourceAFIS}~\cite{sourceafis}. 
+We compute a similarity score for each candidate scan by comparing it against every reference image, and retaining the maximum value as the candidate's score~\cite{hong1998,Cappelli2006,max_score2009}.
+For each of two attack scenarios, we produce histograms of genuine and impostor scores~\cite{Anil1997,Cappelli2006,Slob2005}, to obtain the empirical user and attacker score distributions.
 
 In the first scenario, an attacker authenticates using their own fingerprints. 
-The genuine comparisons involve comparisons between all the user's candidate images and the user's reference images.
-By contrast, the impostor comparisons involve comparisons between all the user's reference images and the scans of the other users in the database.
-With an~\EER of approximately~3.8\%, the algorithm’s performance is representative of state-of-the-art fingerprint verification~\cite{Maio2002,Cappelli2006} and the best results achieved in the~\textit{LivDet2015} competition~\cite{LivDet2015}.
-In the second scenario, an attacker creates a fake fingerprint using spoofing materials, produced by~\textit{Gelatine}, \textit{Woodglue}, \textit{Latex} and~\textit{Ecoflex}. We match these spoof samples against the user's reference images to obtain the impostor score distribution.
+The impostor scores are all the users' scans evaluated against the reference of the other users in the database.
+With an~\EER of~3.8\%, the algorithm’s performance is representative of state-of-the-art fingerprint verification~\cite{Maio2002,Cappelli2006} and the best results achieved in the~\textit{LivDet2015} competition~\cite{LivDet2015}.
+In the second scenario, an attacker creates fake fingerprint samples using spoofing materials such as Gelatine, Woodglue, Latex and Ecoflex. We match each spoof sample against the spoofed user's reference images to obtain the impostor score distribution.
 
-To symbolically analyze different mechanisms, we approximate the empirical score distributions using theoretical distributions.
-Evaluating different mechanisms requires the biometric credential's fault probabilities which are determined by the~\FAR and~\FRR values~(Equation~\ref{eqn:safe_prob}). 
-We evaluate the accuracy of the theoretical models introduced in~$(\S\ref{sec:mechanisms})$ by fitting uniform, quadratic, and normal distributions to the genuine and impostor score histograms in both attack scenarios.
-For each fitted distribution, we calculate the Kolmogorov-Smirnov~(KS) statistic~\cite{Massey1951}. 
-This statistic measures the maximum absolute difference between the empirical and fitted cumulative distribution functions, which correspond to the~\FRR and~\FAR curves.
+To analyze different mechanisms, we approximate the empirical score distributions. 
+We evaluate the accuracy by fitting uniform, quadratic, and normal distributions to the genuine and impostor score histograms in both attack scenarios.
+For each fitted distribution, we calculate the Kolmogorov-Smirnov~(KS) statistic~\cite{Massey1951} against the~\FRR and~\FAR curves.
 Figure~\ref{fig:approximations} presents the resulting~\FAR and~\FRR curves alongside the empirical values for both scenarios.
-The KS statistics range from~$0.04$ to~$0.07$ for the genuine scores and are approximately~$0.17$ for the impostor scores, providing empirical support for using our theoretical models as approximations of the observed score distributions.
+The KS statistics range from~$0.04$ to~$0.07$ for the genuine scores and are~$0.17$ for the impostor scores, providing empirical support for using our theoretical models as approximations of the measured score distributions.
 
 \begin{figure*}[t]
 \centering
 \pgfplotsset{
-    impostor curve/.style={thick, dashed},
-    genuine curve/.style={thick, solid},
+    impostor curve/.style={line width=0.6pt, dashed},
+    genuine curve/.style={line width=0.6pt, solid},
     uniform model/.style={purple},
     quadratic model/.style={orange},
     normal model/.style={cyan},
@@ -377,14 +373,14 @@ The KS statistics range from~$0.04$ to~$0.07$ for the genuine scores and are app
 \begin{axis}[
     ksaxis,
     legend to name=kslegend,
-    legend columns=4,
+    legend columns=6,
     legend style={draw=black, fill=white, font=\scriptsize}
 ]
-\addplot[only marks, red, mark=*, mark size=1.3pt]
+\addplot[only marks, red, mark=*, mark size=1.1pt]
 table[x=T, y=FAR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
 \addlegendentry{Empirical \FAR}
 
-\addplot[only marks, blue, mark=*, mark size=1.3pt]
+\addplot[only marks, blue, mark=*, mark size=1.1pt]
 table[x=T, y=FRR] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
 \addlegendentry{Empirical \FRR}
 
@@ -404,13 +400,13 @@ table[x=T, y=FAR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_
 table[x=T, y=FRR_quadratic] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
 \addlegendentry{Quadratic \FRR}
 
-\addplot[impostor curve, normal model]
-table[x=T, y=FAR_normal] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Normal \FAR}
+% \addplot[impostor curve, normal model]
+% table[x=T, y=FAR_normal] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Normal \FAR}
 
-\addplot[genuine curve, normal model]
-table[x=T, y=FRR_normal] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
-\addlegendentry{Normal \FRR}
+% \addplot[genuine curve, normal model]
+% table[x=T, y=FRR_normal] {figs/fig_different_users_sourceafsi/sourceafis_far_frr_data.txt};
+% \addlegendentry{Normal \FRR}
 \end{axis}
 \end{tikzpicture}
 \caption{Different users.}
@@ -421,10 +417,10 @@ table[x=T, y=FRR_normal] {figs/fig_different_users_sourceafsi/sourceafis_far_frr
 \centering
 \begin{tikzpicture}
 \begin{axis}[ksaxis]
-\addplot[only marks, red, mark=*, mark size=1.3pt]
+\addplot[only marks, red, mark=*, mark size=1.1pt]
 table[x=T, y=FAR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 
-\addplot[only marks, blue, mark=*, mark size=1.3pt]
+\addplot[only marks, blue, mark=*, mark size=1.1pt]
 table[x=T, y=FRR] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 
 \addplot[impostor curve, uniform model]
@@ -439,11 +435,11 @@ table[x=T, y=FAR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_be
 \addplot[genuine curve, quadratic model]
 table[x=T, y=FRR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 
-\addplot[impostor curve, normal model]
-table[x=T, y=FAR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addplot[impostor curve, normal model]
+% table[x=T, y=FAR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 
-\addplot[genuine curve, normal model]
-table[x=T, y=FRR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
+% \addplot[genuine curve, normal model]
+% table[x=T, y=FRR_normal] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_best_of_probes_data.txt};
 \end{axis}
 \end{tikzpicture}
 \caption{Spoofing attack.}
