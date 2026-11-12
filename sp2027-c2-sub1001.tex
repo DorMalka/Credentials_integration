@@ -1713,8 +1713,8 @@ b. \emph{OR}: The user can access at least one credential, while the attacker ca
 P_{\text{Success}}(M^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{loss}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{loss}}
 \end{equation}
 
-We start by analyzing the case of an \emph{AND} mechanism comprises an atomic credential and a biometric credential. 
-We define the atomic credential with a constant value of each probabilities' states as:~$P^1_{safe}$, $P^1_{loss}$, $P^1_{leak}$, $P^1_{theft}$ corrsponding respectively to each one of the states:~${\text{safe}}$,~${\text{loss}}$,~${\text{leak}}$ and~${\text{theft}}$. 
+We start by analyzing the case of an \emph{AND} mechanism that combines an atomic credential and a biometric credential. 
+We define the atomic credential with a constant value of each of its state probabilities as~$P^1_{safe}$, $P^1_{loss}$, $P^1_{leak}$, $P^1_{theft}$ corresponding respectively to each one of the states:~${\text{safe}}$,~${\text{loss}}$,~${\text{leak}}$ and~${\text{theft}}$. 
 We define the biometric credential by its PDFs for the user and the attacker,~$f_U$ and~$f_A$ respectively. We consider uniform distribution as a first-order approximation of a biometric credential's distribution. Denote by~$u_1, u_2$ the user's PDF bounds and~$a_1, a_2$ the attacker's PDF bounds, as shown in Figure~\ref{fig:uniform_three_cases}. The state probabilities of the biometric credential are defined by the error metrics~\FAR and~\FRR as done in Section~\ref{sec:credentials}. Moreover, we consider the overlapping case between the user and attacker distributions, as this represents the common case among real-world scenarios. Thus, we assume that~$a_1 < u_1 < a_2 < u_2$.
 We set the state probabilities of an atomic and a biometric credential into Equation~\ref{eqn:andsuccess}. Thus, the probability of success is a function of the threshold $t$ and divided into 5 intervals. Denote:
 \[L(t) = \dfrac{u_2 - t}{u_2 - u_1}
@@ -1777,9 +1777,9 @@ P^{1}_{\text{safe}} + P^{1}_{\text{leak}}(1
 \]
 Since we are analyzing the overlapping case where~$u_1 > a_1$, it follows that
 \[
-P_{\text{success}}(u_1) > P^{1}_{\text{safe}},
+P_{\text{success}}(u_1) > P^{1}_{\text{safe}}.
 \]
-Demonstrating that the integration of the biometric credential strictly improves the success of the mechanism compared to using the atomic credential alone.
+This demonstrates that integrating the biometric credential strictly improves the mechanism’s success compared to using the atomic credential alone.
 
 By examining the optimal point in this interval under \emph{AND} mechanism, we can deduce that as the variance of the attacker distribution increases, the optimal threshold $t_{\text{opt},3}$ shifts toward the lower boundry of the interval, $u_1$. Moreover, for an atomic credential with high safe values $P^{1}_{\text{safe}}$, and low leak values $P^{1}_{\text{leak}}$, the optimal threshold shifts toward the lower boundary as well. Thus, in such case, the success of the mechnaims becomes mainly dependent on the atomic credential. Conversely, an atomic credential with high leak values $P^{1}_{\text{leak}}$ and low safe values $P^{1}_{\text{safe}}$ causes the optimal threshold to shift toward the upper boundary of the interval, $a_2$. In this case, the success of the mechanism relies more heavily on the biometric credential.
 
