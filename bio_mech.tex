@@ -2136,12 +2136,14 @@ Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,
 \section{Multiple Attempts}
 \label{sec:multiple_auth_attempts}
 \noindent
-In biometric real world authentication, a mechanism commonly allows the principal to retry following failure~\cite{Chen2023BrutePrint}, typically up to a bounded number of attempts before lockout~\cite{typical_aut_attempts}. Since retries change the mechanism and raise the success probability of users and attackers alike, the single attempt threshold is no longer optimal. We therefore formalize a mechanism that limits the number of attempts~$(\S\ref{sec:equal_k_attempts})$. Within that limit, the mechanism success probability alone is not enough, since the threshold optimization may require many attempts to succeed. Then, we analyze both the mechanism's success probability and the mean number of attempts required for a user's first successful authentication~$(\S\ref{sec:mul_attempts_success})$. As these two metrics conflict, we examine their tradeoff subject to different constraints~$(\S\ref{sec:optimization_mul_attempts})$.
+In biometric real world authentication, a mechanism commonly allows the principal to retry following failure~\cite{Chen2023BrutePrint}, typically up to a bounded number of attempts before lockout~\cite{typical_aut_attempts}. Since retries change the mechanism and raise the success probability of users and attackers alike, the single attempt threshold is no longer optimal. We formalize a mechanism that limits the number of attempts and show that reusing a fixed threshold reduces the mechanism's success probability, while optimizing the threshold increases it~$(\S\ref{sec:equal_k_attempts})$. However, the success probability alone does not capture how long a user waits. We therefore analyze the mean number of attempts required for a user's first successful authentication~$(\S\ref{sec:mul_attempts_success})$, a metric that has not been considered alongside the mechanism's success probability until now. As these two metrics conflict, we examine their tradeoff subject to different constraints~$(\S\ref{sec:optimization_mul_attempts})$.
 
 \subsection{Predefined Numbers of Attempts}\label{sec:equal_k_attempts}
 \noindent
-A deployed mechanism fixes its upper attempts number bound before any authentication takes place.
-We first consider a mechanism that allows at most~$k$ attempts, and show how changing the predefined attempts number~$k$ affects the mechanism success probability. The mechnanism may use a different threshold~$t_j$ at every attempt~$j$, and the user fails to authenticate if he is rejected in all~$k$ attempts. Thus, the probability that the user is rejected at an arbitrary single attempt~$j$ is~$\FRR(t_j)$ and the probability that the user is accepted at least once, is the probability it's not rejected in all~$k$ attempts:~$1-\prod_{j=1}^{k}\FRR(t_j).$
+We first consider a mechanism that allows at most~$k$ attempts, and show how changing the predefined attempts number~$k$ affects the threshold and the success probability. The mechnanism may use a different threshold~$t_j$ at every attempt~$j$, and the user fails to authenticate if he is rejected in all~$k$ attempts. Thus, the probability that the user is rejected at an arbitrary single attempt~$j$ is~$\FRR(t_j)$ and the probability that the user is accepted at least once, is the probability it's not rejected in all~$k$ attempts
+\begin{equation}\label{eq:user_auth_in_k}
+    P_{\mathrm{user}}^{(k)}(t)=1-\prod_{j=1}^{k}\FRR(t_j).
+\end{equation}
 Mechanism success requires rejecting the attacker at every attempt. Since the attacker is rejected at each attempt~$j$ with probability~$1-\FAR(t_j)$, the probability that the attacker is rejected in all~$k$ attempts is:~$\prod_{j=1}^{k}\left(1-\FAR(t_j)\right).$ The authentication mechanism succeeds when the user is accepted at least once and the attacker is rejected in every attempt. Therefore, the overall success probability is
 
 \begin{equation}\label{eqn:success_multiple_attempts}
@@ -2156,9 +2158,170 @@ P_{\mathrm{success}}^{(k)}(\mathbf{t})
 \end{equation}
 Both the~$\FRR(t_j)$ and $\FAR(t_j)$ error rates are, by definition, lower or equal than~1, for every attempt~$j$ and threshold~$t_j$. The products of~$\FRR(t_j)$ and the products of $1-\FAR(t_j)$ are both monotonically decreasing functions with~$k$. As a result, for a fixed thresholds selection, increasing the attempts number~$k$ increases the user probability to be accepted, while reducing the probability of the attacker to be rejected. Increasing~$k$ can therefore help the user gain access, but also increases the risk of accepting an attacker. The thresholds selection, when optimizing the success probability, must therefore balance these two effects.
 
+Two consequences follow. First,~$k$ is not a free design parameter: increasing it helps the user and the attacker at once. Thus, a mechanism cannot buy usability by granting more attempts without paying for it in security. Second, the~$k$ thresholds cannot be selected independently, as the success probability is a function of all of them. Thus, the selection of one threshold affects the optimal selection of the others.
+
+We evaluate multiple attempts on real biometric data, using the same genuine and impostor distributions calculated in the spoofing attack scenario using the LivDet2015 database. We calculate the success probability as presented in~(Equation~\ref{eqn:success_multiple_attempts}), and compare three thresholds selections baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the single-attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}. The first two baselines represent biometric authentication systems that use a fixed threshold across multiple authentication attempts, without optimizing it for multiple attempts.
+
+We find that reusing a single threshold in all~$k$ attempts reduces the mechanism's success probability as the number of attempts increases. At~$k=10$ the success probability falls to~$0.03$ when reusing the~\EER threshold and to~$0.02$ when reusing the single-attempt optimal threshold. This reduction indicates that for a fixed threshold mechanisms, the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
+
+In contrast, when optimizing the threshold over all~$k$ attempts, the mechanism's success probability increases with~$k$, reaching~$0.75$ at~$k=10$ and converging to~1~(Figure~\ref{fig:unconstrained_success_convergence}). Optimizing therefore reduces the mechanism's success probability by up to~72 precentage points compared with reusing the~\EER threshold. The optimization suggests that the threshold varies for each~$k$ attempts and increases with~$k$.
+
+\begin{figure}[t]
+\centering
+
+% Upper subfigure: probabilities versus maximum attempt count
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.95\linewidth,
+    height=0.65\linewidth,
+    xlabel={Number of attempts, $k$},
+    ylabel={Probability},
+    xmin=1,
+    xmax=10,
+    ymin=0,
+    ymax=1,
+    xtick=data,
+    grid=major,
+    line width=1pt,
+    mark size=1.6pt,
+    legend style={
+        at={(0.5,-0.28)},
+        anchor=north,
+        legend columns=3,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    }
+]
+
+\addplot[green!60!black, solid, mark=*]
+table[x=k, y=P_success_max]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$P_{\mathrm{success}}^{\max}$}
+
+\addplot[blue, dashed, mark=square*]
+table[x=k, y=P_success_EER]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{EER}})$}
+
+\addplot[red, densely dotted, mark=triangle*]
+table[x=k, y=P_success_single_attempt_optimum]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{opt}}^{(1)})$}
+
+\addplot[orange, solid, mark=diamond*]
+table[x=k, y=product_FRR]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$\prod_{j=1}^{k}\mathrm{FRR}_j$}
+
+\addplot[purple, solid, mark=pentagon*]
+table[x=k, y=product_1_minus_FAR]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+\addlegendentry{$\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Cumulative success and rejection probabilities.}
+\label{fig:Success_probability_by_k_probabilities}
+\end{subfigure}
+
+\medskip
+
+% Lower subfigure: final applied threshold for each k-attempt policy
+\begin{subfigure}{\columnwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.95\linewidth,
+    height=0.50\linewidth,
+    xlabel={Number of attempts, $k$},
+    ylabel={Selected threshold, $t_k^{(k)}$},
+    xmin=1,
+    xmax=10,
+    xtick=data,
+    grid=major,
+    line width=1pt,
+    mark size=1.6pt
+]
+
+\addplot[green!60!black, solid, mark=*]
+table[x=k, y=Threshold]
+{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
+
+\end{axis}
+\end{tikzpicture}
+\caption{Threshold applied at the final attempt of each policy.}
+\label{fig:Success_probability_by_k_thresholds}
+\end{subfigure}
+
+\caption{Success probabilities and selected thresholds as a function
+of the maximum number of authentication attempts~$k$.
+(a)~The optimized cumulative success probability, compared with
+reusing the \EER threshold and the single-attempt optimal threshold,
+together with the products of user-rejection and attacker-rejection
+probabilities.
+(b)~The threshold applied at attempt~$k$ of the corresponding
+$k$-attempt fixed-prefix policy.
+Each value of~$k$ represents a separately optimized policy.}
+\label{fig:Success_probability_by_k}
+\end{figure}
+
+\pgfplotsset{compat=1.18}
+
+% Document
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.95\columnwidth,
+    height=0.65\columnwidth,
+    xlabel={Number of attempts, $k$},
+    ylabel={Overall success probability},
+    xmin=1, xmax=200,
+    ymin=0, ymax=1.02,
+    xtick={1,25,50,75,100,125,150,175,200},
+    ytick={0,0.2,0.4,0.6,0.8,1},
+    grid=major,
+    legend style={
+        at={(0.5,-0.31)},
+        anchor=north,
+        legend columns=1,
+        draw=black,
+        fill=white,
+        font=\scriptsize
+    },
+    legend cell align=left
+]
+
+\addplot[
+    blue,
+    thick,
+    mark=o,
+    mark size=1.8pt,
+    mark repeat=10,
+    mark options={solid}
+]
+table[
+    x=k,
+    y=P_success_optimized
+] {figs/fig_spoofed_users/livdet_unconstrained_success_convergence.txt};
+\addlegendentry{Optimized overall success}
+
+\end{axis}
+\end{tikzpicture}
+\caption{Optimized mechanism success probability as a function of
+the number of authentication attempts~$k$.
+The threshold policy is optimized separately for each~$k$,
+without constraints on the conditional mean number of attempts
+or the success probability. The dashed line marks probability one.}
+\label{fig:unconstrained_success_convergence}
+\end{figure}
+
 \subsection{User Authentication Within~$k$ Attempts}\label{sec:mul_attempts_success}
 \noindent
-We are now interested not only in whether the user eventually authenticates, but also in how many attempts it takes for a user successful authentication. We proceed in three steps. First, we derive the probability that the user's first successful authentication occurs at a given attempt, which yields the probability of authenticating within~$k$ attempts. Then, we consider the conditional attempt number given that the user successfully authenticates. Finally, we take the mean of this conditional distribution, obtaining the average number of attempts a user requires.
+We are now interested not only in whether the user is eventually accepted, but also in how many attempts it takes for a user successful authentication. We proceed in three steps. First, we derive the probability that the user's first successful authentication occurs at a given attempt, which yields the probability of authenticating within~$k$ attempts. Then, we consider the conditional attempt number given that the user successfully authenticates. Finally, we take the mean of this conditional distribution, obtaining the average number of attempts a user requires.
 Let~$N_U$ denote the attempt number at which the user authenticates for the first time.
 If the mechanism rejects the user in all~$k$ attempts, we define~$N_U =\infty$.
 The event~$\{N_U=j\}$ means that the user is rejected in attempts~$1,\ldots,j-1$ and is then accepted at attempt~$j$.
@@ -2172,7 +2335,7 @@ Under the assumption that every authentication attempt is independent, the proba
 \right)
 \left(1-\FRR(t_j)\right).
 \end{equation}
-This is the \emph{first success probability} that the user successfully authenticates specifically at attempt~$j$, having failed every preceding attempt.
+This is the \emph{first success probability} that the user authenticates specifically at attempt~$j$, having failed every preceding attempt.
 Summing the first success probabilities over all permitted attempts gives the probability that the user successfully authenticates within~$k$ attempts: 
 
 \begin{equation*}
@@ -2185,12 +2348,12 @@ Substituting the first success probabilities yields
 \Pr[N_U\leq k]
 =
 \sum_{j=1}^{k}
-\left(
+\left[
 \prod_{i=1}^{j-1}\FRR(t_i)
-\right)
+\right]
 \left(1-\FRR(t_j)\right).
 \end{equation*}
-As described in the previous section, this probability equals
+As described in Equation~\ref{eq:user_auth_in_k}, this probability equals
 \begin{equation}\label{eq:auth_within_ku}
 \Pr[N_U\leq k]
 =
@@ -2377,173 +2540,12 @@ This optimization maximizes the mechanism’s success probability, while ensurin
 
 Here the constraint plays a different role. Without the constraint, the optimization balances both the~\FRR and~\FAR, leading to a non trivial solution as described in~$(\S\ref{sec:equal_k_attempts})$. The constraint~$\mu'$ caps how long a successful user waits. Unlike the previous problem, this constraint may not bind at all: if the optimal threshold vector already lets users authenticate within~$\mu'$ attempts on average, nothing changes. When it does bind, the optimization enforces thresholds more permissive than the unconstrained problem, leading to a reduction in the overall success probability. Thus, this optimization fixes a usability budget and maximizes the mechanism's success probability within it.
 
-\subsection{Spoofing Attack With Multiple Attempts}\label{sec:mul_attempts_spoofing}
-\noindent
-We simulate a spoofing attack scenario in which a principal has multiple attempts to authenticate. We use the same genuine and impostor distributions calculated in the spoofing attack scenario using the LivDet2015 database. 
+We evaluate both optimization problems on the same spoofing attack data. First, we identify the optimal threshold selections that minimize the mean number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the greater the required success probability~$P'$, the greater the mean number of user authentication attempts~$\mathbb{E}[N_U]$ required to achieve it. Moreover, as presented in the theoretical analysis, the mechanism's success probability is equal to the success constraint. In addition, our findings reveal that a higher success probability constraint leads to a greater cumulative user success probability and a lower cumulative attacker success probability. These findings are summarized in Figure~\ref{fig:success_constraints_comparison}.
 
-We follow the theoretical analysis and calculate the success probability under multiple attempts of a mechanism that uses a biometric credential only~(Equation~\ref{eqn:success_multiple_attempts}). We then simulate several authentication attempts by a principal~$P$. For each number of attempts~$k$, we calculate the mechanism's success probability as the probability that the user is accepted at least once, while the attacker is rejected on all~$k$ attempts. As the success probability depends on the number of attempts~$k$, we compare the mechanism's success probability under three thresholds selections baselines: (1)~the~\EER threshold reused for all~$k$ attempts, (2)~the single-attempt optimal threshold reused for all~$k$ attempts, and (3)~threshold optimization over all~$k$ attempts, as shown in Figure~\ref{fig:Success_probability_by_k}. The first two baselines represent biometric authentication systems that use a fixed threshold across multiple authentication attempts, either the~\EER threshold or the single-attempt optimal threshold, without optimizing it for multiple attempts.
+We also analyze the reverse direction, in which a system designer seeks to maximize the achievable security under a usability constraint. We find that allowing a greater mean number of user authentication attempts~$\mathbb{E}[N_U]$ leads to a lower cumulative success probability for the attacker. These findings are shown in Figure~\ref{fig:mean_limits_comparison}.
 
-We find that the success probability of this mechanism, which uses a biometric credential only, increases with the number of attempts~$k$ and converges to 1 when optimizing the threshold over all~$k$ attempts~(Figure~\ref{fig:unconstrained_success_convergence}). The optimization suggests that the threshold should vary with the total number of attempts~$k$. Furthermore, our findings reveal that reusing a single threshold in all~$k$ attempts, either the~\EER threshold or the single-attempt optimal threshold, leads to a reduction of up to 75\% in the mechanism's failure probability. This reduction indicates that the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases.
+In both problems the selected thresholds differ at every attempt, becoming stricter as the attempt index increases. In this way, the mechanism accepts the user in the initial attempts, while limiting the probability of a successful spoofing attack as the attempts accumulate. These threshold selections differ from those obtained in the unconstrained problem of~$(\S\ref{sec:equal_k_attempts})$.
 
-Previously, we noted that for each number of attempts~$k$, the optimal threshold varies with~$k$. Thus, we investigate how the optimal threshold selections are affected when we constrain the mean number of attempts, seeking to maximize the mechanism's success probability. We find that the optimal threshold increases with the number of attempts~$k$, and that the mechanism's success probability increases as the mean number of attempts increases. Nevertheless, system designers seek to minimize the mean number of a user's authentication attempts. 
-
-We explore the tradeoff between the mean number of attempts and the mechanism's success probability. First, we identify the optimal threshold selections that minimize the mean number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P_{\mathrm{success}}^{\min}$. This analysis shows that the greater the required success probability~$P_{\mathrm{success}}^{\min}$, the greater the mean number of user authentication attempts~$\mathbb{E}[N_U]$ required to achieve it. Moreover, as presented in the theoretical analysis, the mechanism's success probability is equal to the success constraint. In addition, our findings reveal that a higher success probability constraint leads to a greater cumulative user success probability and a lower cumulative attacker success probability. This behavior indicates that the selected thresholds tend to be stricter in the initial attempts, with smaller differences between successive thresholds as the attempt index increases. In this way, the mechanism limits the probability of a successful spoofing attack, while relying on the user's cumulative success probability to increase with the number of attempts. These findings are summarized in Figure~\ref{fig:success_constraints_comparison}.
-
-We also analyze the reverse direction, in which a system designer seeks to maximize the achievable security under a usability constraint. Specifically, we constrain the mean number of user authentication attempts~$\mathbb{E}[N_U]$, and seek to maximize the mechanism's success probability. We find that allowing a greater mean number of user authentication attempts~$\mathbb{E}[N_U]$, leads to a lower cumulative success probability for the attacker. 
-A higher limit on the mean number of attempts leads to stricter threshold selections in the initial authentication attempts. In this way, the mechanism prioritizes preventing the attacker from spoofing the biometric credential, over accepting the user in the initial attempts. Thus, the user's cumulative authentication probability is initially lower than under a lower limit on the mean number of attempts. However, it increases significantly over subsequent attempts, as the user has more opportunities to obtain a score above the threshold. These findings are shown in Figure~\ref{fig:mean_limits_comparison}. 
-
-\begin{figure}[t]
-\centering
-
-% Upper subfigure: probabilities versus maximum attempt count
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.95\linewidth,
-    height=0.65\linewidth,
-    xlabel={Number of attempts, $k$},
-    ylabel={Probability},
-    xmin=1,
-    xmax=10,
-    ymin=0,
-    ymax=1,
-    xtick=data,
-    grid=major,
-    line width=1pt,
-    mark size=1.6pt,
-    legend style={
-        at={(0.5,-0.28)},
-        anchor=north,
-        legend columns=3,
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    }
-]
-
-\addplot[green!60!black, solid, mark=*]
-table[x=k, y=P_success_max]
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\max}$}
-
-\addplot[blue, dashed, mark=square*]
-table[x=k, y=P_success_EER]
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-\addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{EER}})$}
-
-\addplot[red, densely dotted, mark=triangle*]
-table[x=k, y=P_success_single_attempt_optimum]
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-\addlegendentry{$P_{\mathrm{success}}(t_{\mathrm{opt}}^{(1)})$}
-
-\addplot[orange, solid, mark=diamond*]
-table[x=k, y=product_FRR]
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-\addlegendentry{$\prod_{j=1}^{k}\mathrm{FRR}_j$}
-
-\addplot[purple, solid, mark=pentagon*]
-table[x=k, y=product_1_minus_FAR]
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-\addlegendentry{$\prod_{j=1}^{k}(1-\mathrm{FAR}_j)$}
-
-\end{axis}
-\end{tikzpicture}
-\caption{Cumulative success and rejection probabilities.}
-\label{fig:Success_probability_by_k_probabilities}
-\end{subfigure}
-
-\medskip
-
-% Lower subfigure: final applied threshold for each k-attempt policy
-\begin{subfigure}{\columnwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.95\linewidth,
-    height=0.50\linewidth,
-    xlabel={Number of attempts, $k$},
-    ylabel={Selected threshold, $t_k^{(k)}$},
-    xmin=1,
-    xmax=10,
-    xtick=data,
-    grid=major,
-    line width=1pt,
-    mark size=1.6pt
-]
-
-\addplot[green!60!black, solid, mark=*]
-table[x=k, y=Threshold]
-{figs/fig_spoofed_users/livdet_fixed_prefix_far_frr_success_by_k.txt};
-
-\end{axis}
-\end{tikzpicture}
-\caption{Threshold applied at the final attempt of each policy.}
-\label{fig:Success_probability_by_k_thresholds}
-\end{subfigure}
-
-\caption{Success probabilities and selected thresholds as a function
-of the maximum number of authentication attempts~$k$.
-(a)~The optimized cumulative success probability, compared with
-reusing the \EER threshold and the single-attempt optimal threshold,
-together with the products of user-rejection and attacker-rejection
-probabilities.
-(b)~The threshold applied at attempt~$k$ of the corresponding
-$k$-attempt fixed-prefix policy.
-Each value of~$k$ represents a separately optimized policy.}
-\label{fig:Success_probability_by_k}
-\end{figure}
-
-\pgfplotsset{compat=1.18}
-
-% Document
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.95\columnwidth,
-    height=0.65\columnwidth,
-    xlabel={Number of attempts, $k$},
-    ylabel={Overall success probability},
-    xmin=1, xmax=200,
-    ymin=0, ymax=1.02,
-    xtick={1,25,50,75,100,125,150,175,200},
-    ytick={0,0.2,0.4,0.6,0.8,1},
-    grid=major,
-    legend style={
-        at={(0.5,-0.31)},
-        anchor=north,
-        legend columns=1,
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    },
-    legend cell align=left
-]
-
-\addplot[
-    blue,
-    thick,
-    mark=o,
-    mark size=1.8pt,
-    mark repeat=10,
-    mark options={solid}
-]
-table[
-    x=k,
-    y=P_success_optimized
-] {figs/fig_spoofed_users/livdet_unconstrained_success_convergence.txt};
-\addlegendentry{Optimized overall success}
-
-\end{axis}
-\end{tikzpicture}
-\caption{Optimized mechanism success probability as a function of
-the number of authentication attempts~$k$.
-The threshold policy is optimized separately for each~$k$,
-without constraints on the conditional mean number of attempts
-or the success probability. The dashed line marks probability one.}
-\label{fig:unconstrained_success_convergence}
-\end{figure}
 
 \pgfplotsset{compat=1.18}
 
@@ -2759,7 +2761,6 @@ circles represent the user and red squares represent the attacker.
 The constraint applies to the complete policy.}
 \label{fig:mean_limits_comparison}
 \end{figure}
-
 
 % \section{Empirical Evaluation}\label{sec:empirical_evaluation}
 % \noindent
