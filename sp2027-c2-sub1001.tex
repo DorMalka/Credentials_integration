@@ -27,7 +27,7 @@
 \definecolor{myRed}{HTML}{D7191C}
 
 \newtheorem{proposition}{Proposition}
-
+\newtheorem*{proofsketch}{Proof Sketch}
 \newtheorem{definition}{Definition}
 
 \begin{document}
@@ -1534,7 +1534,7 @@ table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_bes
 
 \section{Two Credentials}\label{sec:two_cred}
 \noindent
-We explore mechanisms that combine a biometric credential and an atomic credential. We symbolically analyze such mechanisms~$(\S\ref{sec:atm_biocred})$ and evaluate them on public datasets~$(\S\ref{sec:two_credentials_empirical_eval})$. We then characterize when such mechanisms achieve greater success than a mechanism using the atomic credential alone. We show they never do when the atomic credential can only be safe or stolen~$(\S\ref{sec:no_success_improvement})$. Finally, we present a necessary and sufficient condition for improvement~$(\S\ref{sec:necessary_sufficient_success_condition})$ and extend it to multiple atomic credentials.
+We explore mechanisms that combine a biometric credential and an atomic credential. We symbolically analyze such mechanisms~$(\S\ref{sec:atm_biocred})$ and evaluate them on public datasets~$(\S\ref{sec:two_credentials_empirical_eval})$. We then characterize when such mechanisms achieve greater success than a mechanism using an atomic credential alone. We show they never do when the atomic credential can only be safe or stolen~$(\S\ref{sec:no_success_improvement})$. Finally, we present a necessary and sufficient condition for improvement~$(\S\ref{sec:necessary_sufficient_success_condition})$ and extend it to multiple atomic credentials.
 
 \subsection{One Atomic and One Biometric Credential}\label{sec:atm_biocred}
 \noindent
@@ -1542,84 +1542,79 @@ For a mechanism~$M$ combining two independently and identically distributed cred
 a. \emph{AND}: The user can access both credentials, while the attacker cannot access at least one of the credentials. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the leak state. Conversely, if either credential is in the lost or stolen state, the user cannot satisfy the mechanism, and the mechanism fails.
 \begin{equation}
     \label{eqn:andsuccess}
-P_{\text{Success}}(M^{\text{AND}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{leak}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{leak}}
+P_{\text{Success}}(M^{\text{AND}}) = P^1_{safe} \cdot P^2_{safe} + P^1_{safe} \cdot P^2_{leak} + P^2_{safe} \cdot P^1_{leak}
 \end{equation}
 \noindent
 b. \emph{OR}: The user can access at least one credential, while the attacker cannot access either of them. The mechanism succeeds when both credentials are in the safe state or when one is in the safe state and the other is in the lost state. If either credential is leaked or stolen, an attacker can satisfy the mechanism and thus the mechanism fails.
 \begin{equation}
     \label{eqn:orsuccess}
-P_{\text{Success}}(M^{\text{OR}}) = \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{safe}} + \mathrm{P^1_{safe}} \cdot \mathrm{P^2_{loss}} + \mathrm{P^2_{safe}} \cdot \mathrm{P^1_{loss}}
+P_{\text{Success}}(M^{\text{OR}}) = P^1_{safe} \cdot P^2_{safe} + P^1_{safe} \cdot P^2_{loss} + P^2_{safe} \cdot P^1_{loss}
 \end{equation}
 
 We start by analyzing the case of an \emph{AND} mechanism that combines an atomic credential and a biometric credential. 
-We define the atomic credential with a constant value of each of its state probabilities as~$P^1_{safe}$, $P^1_{loss}$, $P^1_{leak}$, $P^1_{theft}$ corresponding respectively to each one of the states:~${\text{safe}}$,~${\text{loss}}$,~${\text{leak}}$ and~${\text{theft}}$. 
-We define the biometric credential by its PDFs for the user and the attacker,~$f_U$ and~$f_A$ respectively. We consider uniform distribution as a first-order approximation of a biometric credential's distribution. Denote by~$u_1, u_2$ the user's PDF bounds and~$a_1, a_2$ the attacker's PDF bounds, as shown in Figure~\ref{fig:uniform_three_cases}. The state probabilities of the biometric credential are defined by the error metrics~\FAR and~\FRR as done in Section~\ref{sec:credentials}. Moreover, we consider the overlapping case between the user and attacker distributions, as this represents the common case among real-world scenarios. Thus, we assume that~$a_1 < u_1 < a_2 < u_2$.
-We set the state probabilities of an atomic and a biometric credential into Equation~\ref{eqn:andsuccess}. Thus, the probability of success is a function of the threshold $t$ and divided into 5 intervals. Denote:
-\[L(t) = \dfrac{u_2 - t}{u_2 - u_1}
-\left[
-P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{leak}}(1
-- \dfrac{a_2 - t}{a_2 - a_1})
-\right].\]
-\[
-P_{\mathrm{success}}(t)=
+We define the atomic credential with a constant value of each of its state probabilities as~$P^1_{safe}$, $P^1_{loss}$, $P^1_{leak}$, $P^1_{stolen}$ corresponding respectively to each one of the states:~${\text{safe}}$,~${\text{loss}}$,~${\text{leak}}$ and~${\text{stolen}}$. 
+We define the biometric credential by its PDFs for the user and the attacker,~$f_U$ and~$f_A$ respectively, and its state probabilities by the error metrics~\FAR and~\FRR as described in Equation~\ref{eqn:safe_prob}. We consider uniform distribution as a first-order approximation of a biometric credential's distribution. Denote by~$u_1, u_2$ the user's PDF bounds and by~$a_1, a_2$ the attacker's PDF bounds, as shown in Figure~\ref{fig:uniform_three_cases}. Moreover, we consider the overlapping case between the user and attacker distributions, as this represents the common case among real-world scenarios. Thus, we assume that~$a_1 < u_1 < a_2 < u_2$.
+We plug the state probabilities of an atomic and a biometric credential into Equation~\ref{eqn:andsuccess}. Thus, the probability of success is a function of the threshold $t$ and divided into 5 intervals. Denote:
+\begin{multline*}
+P_{\mathrm{success}}(t)=\\
 \begin{cases}
-P^{1}_{\mathrm{safe}}, 
+P^1_{safe}, 
 & t \le a_1 \\
-
-P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{leak}}(1-\dfrac{a_2 - t}{a_2 - a_1}), 
+P^1_{safe} + P^1_{leak}\left(1-\dfrac{a_2 - t}{a_2 - a_1}\right), 
 & a_1 < t \le u_1 \\
-
-L(t),
+\dfrac{u_2 - t}{u_2 - u_1}\left[P^1_{safe} + P^1_{leak}\left(\dfrac{t - a_1}{a_2 - a_1}\right)\right],
 & u_1 < t \le a_2 \\
-
-\dfrac{u_2 - t}{u_2 - u_1}\cdot(P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{leak}}),
+\dfrac{u_2 - t}{u_2 - u_1}\cdot(P^1_{safe} + P^1_{leak}),
 & a_2 < t \le u_2 \\
-
 0, 
 & t > u_2 .
 \end{cases}
-\]
+\end{multline*}
 
 The success probability is constant in the first interval, strictly increasing in the second, quadratic in the third, strictly decreasing in the fourth, and zero in the fifth.
-The global optimum therefore lies in the third interval, $u_1 < t \le a_2$, where the user and attacker distributions overlap and the success function attains an interior maximum:
+The global optimum therefore lies in the third interval, $u_1 < t \le a_2$, where the user and attacker distributions overlap and the success function attains an interior maximum. Denote the critical point
 \begin{equation*}
-t_{\text{opt}}^{\mathrm{AND}}
+\hat{t}
 =
 \frac{
 u_2 + a_2
-- (a_2 - a_1)\,\dfrac{P^{1}_{\text{safe}} + P^{1}_{\text{leak}}}{P^{1}_{\text{leak}}}
-}{2},
+- (a_2 - a_1)\,\dfrac{P^1_{safe} + P^1_{leak}}{P^1_{leak}}
+}{2}.
 \end{equation*}
-clipped to the interval boundaries.
-Evaluating at the lower boundary gives $P_{\text{success}}(u_1) > P^{1}_{\text{safe}}$, so integrating the biometric credential strictly improves the mechanism over using the atomic credential alone.
+The optimal threshold is this point clipped to the interval boundaries,
+\begin{equation*}
+t_{\text{opt}}^{\mathrm{AND}} = \min\left\{a_2,\;\max\left\{u_1,\;\hat{t}\right\}\right\}.
+\end{equation*}
+Since the optimal threshold is clipped to~$[u_1, a_2]$, the success probability is at least~$P_{\text{success}}(u_1)$, which exceeds~$P^1_{safe}$. Integrating the biometric credential therefore strictly improves the mechanism over using the atomic credential alone.
 
 The optimum's position reveals which credential the mechanism relies on.
 As the variance of the attacker distribution increases,~$t_{\text{opt}}^{\mathrm{AND}}$ shifts toward the lower boundary~$u_1$.
-An atomic credential with high~$P^{1}_{\text{safe}}$ and low~$P^{1}_{\text{leak}}$ shifts it toward $u_1$ as well, and the mechanism's success then depends mainly on the atomic credential.
-Conversely, high~$P^{1}_{\text{leak}}$ and low~$P^{1}_{\text{safe}}$ shift it toward the upper boundary~$a_2$, and the mechanism relies more heavily on the biometric credential.
+An atomic credential with high~$P^1_{safe}$ and low~$P^1_{leak}$ shifts it toward $u_1$ as well, and the mechanism's success then depends mainly on the atomic credential.
+Conversely, high~$P^1_{leak}$ and low~$P^1_{safe}$ shift it toward the upper boundary~$a_2$, and the mechanism relies more heavily on the biometric credential.
 
-We obtain a similar analysis for the \emph{OR} mechanism, with~$P^{1}_{\mathrm{loss}}$ in place of~$P^{1}_{\mathrm{leak}}$.
-Its global optimum lies in the same third interval:
+A similar analysis of the \emph{OR} mechanismshows its global optimum lies in the same third interval:
 \begin{equation*}
-t_{\text{opt}}^{\mathrm{OR}} = \frac{a_1 P^{1}_{\mathrm{loss}} + u_2 (P^{1}_{\mathrm{safe}} + P^{1}_{\mathrm{loss}}) - P^{1}_{\mathrm{safe}} u_1}{2 P^{1}_{\mathrm{loss}}}.
+\hat{t}
+=
+\frac{a_1 P^1_{loss} + u_2 (P^1_{safe} + P^1_{loss}) - P^1_{safe} u_1}{2 P^1_{loss}}.
 \end{equation*}
-For both mechanisms the optimal threshold differs from the~\EER threshold,~$t_{\EER} = (a_1 u_1 - a_2 u_2)/(a_1 - a_2 + u_1 - u_2)$.
+The optimal threshold is this point clipped to the interval boundaries,
+\begin{equation*}
+t_{\text{opt}}^{\mathrm{OR}} = \min\left\{a_2,\;\max\left\{u_1,\;\hat{t}\right\}\right\}.
+\end{equation*}
+For both mechanisms the optimal threshold differs, in general, from the~\EER threshold,~$t_{\EER} = (a_1 u_1 - a_2 u_2)/(a_1 - a_2 + u_1 - u_2)$.
 
 We observe that the optimal threshold of the biometric credential in both mechanisms is not, in general, the same as its optimal threshold when used without the atomic credential.
-An integrator must therefore set the threshold with respect to the mechanism it is deployed in, and not treat the biometric credential in isolation.
 The full interval analysis and the resulting success probabilities are in the full version of this report~\cite{biometric_full_version}.
 
 \subsection{Empirical Evaluation}\label{sec:two_credentials_empirical_eval}
 \noindent
-We use the same biometric credential evaluated in~$(\S\ref{sec:eval_single_cred})$, and first consider the baseline attack scenario, where attackers use their own fingerprints to authenticate. The mechanisms combine this biometric credential with an atomic credential whose fault probabilities are arbitrarily set to~$P^{1}_\text{safe} = 0.75$, $P^{1}_\text{leak} = 0.1$, $P^{1}_\text{loss} = 0.1$, and $P^{1}_\text{stolen} = 0.05$. We then calculate the success probabilities of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}). We illustrate these probabilities as functions of the threshold~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. We show that the optimal threshold for each mechanism differs from the~\EER threshold. Moreover, both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of a mechanism using only the atomic credential, demonstrating the benefit of combining the two credentials.
+We evaluate the mechanisms using the real biometric credential parameters obtained in~$(\S\ref{sec:real_data})$.
+We first consider the baseline attack scenario, where attackers use their own fingerprints to authenticate. The mechanisms combine this biometric credential with an atomic credential. Since no data is available on the fault probabilities of atomic credentials, we set them arbitrarily to~$P^1_{safe} = 0.75$, $P^1_{leak} = 0.1$, $P^1_{loss} = 0.1$, and $P^1_{stolen} = 0.05$. We illustrate  the success probabilities of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}) as functions of the threshold~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. Both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of a mechanism using only the atomic credential, demonstrating the benefit of combining the two credentials.
 
-However, in this attack scenario, optimizing the thresholds provides only a small improvement over the \EER threshold for both mechanisms, since the biometric credential already has a very low \EER, indicating limited overlap between the genuine and impostor distributions.
+However optimizing the thresholds provides only a small improvement over the \EER threshold for both mechanisms, since the biometric credential already has a very low \EER, due to the small overlap between the genuine and impostor distributions.
 
-We next evaluate the two mechanisms under spoofing attacks, where attackers use forged fingerprints to impersonate legitimate users. As shown in the previous subsection, spoofing increases the overlap between the genuine and impostor score distributions, making authentication more challenging. We calculate the success probabilities of both mechanisms under this attack, as shown in Figure~\ref{fig:livdet_and_or_success}. We find that the optimal threshold reduces the failure probability between~20\%-72\% compared to the~\EER threshold for the two mechanisms. Moreover, a mechanism combining both credentials at the~\EER threshold may achieve a lower success probability than a mechanism using either credential alone. These results demonstrate that using a non-optimal biometric threshold can reduce the success probability when combining credentials in an authentication mechanism. The results are summarized in Table~\ref{tab:psafe_sweep_improvement}.
-
-Since threshold selection can either reduce or improve the mechanism's success, the threshold of the biometric credential must be selected in the context of the mechanism.
-This motivates us to characterize when combining a biometric credential with an atomic credential improves the mechanism at all.
-
+The picture changes when the attacker is spoofing the fingerprints, since the overlap between the genuine and impostor score distributions grows. Figure~\ref{fig:livdet_and_or_success} shows the success probabilities of both mechanisms under this attack. The optimal threshold reduces the failure probability between~20\%-72\% compared to the~\EER threshold for the two mechanisms. Moreover, a mechanism combining both credentials at the~\EER threshold may achieve a lower success probability than a mechanism using either credential alone. These results demonstrate that using a non-optimal biometric threshold can reduce the success probability when combining credentials in an authentication mechanism. Table~\ref{tab:psafe_sweep_improvement} sweeps the atomic credential's fault probabilities and shows that the more reliable the atomic credential, the greater the improvement from optimizing the threshold, reaching~72\% when~$P^1_{safe} = 0.90$.
 % ===========================================================================
 % FIGURES AND TABLE FOR sec:two_credentials_empirical_eval
 % ===========================================================================
@@ -1765,9 +1760,9 @@ $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\
 
 \subsection{No Improvement In Mechanism Success}\label{sec:no_success_improvement}
 \noindent
-We first consider an atomic credential that is always either safe or stolen, never lost or leaked. This case admits no benefit from producing a mechanism that uses an atomic credential in this setting and a biometric credential. The following proposition formalizes this result.
+We show that given an atomic credential that is either safe or stolen, there is no benefit in combining it with a biometric credential.
 \begin{proposition}
-    Let~$c_1$ be an atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$, $c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$, and~$M$ be a mechanism using~$c_1$. Then, for a mechanism~$\bar{M}$ using~$c_1$,~$c_2$ in \emph{AND} or \emph{OR} compositions it holds that
+    Let~$c_1$ be an atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$, $c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$, and~$M$ be the mechanism using only~$c_1$. Then, for a mechanism~$\bar{M}$ using~$c_1$,~$c_2$ in \emph{AND} or \emph{OR} compositions it holds that
     \begin{equation*}
         P_{\mathrm{success}}^{\bar{M}} \le P_{\mathrm{success}}^{M}.
     \end{equation*}
@@ -1780,8 +1775,8 @@ The proof is in the full version of this report~\cite{biometric_full_version}.
 
 \subsection{Necessary and Sufficient Condition}\label{sec:necessary_sufficient_success_condition}
 \noindent 
-We turn to the general case of an atomic credential that can also be lost or leaked. Then, we identify a biometric credential that is \emph{asymptotically separable}. We show that this is a necessary and sufficient condition for a mechanism using an atomic credential and a biometric credential to achieve strictly greater success probability than a mechanism using only the atomic credential.
-Intuitively, asymptotic separability means that there exists a threshold~$t$ such that the error rate is negligible with respect to the correctness rate, making the user and attacker distributions effectively separated.
+We turn to the general case of an atomic credential that can also be lost or leaked. We identify a necessary and sufficient condition for a mechanism using an atomic credential and a biometric credential to achieve strictly greater success probability than a mechanism using only the atomic credential.
+The property which we call \emph{asymptotic separability} means that there exists a threshold~$t$ such that the error rate is negligible, making the user and attacker distributions effectively separated.
 \begin{definition}
 A user distribution function~$f_U(s)$ and an attacker distribution function~$f_A(s)$ are \emph{asymptotically separable} if
 \begin{equation*}
@@ -1793,7 +1788,7 @@ A user distribution function~$f_U(s)$ and an attacker distribution function~$f_A
     = 0.
 \end{equation*}
 \end{definition}
-We now prove that asymptotic separability of a biometric credential is a sufficient condition.
+\emph{Asymptotic separability} is a sufficient condition:
 \begin{proposition}\label{thm:suf_nec_cond_for_improve}
     Let~$c_1$ be an atomic credential with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$, $c_2$ be a biometric credential whose user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$ are asymptotically separable and~$M$ be a mechanism using~$c_1$. Then, there exists a mechanism~$\bar{M}$ which is an \emph{AND} or \emph{OR} composition using~$c_1$ and~$c_2$, such that
     \begin{equation*}
@@ -1801,28 +1796,33 @@ We now prove that asymptotic separability of a biometric credential is a suffici
     \end{equation*}
 \end{proposition}
 \noindent
+\begin{proofsketch}
 The \emph{AND} mechanism improves on~$M$ exactly when the ratio~$\FRR(t)/(1-\FAR(t))$ falls below a positive bound determined by the atomic credential’s fault probabilities, and the \emph{OR} mechanism when~$\FAR(t)/(1-\FRR(t))$ does.
 Both bounds are strictly positive whenever the atomic credential has $P^1_\text{safe} > 0$ and at least one of $P^1_\text{leak}, P^1_\text{loss} > 0$.
 Asymptotic separability states that one of these two ratios comes arbitrarily close to zero, so a threshold satisfying the corresponding bound exists. The vanishing ratio selects the composition.
+\end{proofsketch}
+\noindent
 The proof is in the full version of this report~\cite{biometric_full_version}.
 
-We showed that \emph{asymptotic separability} is a sufficient condition. We now show it is a necessary condition for producing a new mechanism~$\bar{M}$ with greater success probability than that of~$M$.
+\emph{Asymptotic separability} is also a necessary condition:
 \begin{proposition}\label{thm:nec_cond_for_improve}
-    Let~$c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. If for every atomic credential~$c_1$ with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$, there exists a threshold~$t$ and a mechanism~$\bar{M}$ formed as an \emph{AND} or \emph{OR} composition such that
+    Let~$c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. If for every atomic credential~$c_1$ with~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$ there exists a threshold~$t$ and a mechanism~$\bar{M}$ formed as an \emph{AND} or \emph{OR} composition such that
     \begin{equation*}
     P^{\bar{M}}_{\text{success}}(t) > P^{M}_{\text{success}}.
     \end{equation*}
     Then the biometric credential~$c_2$ is asymptotically separable.
 \end{proposition} 
 \noindent
+\begin{proofsketch}
 Suppose the biometric credential is not asymptotically separable, so both~$\FRR(t)/(1-\FAR(t))$ and~$\FAR(t)/(1-\FRR(t))$ stay above some $\varepsilon > 0$ for every threshold.
-The hypothesis quantifies over \emph{every} atomic credential, so it must hold in particular for one whose leak and loss probabilities are small enough relative to its safe probability that both bounds of Proposition~\ref{thm:suf_nec_cond_for_improve} fall below~$\varepsilon$.
+The hypothesis quantifies over \emph{every} atomic credential. It must therefore hold for one whose leak and loss probabilities are small relative to its safe probability, so that both~$P^1_{leak}/(P^1_{safe}+P^1_{leak})$ and~$P^1_{loss}/(P^1_{safe}+P^1_{loss})$ fall below~$\varepsilon$.
 No threshold can then satisfy either bound, so no composition improves on~$M$ for that credential, contradicting the hypothesis.
+\end{proofsketch}
+\noindent
 The proof is in the full version of this report~\cite{biometric_full_version}.
 
-We showed that~$\bar{M}$ achieves greater success probability than~$M$ when the biometric credential is \emph{asymptotically separable}, and the atomic credential has~$P^1_\text{safe} > 0$ and at least one of~$P^1_\text{leak},P^1_\text{loss} > 0$.
-We also showed that asymptotic separability is necessary for~$\bar{M}$ to achieve greater success probability than every atomic credential mechanism.
-We extend our proof to a mechanism that uses a biometric credential and~$k$ atomic credentials, and show that it achieves greater success probability than a mechanism using only the atomic credentials.
+We showed that asymptotic separability is necessary and sufficient for~$\bar{M}$ to achieve greater success probability than~$M$, provided the atomic credential has~$P^1_{safe} > 0$ and at least one of~$P^1_{leak}, P^1_{loss} > 0$.
+We extend this to~$k$ atomic credentials.
 
 First, every authentication mechanism~$M$ can be represented as a sum of products, i.e., a disjunctive normal form~(DNF)~\cite{Mendelson1997}. Then, we define a \emph{consolidated credential} of~$k$ atomic credentials as if it were itself a single atomic credential.
 
@@ -1849,9 +1849,11 @@ P^M_{\text{stolen}}
         P_{\mathrm{success}}^{\bar{M}} > P_{\mathrm{success}}^{M}
     \end{equation*}
 \end{proposition}
-\begin{proof}
-    Let~$M$ be a mechanism using~$\{c_1,c_2,\ldots,c_k\}$. The mechanism~$M$ induces a reduction of the~$k$ credentials into a single consolidated credential. The consolidated credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak}$, or~$P^M_\text{loss} > 0$. By Proposition~\ref{thm:suf_nec_cond_for_improve}, there exists a mechanism~$\bar{M}$ using the consolidated credential and the biometric credential that achieves greater success probability than that of the consolidated credential mechanism. Since the consolidated credential is equivalent to the original mechanism~$M$, it follows that there exists a mechanism~$\bar{M}$ using~$\{c_1,c_2,\ldots,c_k,c_{k+1}\}$ that achieves greater success probability than that of~$M$.
-\end{proof}
+\begin{proofsketch}
+The mechanism~$M$ reduces its~$k$ atomic credentials to a single consolidated credential, which is itself an atomic credential with~$P^M_{safe} > 0$ and at least one of~$P^M_{leak}, P^M_{loss} > 0$.
+An asymptotically separable biometric credential therefore improves on it, as in the two-credential case.
+\end{proofsketch}
+The full proof is in the full version of this report~\cite{biometric_full_version}.
 \begin{proposition}
     Let~$c_{k+1}$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. Suppose that for every set of~$k$ independent atomic credentials~$\{c_1,\ldots,c_k\}$ and every mechanism~$M$ over these credentials whose consolidated credential has~$P^M_\text{safe} > 0$ and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$, there exists a mechanism~$\bar{M}$ using~$\{c_1,\ldots,c_k,c_{k+1}\}$ such that
     \begin{equation*}
@@ -1859,9 +1861,12 @@ P^M_{\text{stolen}}
     \end{equation*}
     Then the biometric credential~$c_{k+1}$ must be asymptotically separable.
 \end{proposition} 
-\begin{proof}
-    The mechanism~$M$ induces a reduction of the~$k$ credentials into a single consolidated credential. The consolidated credential of~$M$ is a single atomic credential with state probabilities~$P^M_\text{safe}>0$, and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$. Then,~$\bar{M}$ is a mechanism using the consolidated credential of~$M$ and the biometric credential. By Proposition~\ref{thm:nec_cond_for_improve}, the biometric credential must be asymptotically separable.
-\end{proof}
+\begin{proofsketch}
+The mechanism~$M$ reduces its~$k$ atomic credentials to a single consolidated credential, which is itself an atomic credential with~$P^M_{safe} > 0$ and at least one of~$P^M_{leak}, P^M_{loss} > 0$.
+Since~$\bar{M}$ improves on~$M$ for every such credential, the biometric credential must be asymptotically separable, as in the two-credential case.
+\end{proofsketch}
+\noindent
+The full proof is in the full version of this report~\cite{biometric_full_version}.
 
 Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,anil2004}, we introduce the stronger \emph{asymptotic dominance} condition to capture this property. Intuitively, asymptotic dominance means that one distribution function dominates the other in the tails of the distributions: for very low score values~$s$ the attacker distribution dominates the user distribution, and vice versa for very high values of~$s$. We prove that a mechanism~$\bar{M}$ that uses an \emph{asymptotically dominated} biometric credential and an atomic credential, achieves a greater success probability than that of a single atomic credential mechanism~$M$. We prove that this is a sufficient condition~(see Appendix~\ref{app:sufficient-condition}). 
 
