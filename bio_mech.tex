@@ -611,34 +611,23 @@ P_{\text{success}}(t) =
     0, & t > u_2.
 \end{cases}
 \end{equation*}
-We analyze the probability of success in each interval. First, we show that~$P_{\text{success}}(t)$ is continuous. Since~$P_{\text{success}}(t)$ is continuous on each region of its piecewise definition, it remains only to check the boundary points. At each boundary point, the left-hand and right-hand limits of~$P_{\text{success}}$ coincide with~$P_{\text{success}}$ itself; therefore,~$P_{\text{success}}$ is continuous on its entire domain. Then, we find the optimal threshold that maximizes the mechanism's success probability in each region. The second and third regions of case~(2) are equivalent to the third and fourth regions of case~(3), thus we analyze them together. In case~(3), the success probability function is linearly increasing in $a_1 \le t \le u_1$, and therefore its maximum is achieved at the right boundary,~$t = u_1$. In both cases, the success probability is linearly decreasing on $a_2 \le t \le u_2$, and therefore its maximum is achieved at the left boundary,~$t = a_2$. Since~$t = u_1$ and~$t = a_2$ are the boundary points of the region where~\FAR and~\FRR are strictly between zero and one, the maxima of the adjacent regions are already included in this region. Therefore, it is sufficient to analyze the region where~$u_1 \le t \le a_2$ in case~(3) or~$a_1 \le t \le a_2$ in case~(2). Figure~\ref{fig:uniform_success_1_cred} illustrates this analysis.
-Thus, we find the global maximum by differentiating the success probability function in this region and comparing the resulting critical point with the boundary values.
-
-We differentiate the success function and set it to zero.
-We find that at~$t = \frac{a_1+u_2}{2}$ we get $\frac{d}{dt} P_{\text{success}}(t) = 0$ with
-$\frac{d}{dt} P_{\text{success}}(t) > 0 \text{, for every } t \in (u_1, \frac{a_1+u_2}{2})$
-$\textit{and }$
-$\frac{d}{dt} P_{\text{success}}(t) < 0 \text{, for every } t \in (\frac{a_1+u_2}{2}, a_2).$
-Thus, the maximum point is at~$t_{\text{Max}} = \frac{a_1 + u_2}{2}$ if~$\frac{a_1+u_2}{2} \in [u_1, a_2]$ in case~(3) and~$\frac{a_1+u_2}{2} \in [a_1, a_2]$ in case~(2).
-
-For both cases, the probability of success at the optimal point, if the condition is satisfied, is
+In case~(3) the success probability is zero in the first interval, linearly increasing in the second, quadratic in the third, linearly decreasing in the fourth, and zero in the fifth. Case~(2) has the same structure without the linearly increasing second interval.
+The function is continuous, so the global maximum lies in the third interval,~$u_1 \le t \le a_2$, where both~\FAR and~\FRR are strictly between zero and one.
+Differentiating there gives an interior critical point at $t_{\text{opt}} = \frac{a_1+u_2}{2}$, clipped to the interval boundaries, with
 \begin{equation*}
 P_{\text{success}}(t_{\text{opt}}) = \frac{(a_1 - u_2)^2}{4 (a_1 - a_2) (u_1 - u_2)}.
 \end{equation*}
-For the overlap case, if the condition is not satisfied, the maximum point is at the boundary of the interval, which is either~${t = u_1}$ or~${t = a_2}$. Thus
+Figure~\ref{fig:uniform_success_1_cred} illustrates this analysis.
+The optimum shows that a wider attacker distribution, meaning a larger~$(a_2 - a_1)$, reduces the mechanism's success probability.
+
+The~\EER threshold is
 \begin{equation*}
-P_{\text{success}}(t_{\text{opt}}) = \max\left\{\frac{u_1 - a_1}{a_2 - a_1}, \frac{u_2 - a_2}{u_2 - u_1}\right\}.  
+t_{\EER} = \frac{a_1 u_1 - a_2 u_2}{a_1 - a_2 + u_1 - u_2},
 \end{equation*}
-For the case where the attacker range lies within the user's range, if the condition is not satisfied the maximum point is at the lower boundary of the third interval, where~${t = a_2}$. Thus
-\begin{equation*}
-P_{\text{success}}(t_{\text{opt}}) = \frac{u_2 - a_2}{u_2 - u_1}.
-\end{equation*}
-The maximum point represents the optimal threshold of the mechanism. From the optimal success probability expression, we can see that when an attacker distribution spans a wider interval, i.e., when~$(a_2 - a_1)$ increases, the mechanism’s success probability may significantly decrease.
-We calculate the~\EER point and show that it is not, in general, equal to the optimal point:
-\begin{equation*}
-t_{\EER} = \frac{a_1 \cdot u_1 - a_2 \cdot u_2}{a_1 - a_2 + u_1 - u_2}.
-\end{equation*}
-When the attacker's range lies within the user's range, the optimal threshold lies in the boundary~${t = a_2}$ or inside the third interval~$t=\frac{a_1 + u_2}{2}$. These points are not equal to the~\EER and lead to different success probability. Similarly, in the overlap case, the optimal threshold lies in one of the boundaries~${t = u_1}$,~${t = a_2}$ or inside the third interval where~$t=\frac{a_1 + u_2}{2}$. Thus, in both cases, the optimal threshold generally differs from the~\EER. However, when the user and attacker distributions are symmetric, i.e., when the intervals of each distribution are equal:~${a_2 - a_1 = u_2 - u_1}$, the~\EER expression coincides with the optimal threshold. Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrates this exception.
+which in general differs from~$t_{\text{opt}}$ in both cases.
+The two coincide only when the distributions are symmetric, when~${a_2 - a_1 = u_2 - u_1}$, as Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrates.
+The full interval analysis and the boundary cases are in Appendix~\ref{app:uniform_opt_thr}.
+
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}
@@ -846,16 +835,7 @@ f_A(s) =
     \end{array}
 \right.
 \]
-
-To reduce the degrees of freedom of the quadratic distributions, we express the coefficients directly in terms of their roots. The integral of each PDF over its roots interval is set to~1, which enforces the normalization condition. This condition ensures that the resulting error metrics~\FAR and~\FRR are bounded by~1. Under this condition, the coefficients become fully determined. Accordingly, we define the coefficients as
-\begin{align*}
-    &\alpha_1 \cdot \alpha_2 = \frac{c}{a} \rightarrow a = \frac{c}{\alpha_1 \cdot \alpha_2}. \\
-    &\alpha_1 + \alpha_2 = -\frac{b}{a} \rightarrow b = - \frac{c \cdot (\alpha_1 + \alpha_2)}{\alpha_1 \cdot \alpha_2}. \\
-    &\beta_1 \cdot \beta_2 = \frac{f}{d} \rightarrow d = \frac{f}{\beta_1 \cdot \beta_2}. \\
-    &\beta_1 + \beta_2 = -\frac{e}{d} \rightarrow e = - \frac{f \cdot (\beta_1 + \beta_2)}{\beta_1 \cdot \beta_2}. \\
-    &\int_{\alpha_1}^{\alpha_2} (a \cdot x^2+b \cdot x+c) dx = 1 \Rightarrow c = \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3}. \\
-    &\int_{\beta_1}^{\beta_2} (d \cdot x^2+e \cdot x+f) dx = 1 \Rightarrow f = \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3}.
-\end{align*}
+To reduce the degrees of freedom, we express the coefficients in terms of the roots and set the integral of each PDF over its roots interval to~1. This normalization condition ensures that the resulting error metrics~\FAR and~\FRR are bounded by~1, and determines the coefficients fully. The derivation of the coefficients is in Appendix~\ref{app:quad_opt_thr}. 
 Therefore, we can write the quadratic PDFs as
 \begin{flalign*}
 &f_U(s) =
@@ -968,125 +948,97 @@ G(t),
 \end{cases}
 \end{multline*}
 The second and third intervals in case~(2) are identical to the third and fourth intervals in case~(3) and therefore, we analyze them together. 
-We differentiate~$P_{\text{success}}(t)$ and compute its critical points in every interval. By comparing the stationary values obtained in all valid regions, we identify the global maximum, which corresponds to the optimal threshold~$t_{\text{opt}}$.
-Before writing the piecewise derivative, we define the polynomial coefficients and the following function:
-\begin{align*}
-&q = 4, \\
-&m = -(5\alpha_1 + \alpha_2 + \beta_1 + 5\beta_2),\\ 
-&n = \alpha_1(3\alpha_2 + \beta_1 + 6\beta_2)
-    - \alpha_2^2 + \alpha_2\beta_2 - \beta_1^2 + 3\beta_1\beta_2,\\
-&\ell = \alpha_1\bigl(\beta_1^2 - 3\beta_2(\alpha_2 + \beta_1)\bigr)
-       + \alpha_2^2 \beta_2,\\
-&R(t) = -\frac{6 (t-\alpha_2)(t-\beta_1)\bigl(qt^3 + mt^2 + nt + \ell\bigr)}
-     {(\alpha_1-\alpha_2)^3 (\beta_1-\beta_2)^3}.
-\end{align*}
-With these coefficients and function $R(t)$, the derivative of $P_{\text{success}}(t)$ is given by the following piecewise expression:
-\begin{equation*}
-\frac{dP_{\text{success}}}{dt} =
-\begin{cases}
-0, & t < \beta_1 \;\lor\; t > \alpha_2, \\
+We differentiate~$P_{\text{success}}(t)$ in every interval. In the second and fourth intervals the only critical points lie at~$t=\beta_1$ and~$t=\alpha_2$, where the derivative does not change sign in the required direction, and therefore these intervals contain no maximum. We turn to the third interval, where the derivative is a cubic polynomial multiplied by two linear factors that vanish outside the interval. Thus, the critical points depend solely on the cubic term, which reveals exactly one real root with the remaining two roots being complex. By examining the sign of the derivative on both sides of this root, we verify that it constitutes the global maximum~$t_{\text{opt}}$. The closed form cannot be simplified beyond a complex expression. The full derivative analysis and the closed form are in Appendix~\ref{app:quad_opt_thr}.
 
-\dfrac{6 (t-\beta_1) (t-\beta_2)}{(\beta_1-\beta_2)^3},
-& \beta_1 \le t \le \alpha_1, \\
+% \begin{figure*}[t]
+% \centering
 
-R(t),
-& \alpha_1 \le t \le \beta_2, \\
+% \begin{subfigure}[t]{0.31\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.8\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={$s$},
+%     ylabel={$P(s)$},
+%     xmin=1.5, xmax=4.5,
+%     ymin=-0.1, ymax=1.65,
+%     xtick={2,3,3.5,4},
+%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+%     ytick=\empty,
+%     legend to name=distlegend,
+%     legend columns=2,
+%     legend style={draw=black, fill=white}
+% ]
+% \addplot[blue, thick, mark=none]
+% table [x=s, y=PU] {figs/fig_parabola/parabola_case_a.txt};
+% \addlegendentry{User}
 
--\dfrac{6 (t-\alpha_1) (t-\alpha_2)}{(\alpha_1-\alpha_2)^3},
-& \beta_2 \le t \le \alpha_2.
-\end{cases}
-\end{equation*}
-In the second interval, the derivative has a single critical point at $t=\beta_{1}$. Since the derivative is strictly positive for all $t>\beta_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $t=\alpha_{2}$, and the derivative is strictly negative for all $t<\alpha_{2}$. Therefore, this interval contains no maximum either. We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at~$t=\beta_{1}$ and~$t=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic reveals exactly one real root with the remaining two roots being complex. The closed form of the cubic solution cannot be simplified beyond a complex expression~(see Appendix~\ref{app:quad_opt_thr}). Thus, we denote the solution as $t_{\text{cubic}}$.
+% \addplot[red, thick, mark=none]
+% table [x=s, y=PA] {figs/fig_parabola/parabola_case_a.txt};
+% \addlegendentry{Attacker}
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Attacker with low variance.}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.31\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.8\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={$s$},
+%     ylabel={$P(s)$},
+%     xmin=1, xmax=4.5,
+%     ymin=-0.1, ymax=1.65,
+%     xtick={1.2,3,3.5,4},
+%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+%     ytick=\empty
+% ]
+% \addplot[blue, thick, mark=none]
+% table [x=s, y=PU] {figs/fig_parabola/parabola_case_b.txt};
 
-\begin{figure*}[t]
-\centering
+% \addplot[red, thick, mark=none]
+% table [x=s, y=PA] {figs/fig_parabola/parabola_case_b.txt};
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Attacker with medium variance.}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.31\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.8\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={$s$},
+%     ylabel={$P(s)$},
+%     xmin=0.5, xmax=4.5,
+%     ymin=-0.1, ymax=1.65,
+%     xtick={0.6,3,3.5,4},
+%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
+%     ytick=\empty
+% ]
+% \addplot[blue, thick, mark=none]
+% table [x=s, y=PU] {figs/fig_parabola/parabola_case_c.txt};
 
-\begin{subfigure}[t]{0.31\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.45\linewidth,
-    xlabel={$s$},
-    ylabel={$P(s)$},
-    xmin=1.5, xmax=4.5,
-    ymin=-0.1, ymax=1.65,
-    xtick={2,3,3.5,4},
-    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-    ytick=\empty,
-    legend to name=distlegend,
-    legend columns=2,
-    legend style={draw=black, fill=white}
-]
-\addplot[blue, thick, mark=none]
-table [x=s, y=PU] {figs/fig_parabola/parabola_case_a.txt};
-\addlegendentry{User}
+% \addplot[red, thick, mark=none]
+% table [x=s, y=PA] {figs/fig_parabola/parabola_case_c.txt};
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Attacker with high variance.}
+% \end{subfigure}
 
-\addplot[red, thick, mark=none]
-table [x=s, y=PA] {figs/fig_parabola/parabola_case_a.txt};
-\addlegendentry{Attacker}
-\end{axis}
-\end{tikzpicture}
-\caption{Attacker with low variance.}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.31\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.45\linewidth,
-    xlabel={$s$},
-    ylabel={$P(s)$},
-    xmin=1, xmax=4.5,
-    ymin=-0.1, ymax=1.65,
-    xtick={1.2,3,3.5,4},
-    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-    ytick=\empty
-]
-\addplot[blue, thick, mark=none]
-table [x=s, y=PU] {figs/fig_parabola/parabola_case_b.txt};
+% \medskip
 
-\addplot[red, thick, mark=none]
-table [x=s, y=PA] {figs/fig_parabola/parabola_case_b.txt};
-\end{axis}
-\end{tikzpicture}
-\caption{Attacker with medium variance.}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.31\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.45\linewidth,
-    xlabel={$s$},
-    ylabel={$P(s)$},
-    xmin=0.5, xmax=4.5,
-    ymin=-0.1, ymax=1.65,
-    xtick={0.6,3,3.5,4},
-    xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-    ytick=\empty
-]
-\addplot[blue, thick, mark=none]
-table [x=s, y=PU] {figs/fig_parabola/parabola_case_c.txt};
-
-\addplot[red, thick, mark=none]
-table [x=s, y=PA] {figs/fig_parabola/parabola_case_c.txt};
-\end{axis}
-\end{tikzpicture}
-\caption{Attacker with high variance.}
-\end{subfigure}
-
-\medskip
-
-\pgfplotslegendfromname{distlegend}
-\caption{Quadratic user and attacker distributions.}
-\label{fig:different_attackers_pdf_1_quadratic_cred}
-\end{figure*}
+% \pgfplotslegendfromname{distlegend}
+% \caption{Quadratic user and attacker distributions.}
+% \label{fig:different_attackers_pdf_1_quadratic_cred}
+% \end{figure*}
 
 \begin{figure*}[t]
 \centering
@@ -1188,122 +1140,121 @@ table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_c_points.txt};
 \label{fig:success_per_attacker_1_quadratic_cred}
 \end{figure*}
 
-\begin{figure*}[t]
-\centering
+% \begin{figure*}[t]
+% \centering
 
-\begin{subfigure}[t]{0.31\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.45\linewidth,
-    xlabel={$\FRR(t)$},
-    ylabel={$\FAR(t)$},
-    xmin=0, xmax=1,
-    ymin=0, ymax=1,
-    grid=none,
-    ytick =\empty,
-    xtick =\empty,
-    legend to name=farfrrlegend,
-    legend columns=3,
-    legend style={draw=black, fill=white}
-]
-\addplot[thick, myPurple, mark=none]
-table [x=FRR, y=FAR]
-{figs/fig_parabola/parabola_case_a.txt};
-\addlegendentry{Operating Curve}
+% \begin{subfigure}[t]{0.31\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.8\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={$\FRR(t)$},
+%     ylabel={$\FAR(t)$},
+%     xmin=0, xmax=1,
+%     ymin=0, ymax=1,
+%     grid=none,
+%     ytick =\empty,
+%     xtick =\empty,
+%     legend to name=farfrrlegend,
+%     legend columns=3,
+%     legend style={draw=black, fill=white}
+% ]
+% \addplot[thick, myPurple, mark=none]
+% table [x=FRR, y=FAR]
+% {figs/fig_parabola/parabola_case_a.txt};
+% \addlegendentry{Operating Curve}
 
-\addplot[only marks, mark=*, mark size=1.3pt, blue]
-table [x=FRR_opt, y=FAR_opt]
-{figs/fig_parabola/parabola_case_a_points.txt};
-\addlegendentry{Optimal Point}
+% \addplot[only marks, mark=*, mark size=1.3pt, blue]
+% table [x=FRR_opt, y=FAR_opt]
+% {figs/fig_parabola/parabola_case_a_points.txt};
+% \addlegendentry{Optimal Point}
 
-\addplot[only marks, mark=*, mark size=1.3pt, red]
-table [x=FRR_eer, y=FAR_eer]
-{figs/fig_parabola/parabola_case_a_points.txt};
-\addlegendentry{\EER Point}
-\end{axis}
-\end{tikzpicture}
-\caption{Attacker with low variance.}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.31\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.45\linewidth,
-    xlabel={$\FRR(t)$},
-    ylabel={$\FAR(t)$},
-    xmin=0, xmax=1,
-    ymin=0, ymax=1,
-    grid=none,
-    ytick =\empty,
-    xtick =\empty
-]
-\addplot[thick, myPurple, mark=none]
-table [x=FRR, y=FAR]
-{figs/fig_parabola/parabola_case_b.txt};
+% \addplot[only marks, mark=*, mark size=1.3pt, red]
+% table [x=FRR_eer, y=FAR_eer]
+% {figs/fig_parabola/parabola_case_a_points.txt};
+% \addlegendentry{\EER Point}
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Attacker with low variance.}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.31\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.8\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={$\FRR(t)$},
+%     ylabel={$\FAR(t)$},
+%     xmin=0, xmax=1,
+%     ymin=0, ymax=1,
+%     grid=none,
+%     ytick =\empty,
+%     xtick =\empty
+% ]
+% \addplot[thick, myPurple, mark=none]
+% table [x=FRR, y=FAR]
+% {figs/fig_parabola/parabola_case_b.txt};
 
-\addplot[only marks, mark=*, mark size=1.3pt, blue]
-table [x=FRR_opt, y=FAR_opt]
-{figs/fig_parabola/parabola_case_b_points.txt};
+% \addplot[only marks, mark=*, mark size=1.3pt, blue]
+% table [x=FRR_opt, y=FAR_opt]
+% {figs/fig_parabola/parabola_case_b_points.txt};
 
-\addplot[only marks, mark=*, mark size=1.3pt, red]
-table [x=FRR_eer, y=FAR_eer]
-{figs/fig_parabola/parabola_case_b_points.txt};
-\end{axis}
-\end{tikzpicture}
-\caption{Attacker with medium variance.}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.31\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.45\linewidth,
-    xlabel={$\FRR(t)$},
-    ylabel={$\FAR(t)$},
-    xmin=0, xmax=1,
-    ymin=0, ymax=1,
-    grid=none,
-    ytick =\empty,
-    xtick =\empty
-]
-\addplot[thick, myPurple, mark=none]
-table [x=FRR, y=FAR]
-{figs/fig_parabola/parabola_case_c.txt};
+% \addplot[only marks, mark=*, mark size=1.3pt, red]
+% table [x=FRR_eer, y=FAR_eer]
+% {figs/fig_parabola/parabola_case_b_points.txt};
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Attacker with medium variance.}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}[t]{0.31\textwidth}
+% \centering
+% \begin{tikzpicture}
+% \begin{axis}[
+%     scale only axis,
+%     width=0.8\linewidth,
+%     height=0.45\linewidth,
+%     xlabel={$\FRR(t)$},
+%     ylabel={$\FAR(t)$},
+%     xmin=0, xmax=1,
+%     ymin=0, ymax=1,
+%     grid=none,
+%     ytick =\empty,
+%     xtick =\empty
+% ]
+% \addplot[thick, myPurple, mark=none]
+% table [x=FRR, y=FAR]
+% {figs/fig_parabola/parabola_case_c.txt};
 
-\addplot[only marks, mark=*, mark size=1.3pt, blue]
-table [x=FRR_opt, y=FAR_opt]
-{figs/fig_parabola/parabola_case_c_points.txt};
+% \addplot[only marks, mark=*, mark size=1.3pt, blue]
+% table [x=FRR_opt, y=FAR_opt]
+% {figs/fig_parabola/parabola_case_c_points.txt};
 
-\addplot[only marks, mark=*, mark size=1.3pt, red]
-table [x=FRR_eer, y=FAR_eer]
-{figs/fig_parabola/parabola_case_c_points.txt};
-\end{axis}
-\end{tikzpicture}
-\caption{Attacker with high variance.}
-\end{subfigure}
+% \addplot[only marks, mark=*, mark size=1.3pt, red]
+% table [x=FRR_eer, y=FAR_eer]
+% {figs/fig_parabola/parabola_case_c_points.txt};
+% \end{axis}
+% \end{tikzpicture}
+% \caption{Attacker with high variance.}
+% \end{subfigure}
 
-\medskip
+% \medskip
 
-\pgfplotslegendfromname{farfrrlegend}
-\caption{\FAR vs. \FRR operating curves for different attacker distributions.}
-\label{fig:FAR_FRR_1_quadratic_cred}
-\end{figure*}
-By examining the sign of the derivative on both sides of the critical point $t_{\text{cubic}}$, we verify that it constitutes a global maximum of $P_{\text{success}}(t)$. We denote this maximizing point by $t_{\text{opt}}$. Figure~\ref{fig:success_per_attacker_1_quadratic_cred} illustrates this analysis.
+% \pgfplotslegendfromname{farfrrlegend}
+% \caption{\FAR vs. \FRR operating curves for different attacker distributions.}
+% \label{fig:FAR_FRR_1_quadratic_cred}
+% \end{figure*}
 
 To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we computed the~\EER threshold as follows:
 \begin{equation*}
 t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2}
 \end{equation*}
 We can observe that the two thresholds differ.
-To evaluate the difference between the~$t_{\text{opt}}$ and the~\EER, we illustrate different attacker distributions, each spanning a wider interval~$(\beta_1,\beta_2)$, which corresponds to increasing the variance, as shown in Figure~\ref{fig:different_attackers_pdf_1_quadratic_cred}.
+To evaluate the difference between the~$t_{\text{opt}}$ and the~\EER, we consider different attacker distributions, each spanning a wider interval~$(\beta_1,\beta_2)$, which corresponds to increasing the variance.
 Comparing each case with its corresponding success probability curve, we observe that the optimal threshold~$t_{\text{opt}}$ becomes more distinct from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases and the more asymmetric the user and attacker distributions become. 
 
 Moreover, increasing the variance of an attacker distribution shifts the optimal threshold~$t_{\text{opt}}$ towards~$\alpha_1$, reducing the~\FRR to zero. In contrast, the~\EER threshold remains fixed balancing between the~\FAR and~\FRR. This shift indicates that when increasing the variance, the optimal threshold prioritizes minimizing the false rejection rate, rather than balancing both error rates, as shown in Figure~\ref{fig:success_per_attacker_1_quadratic_cred}.
@@ -1345,7 +1296,7 @@ table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 
 \subsection{Empirical Evaluation}\label{sec:eval_single_cred}
 \noindent
-We first evaluate a mechanism that uses a biometric credential only under the baseline attack, where attackers authenticate using their own fingerprints. Calculating the mechanism’s success probability requires the biometric credential’s fault probabilities, which depend on the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms genuine and impostor comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}and calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:approximations}.
+We first evaluate a mechanism that uses a biometric credential only under the baseline attack, where attackers authenticate using their own fingerprints. Calculating the mechanism’s success probability requires the biometric credential’s fault probabilities, which depend on the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of genuine and impostor comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}and calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:approximations}.
 
 Using these error rates, we calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the mechanism's success probability~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. However, the success probability of the mechanism, when operated at the optimal threshold, is not significantly greater than operating at the~\EER threshold.
 
@@ -3851,6 +3802,94 @@ However, our survey finds that only two device families allow setting a numeric 
 
 \appendices
 
+\section{Uniform Distribution Optimal Threshold}\label{app:uniform_opt_thr}
+\noindent
+We derive the optimal threshold for a uniform distribution, which is a first-order approximation of a biometric credential score distribution. As shown in~$(\S\ref{sec:uniform_biocred})$, we analyze cases~(2) and~(3).
+
+We analyze the probability of success in each interval. First, we show that~$P_{\text{success}}(t)$ is continuous. Since~$P_{\text{success}}(t)$ is continuous on each region of its piecewise definition, it remains only to check the boundary points. At each boundary point, the left-hand and right-hand limits of~$P_{\text{success}}$ coincide with~$P_{\text{success}}$ itself; therefore,~$P_{\text{success}}$ is continuous on its entire domain. Then, we find the optimal threshold that maximizes the mechanism's success probability in each region. The second and third regions of case~(2) are equivalent to the third and fourth regions of case~(3), thus we analyze them together. In case~(3), the success probability function is linearly increasing in $a_1 \le t \le u_1$, and therefore its maximum is achieved at the right boundary,~$t = u_1$. In both cases, the success probability is linearly decreasing on $a_2 \le t \le u_2$, and therefore its maximum is achieved at the left boundary,~$t = a_2$. Since~$t = u_1$ and~$t = a_2$ are the boundary points of the region where~\FAR and~\FRR are strictly between zero and one, the maxima of the adjacent regions are already included in this region. Therefore, it is sufficient to analyze the region where~$u_1 \le t \le a_2$ in case~(3) or~$a_1 \le t \le a_2$ in case~(2).
+Thus, we find the global maximum by differentiating the success probability function in this region and comparing the resulting critical point with the boundary values.
+
+We differentiate the success function and set it to zero.
+We find that at~$t = \frac{a_1+u_2}{2}$ we get $\frac{d}{dt} P_{\text{success}}(t) = 0$ with
+$\frac{d}{dt} P_{\text{success}}(t) > 0 \text{, for every } t \in (u_1, \frac{a_1+u_2}{2})$
+and
+$\frac{d}{dt} P_{\text{success}}(t) < 0 \text{, for every } t \in (\frac{a_1+u_2}{2}, a_2).$
+Thus, the maximum point is at~$t_{\text{opt}} = \frac{a_1 + u_2}{2}$ if~$\frac{a_1+u_2}{2} \in [u_1, a_2]$ in case~(3) and~$\frac{a_1+u_2}{2} \in [a_1, a_2]$ in case~(2).
+
+For the overlap case, if the condition is not satisfied, the maximum point is at the boundary of the interval, which is either~${t = u_1}$ or~${t = a_2}$. Thus
+\begin{equation*}
+P_{\text{success}}(t_{\text{opt}}) = \max\left\{\frac{u_1 - a_1}{a_2 - a_1}, \frac{u_2 - a_2}{u_2 - u_1}\right\}.
+\end{equation*}
+For the case where the attacker range lies within the user's range, if the condition is not satisfied the maximum point is at the lower boundary of the third interval, where~${t = a_2}$. Thus
+\begin{equation*}
+P_{\text{success}}(t_{\text{opt}}) = \frac{u_2 - a_2}{u_2 - u_1}.
+\end{equation*}
+
+When the attacker's range lies within the user's range, the optimal threshold lies in the boundary~${t = a_2}$ or inside the third interval~$t=\frac{a_1 + u_2}{2}$. These points are not equal to the~\EER and lead to different success probability. Similarly, in the overlap case, the optimal threshold lies in one of the boundaries~${t = u_1}$,~${t = a_2}$ or inside the third interval where~$t=\frac{a_1 + u_2}{2}$. Thus, in both cases, the optimal threshold generally differs from the~\EER.
+
+\section{Quadratic Distribution Optimal Threshold}\label{app:quad_opt_thr}
+\noindent
+We derive the coefficients of the quadratic distributions and the optimal threshold of a mechanism that uses a biometric credential with such distributions, as presented in~$(\S\ref{sec:quadratic_biocred})$.
+
+Expressing the coefficients in terms of the roots and imposing the normalization condition gives
+\begin{align*}
+    &\alpha_1 \cdot \alpha_2 = \frac{c}{a} \rightarrow a = \frac{c}{\alpha_1 \cdot \alpha_2}. \\
+    &\alpha_1 + \alpha_2 = -\frac{b}{a} \rightarrow b = - \frac{c \cdot (\alpha_1 + \alpha_2)}{\alpha_1 \cdot \alpha_2}. \\
+    &\beta_1 \cdot \beta_2 = \frac{f}{d} \rightarrow d = \frac{f}{\beta_1 \cdot \beta_2}. \\
+    &\beta_1 + \beta_2 = -\frac{e}{d} \rightarrow e = - \frac{f \cdot (\beta_1 + \beta_2)}{\beta_1 \cdot \beta_2}. \\
+    &\int_{\alpha_1}^{\alpha_2} (a \cdot x^2+b \cdot x+c) dx = 1 \Rightarrow c = \frac{6 \cdot \alpha_1 \cdot \alpha_2}{(\alpha_1 - \alpha_2)^3}. \\
+    &\int_{\beta_1}^{\beta_2} (d \cdot x^2+e \cdot x+f) dx = 1 \Rightarrow f = \frac{6 \cdot \beta_1 \cdot \beta_2}{(\beta_1 - \beta_2)^3}.
+\end{align*}
+
+To find the optimal threshold, we define the polynomial coefficients and the following function:
+\begin{align*}
+&q = 4, \\
+&m = -(5\alpha_1 + \alpha_2 + \beta_1 + 5\beta_2),\\ 
+&n = \alpha_1(3\alpha_2 + \beta_1 + 6\beta_2)
+    - \alpha_2^2 + \alpha_2\beta_2 - \beta_1^2 + 3\beta_1\beta_2,\\
+&\ell = \alpha_1\bigl(\beta_1^2 - 3\beta_2(\alpha_2 + \beta_1)\bigr)
+       + \alpha_2^2 \beta_2,\\
+&R(t) = -\frac{6 (t-\alpha_2)(t-\beta_1)\bigl(qt^3 + mt^2 + nt + \ell\bigr)}
+     {(\alpha_1-\alpha_2)^3 (\beta_1-\beta_2)^3}.
+\end{align*}
+With these coefficients and function $R(t)$, the derivative of $P_{\text{success}}(t)$ is given by the following piecewise expression:
+\begin{equation*}
+\frac{dP_{\text{success}}}{dt} =
+\begin{cases}
+0, & t < \beta_1 \;\lor\; t > \alpha_2, \\
+
+\dfrac{6 (t-\beta_1) (t-\beta_2)}{(\beta_1-\beta_2)^3},
+& \beta_1 \le t \le \alpha_1, \\
+
+R(t),
+& \alpha_1 \le t \le \beta_2, \\
+
+-\dfrac{6 (t-\alpha_1) (t-\alpha_2)}{(\alpha_1-\alpha_2)^3},
+& \beta_2 \le t \le \alpha_2.
+\end{cases}
+\end{equation*}
+In the second interval, the derivative has a single critical point at $t=\beta_{1}$. Since the derivative is strictly positive for all $t>\beta_{1}$, this point corresponds to a local minimum rather than a maximum. Similarly, in the fourth interval, the only critical point occurs at $t=\alpha_{2}$, and the derivative is strictly negative for all $t<\alpha_{2}$. Therefore, this interval contains no maximum either. We therefore turn to the third interval. In this region, the derivative is the product of a cubic polynomial and two linear factors. The linear factors vanish at~$t=\beta_{1}$ and~$t=\alpha_{2}$, both of which lie outside the third interval. Consequently, the existence of critical points within this interval depends solely on the cubic term. Solving this cubic reveals exactly one real root with the remaining two roots being complex.
+
+Let
+\begin{align*}
+p &= 13\alpha_1^2 - 2\alpha_1(13\alpha_2 + \beta_1 - \beta_2) + 25\alpha_2^2 \\
+  &\quad - 2\alpha_2(11\beta_1 + \beta_2) + 25\beta_1^2 - 26\beta_1\beta_2 + 13\beta_2^2, \\[4pt]
+r &= 19\alpha_1^2 + 2\alpha_1(35\alpha_2 - 55\beta_1 + \beta_2) - 125\alpha_2^2 \\
+  &\quad + 10\alpha_2(29\beta_1 - 11\beta_2) - (25\beta_1 - 19\beta_2)(5\beta_1 + \beta_2), \\[4pt]
+w &= 19\alpha_1^3 + 3\alpha_1^2(17\alpha_2 - 43\beta_1 + 7\beta_2) \\
+  &\quad + 3\alpha_1\bigl(-5(13\alpha_2^2 - 22\alpha_2\beta_1 + \beta_1^2) \\
+  &\quad\quad - 14\beta_2(\alpha_2 + \beta_1) + 7\beta_2^2\bigr) \\
+  &\quad + 125\alpha_2^3 - 165\alpha_2^2\beta_1 - 15\alpha_2^2\beta_2 - 165\alpha_2\beta_1^2 \\
+  &\quad + 330\alpha_2\beta_1\beta_2 - 129\alpha_2\beta_2^2 + 125\beta_1^3 \\
+  &\quad - 195\beta_1^2\beta_2 + 51\beta_1\beta_2^2 + 19\beta_2^3, \\[4pt]
+D &= \sqrt{-p^3 + (\alpha_1 - \alpha_2 - \beta_1 + \beta_2)^2 r^2}, \\[4pt]
+C &= \sqrt[3]{w + D}.
+\end{align*}
+The optimal threshold is then
+\begin{equation*}
+t_{\text{opt}} = \frac{1}{12}\left(C + \frac{p}{C} + \alpha_1 + 5\alpha_2 + 5\beta_1 + \beta_2\right).
+\end{equation*}
+
 \section{A Sufficient Condition for Integrating Biometric Credentials}
 \label{app:sufficient-condition}
 \noindent
@@ -3981,29 +4020,6 @@ Authentication Mode the decision is delegated to an upstream controller.
 $^{\ddagger}$On-device matching is one of three selectable operating modes.
 $^{\S}$Face detection only: no template store and no identity decision.
 \end{table*}
-
-\section{Closed Form of the Quadratic Optimal Threshold}\label{app:quad_opt_thr}
-\noindent
-We derive the optimal threshold for a quadratic distribution, which is a second-order approximation of a biometric credential score distribution. As shown in~$(\S\ref{sec:quadratic_biocred})$, the optimal threshold is the single real root of the cubic in the third interval.
-Let
-\begin{align*}
-p &= 13\alpha_1^2 - 2\alpha_1(13\alpha_2 + \beta_1 - \beta_2) + 25\alpha_2^2 \\
-  &\quad - 2\alpha_2(11\beta_1 + \beta_2) + 25\beta_1^2 - 26\beta_1\beta_2 + 13\beta_2^2, \\[4pt]
-r &= 19\alpha_1^2 + 2\alpha_1(35\alpha_2 - 55\beta_1 + \beta_2) - 125\alpha_2^2 \\
-  &\quad + 10\alpha_2(29\beta_1 - 11\beta_2) - (25\beta_1 - 19\beta_2)(5\beta_1 + \beta_2), \\[4pt]
-w &= 19\alpha_1^3 + 3\alpha_1^2(17\alpha_2 - 43\beta_1 + 7\beta_2) \\
-  &\quad + 3\alpha_1\bigl(-5(13\alpha_2^2 - 22\alpha_2\beta_1 + \beta_1^2) \\
-  &\quad\quad - 14\beta_2(\alpha_2 + \beta_1) + 7\beta_2^2\bigr) \\
-  &\quad + 125\alpha_2^3 - 165\alpha_2^2\beta_1 - 15\alpha_2^2\beta_2 - 165\alpha_2\beta_1^2 \\
-  &\quad + 330\alpha_2\beta_1\beta_2 - 129\alpha_2\beta_2^2 + 125\beta_1^3 \\
-  &\quad - 195\beta_1^2\beta_2 + 51\beta_1\beta_2^2 + 19\beta_2^3, \\[4pt]
-D &= \sqrt{-p^3 + (\alpha_1 - \alpha_2 - \beta_1 + \beta_2)^2 r^2}, \\[4pt]
-C &= \sqrt[3]{w + D}.
-\end{align*}
-The optimal threshold is then
-\begin{equation*}
-t_{\text{opt}} = \frac{1}{12}\left(C + \frac{p}{C} + \alpha_1 + 5\alpha_2 + 5\beta_1 + \beta_2\right).
-\end{equation*}
 
 \end{document}
 \endinput
