@@ -1761,7 +1761,7 @@ $\mathbf{P_{\mathrm{safe}}}$ & $P_{\mathrm{loss}}$ & $P_{\mathrm{leak}}$ & $P_{\
 \subsection{No Improvement In Mechanism Success}\label{sec:no_success_improvement}
 \noindent
 We show that given an atomic credential that is either safe or stolen, there is no benefit in combining it with a biometric credential.
-\begin{proposition}
+\begin{proposition}\label{thm:no_improvement}
     Let~$c_1$ be an atomic credential with~${P^1_\text{loss} = P^1_\text{leak} = 0}$, $c_2$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$, and~$M$ be the mechanism using only~$c_1$. Then, for a mechanism~$\bar{M}$ using~$c_1$,~$c_2$ in \emph{AND} or \emph{OR} compositions it holds that
     \begin{equation*}
         P_{\mathrm{success}}^{\bar{M}} \le P_{\mathrm{success}}^{M}.
@@ -1854,7 +1854,7 @@ The mechanism~$M$ reduces its~$k$ atomic credentials to a single consolidated cr
 An asymptotically separable biometric credential therefore improves on it, as in the two-credential case.
 \end{proofsketch}
 The full proof is in the full version of this report~\cite{biometric_full_version}.
-\begin{proposition}
+\begin{proposition}\label{thm:nec_cond_for_improve_k_atm}
     Let~$c_{k+1}$ be a biometric credential with user distribution~$f_U(t)$ and attacker distribution~$f_A(t)$. Suppose that for every set of~$k$ independent atomic credentials~$\{c_1,\ldots,c_k\}$ and every mechanism~$M$ over these credentials whose consolidated credential has~$P^M_\text{safe} > 0$ and at least one of~$P^M_\text{leak},P^M_\text{loss} > 0$, there exists a mechanism~$\bar{M}$ using~$\{c_1,\ldots,c_k,c_{k+1}\}$ such that
     \begin{equation*}
     P^{\bar{M}}_{\text{success}}(t) > P^{M}_{\text{success}}.
