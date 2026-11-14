@@ -444,38 +444,44 @@ from the KS fits, under both attack scenarios.}
 \label{fig:approximations}
 \end{figure*}
 
+
 \section{Single Biometric Credential}\label{sec:mechanisms}
 \noindent
-We explore optimal mechanism success probability with a single biometric credential.
-We start with first~$(\S\ref{sec:uniform_biocred})$ and second~$(\S\ref{sec:quadratic_biocred})$ order approximations, and then evaluate the mechanism on public biometric datasets~$(\S\ref{sec:eval_single_cred})$.
-
-\begin{figure*}[t]
+We optimize mechanisms with a single biometric credential.
+We start with closed-form first~$(\S\ref{sec:uniform_biocred})$ and second~$(\S\ref{sec:quadratic_biocred})$ order approximations, and then evaluate the mechanism on the biometric dataset~$(\S\ref{sec:eval_single_cred})$.
+\begin{figure}[t]
 \centering
 
-\begin{subfigure}[t]{0.30\textwidth}
+\pgfplotsset{
+    uniformcase/.style={
+        scale only axis,
+        width=0.78\columnwidth,
+        height=0.16\columnwidth,
+        xmin=0, xmax=1,
+        ymin=0, ymax=4.8,
+        grid=major,
+        ytick=\empty,
+        ylabel={Density},
+        ylabel style={font=\small},
+        xticklabel style={font=\small}
+    }
+}
+
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.5\linewidth,
-    xlabel={Matching Score},
-    ylabel={Probability Density},
-    xmin=0, xmax=1,
-    ymin=0, ymax=4.8,
-    grid=major,
+    uniformcase,
     xtick={0,0.15,0.40,0.60,0.85},
     xticklabels={$0$,$a_1$,$a_2$,$u_1$,$u_2$},
-    ytick=\empty,
     legend to name=uniformthreecaseslegend,
     legend columns=2,
     legend style={draw=black, fill=white}
 ]
-\addplot+[blue, thick, mark=none, const plot]
+\addplot[blue, thick, mark=none, const plot]
 table [x=s, y=PU_case1] {figs/fig_uniform/uniform_three_cases.txt};
 \addlegendentry{User}
-
-\addplot+[red, thick, mark=none, const plot]
+\addplot[red, thick, mark=none, const plot]
 table [x=s, y=PA_case1] {figs/fig_uniform/uniform_three_cases.txt};
 \addlegendentry{Attacker}
 \end{axis}
@@ -483,52 +489,37 @@ table [x=s, y=PA_case1] {figs/fig_uniform/uniform_three_cases.txt};
 \caption{Separated uniform PDFs.}
 \label{fig:uniform_case1_pdf}
 \end{subfigure}
-\begin{subfigure}[t]{0.30\textwidth}
+
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.5\linewidth,
-    xlabel={Matching Score},
-    ylabel={},
-    xmin=0, xmax=1,
-    ymin=0, ymax=4.8,
-    grid=major,
+    uniformcase,
     xtick={0,0.20,0.40,0.65,0.85},
-    xticklabels={$0$,$u_1$,$a_1$,$a_2$,$u_2$},
-    ytick=\empty
+    xticklabels={$0$,$u_1$,$a_1$,$a_2$,$u_2$}
 ]
-\addplot+[blue, thick, mark=none, const plot]
+\addplot[blue, thick, mark=none, const plot]
 table [x=s, y=PU_case2] {figs/fig_uniform/uniform_three_cases.txt};
-
-\addplot+[red, thick, mark=none, const plot]
+\addplot[red, thick, mark=none, const plot]
 table [x=s, y=PA_case2] {figs/fig_uniform/uniform_three_cases.txt};
 \end{axis}
 \end{tikzpicture}
 \caption{The attacker range lies within the user range.}
 \label{fig:uniform_case2_pdf}
 \end{subfigure}
-\begin{subfigure}[t]{0.30\textwidth}
+
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.5\linewidth,
+    uniformcase,
     xlabel={Matching Score},
-    ylabel={},
-    xmin=0, xmax=1,
-    ymin=0, ymax=4.8,
-    grid=major,
     xtick={0,0.15,0.40,0.65,0.85},
-    xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$},
-    ytick=\empty
+    xticklabels={$0$,$a_1$,$u_1$,$a_2$,$u_2$}
 ]
-\addplot+[blue, thick, mark=none, const plot]
+\addplot[blue, thick, mark=none, const plot]
 table [x=s, y=PU_case3] {figs/fig_uniform/uniform_three_cases.txt};
-
-\addplot+[red, thick, mark=none, const plot]
+\addplot[red, thick, mark=none, const plot]
 table [x=s, y=PA_case3] {figs/fig_uniform/uniform_three_cases.txt};
 \end{axis}
 \end{tikzpicture}
@@ -536,16 +527,17 @@ table [x=s, y=PA_case3] {figs/fig_uniform/uniform_three_cases.txt};
 \label{fig:uniform_case3_pdf}
 \end{subfigure}
 
+\smallskip
 \ref*{uniformthreecaseslegend}
 
-\caption{Quantitative illustration of three distinct cases of uniform attacker and user score distributions. In case (1), the distributions are separated. Case (2) illustrates the case where an attacker is fully contained in the user distribution, and (3) illustrates two overlapping configurations.}
+\caption{Three distinct cases of uniform attacker and user score distributions.}
 \label{fig:uniform_three_cases}
-\end{figure*}
+\end{figure}
 
 \subsection{Uniformly Distributed Biometric Credentials}\label{sec:uniform_biocred}
 \noindent
 We consider uniform distribution as a first-order approximation of the biometric credential distributions.
-Denote by~$u_1 \textit{ and } u_2$ the user's PDF bounds and by~$a_1 \textit{ and } a_2$  the attacker's PDF bounds as shown in Figure~\ref{fig:uniform_three_cases}. The probability distribution functions for the user and the attacker, $f_U$ and $f_A$ are thus:
+Denote by~$u_1 \textit{ and } u_2$ the user's PDF bounds and by~$a_1 \textit{ and } a_2$  the attacker's PDF bounds~(Figure~\ref{fig:uniform_three_cases}). The probability distribution functions for the user and the attacker are thus:
 \begin{align*}
 &f_U(s) = \frac{1}{u_2-u_1} \quad \text{for } u_1 \leq s \leq u_2 \text{ and}\\
 &f_A(s) = \frac{1}{a_2-a_1} \quad \text{for } a_1 \leq s \leq a_2.
@@ -563,14 +555,14 @@ The error metrics~\FAR and~\FRR are both functions of the match threshold~$t$ an
 \end{array}
 \right.
 \]
-\[\textit{and}\]
+and
 \[
 \FRR(t) = \int_{u_1}^{t} \frac{1}{u_2-u_1} ds =
 \left\{
 \begin{array}{ll}
 0 & \text{if } t \le u_1 \\
 \frac{t - u_1}{u_2 - u_1} & \text{if } u_1 < t \le u_2 \\
-1 & \text{if } t > u_2
+1 & \text{if } t > u_2.
 \end{array}
 \right.
 \]
@@ -594,7 +586,7 @@ P_{\text{success}}(t) =
     0, & t \le a_1 \\
     (1 - \frac{a_2-t}{a_2-a_1})\cdot(1-\frac{t-u_1}{u_2-u_1}), & a_1 < t \le a_2\\
     1 - \frac{t-u_1}{u_2-u_1}, & a_2 < t \le u_2 \\
-    0, & t > u_2
+    0, & t > u_2.
 \end{cases}
 \end{equation*}
 
@@ -626,7 +618,7 @@ t_{\EER} = \frac{a_1 u_1 - a_2 u_2}{a_1 - a_2 + u_1 - u_2},
 \end{equation*}
 which in general differs from~$t_{\text{opt}}$ in both cases.
 The two coincide only when the distributions are symmetric, when~${a_2 - a_1 = u_2 - u_1}$, as Figure~\ref{fig:FAR_FRR_uniform_1_cred} illustrates.
-The full interval analysis and the boundary cases are in Appendix~\ref{app:uniform_opt_thr}.
+The full interval analysis and the boundary cases are in the full version of this report~\cite{biometric_full_version}.
 
 \begin{figure}[t]
 \centering
@@ -724,33 +716,39 @@ table [x=FRR_eer_sym, y=FAR_eer_sym] {figs/fig_uniform/success_uniform_data.txt}
 
 \subsection{Quadratic Distributed Credential}\label{sec:quadratic_biocred}
 \noindent
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
 
-\begin{subfigure}[t]{0.30\textwidth}
+\pgfplotsset{
+    quadraticcase/.style={
+        scale only axis,
+        width=0.78\columnwidth,
+        height=0.20\columnwidth,
+        xmin=0, xmax=1,
+        ymin=0, ymax=7,
+        grid=major,
+        ytick=\empty,
+        ylabel={Density},
+        ylabel style={font=\small},
+        xticklabel style={font=\small}
+    }
+}
+
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.5\linewidth,
-    xlabel={Matching Score},
-    ylabel={Probability Density},
-    xmin=0, xmax=1,
-    ymin=0, ymax=7,
-    grid=major,
+    quadraticcase,
     xtick={0,0.15,0.40,0.60,0.85},
     xticklabels={$0$,$\beta_1$,$\beta_2$,$\alpha_1$,$\alpha_2$},
-    ytick=\empty,
     legend to name=quadraticthreecaseslegend,
     legend columns=2,
     legend style={draw=black, fill=white}
 ]
-\addplot+[blue, thick, mark=none]
+\addplot[blue, thick, mark=none]
 table [x=s, y=PU_case1] {figs/fig_parabola/quadratic_three_cases.txt};
 \addlegendentry{User}
-
-\addplot+[red, thick, mark=none]
+\addplot[red, thick, mark=none]
 table [x=s, y=PA_case1] {figs/fig_parabola/quadratic_three_cases.txt};
 \addlegendentry{Attacker}
 \end{axis}
@@ -758,52 +756,37 @@ table [x=s, y=PA_case1] {figs/fig_parabola/quadratic_three_cases.txt};
 \caption{Separated quadratic PDFs.}
 \label{fig:quadratic_case1_pdf}
 \end{subfigure}
-\begin{subfigure}[t]{0.30\textwidth}
+
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.5\linewidth,
-    xlabel={Matching Score},
-    ylabel={},
-    xmin=0, xmax=1,
-    ymin=0, ymax=7,
-    grid=major,
+    quadraticcase,
     xtick={0,0.20,0.40,0.65,0.85},
-    xticklabels={$0$,$\alpha_1$,$\beta_1$,$\beta_2$,$\alpha_2$},
-    ytick=\empty
+    xticklabels={$0$,$\alpha_1$,$\beta_1$,$\beta_2$,$\alpha_2$}
 ]
-\addplot+[blue, thick, mark=none]
+\addplot[blue, thick, mark=none]
 table [x=s, y=PU_case2] {figs/fig_parabola/quadratic_three_cases.txt};
-
-\addplot+[red, thick, mark=none]
+\addplot[red, thick, mark=none]
 table [x=s, y=PA_case2] {figs/fig_parabola/quadratic_three_cases.txt};
 \end{axis}
 \end{tikzpicture}
 \caption{The attacker roots lie within the user roots.}
 \label{fig:quadratic_case2_pdf}
 \end{subfigure}
-\begin{subfigure}[t]{0.30\textwidth}
+
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.8\linewidth,
-    height=0.5\linewidth,
+    quadraticcase,
     xlabel={Matching Score},
-    ylabel={},
-    xmin=0, xmax=1,
-    ymin=0, ymax=7,
-    grid=major,
     xtick={0,0.15,0.40,0.65,0.85},
-    xticklabels={$0$,$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-    ytick=\empty
+    xticklabels={$0$,$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$}
 ]
-\addplot+[blue, thick, mark=none]
+\addplot[blue, thick, mark=none]
 table [x=s, y=PU_case3] {figs/fig_parabola/quadratic_three_cases.txt};
-
-\addplot+[red, thick, mark=none]
+\addplot[red, thick, mark=none]
 table [x=s, y=PA_case3] {figs/fig_parabola/quadratic_three_cases.txt};
 \end{axis}
 \end{tikzpicture}
@@ -811,12 +794,14 @@ table [x=s, y=PA_case3] {figs/fig_parabola/quadratic_three_cases.txt};
 \label{fig:quadratic_case3_pdf}
 \end{subfigure}
 
+\smallskip
 \ref*{quadraticthreecaseslegend}
 
-\caption{Illustration of three distinct cases of quadratic attacker and user score distributions. In case (1), the distributions are separated. Case (2) illustrates the case where the attacker distribution is fully contained within the user distribution, and case (3) illustrates partial overlap between the two distributions.}
+\caption{Three distinct cases of quadratic attacker and user score distributions.}
 \label{fig:quadratic_three_cases}
-\end{figure*}
-Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:real_data})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005} on Eigenfinger and Eigenpalm feature distributions. Accordingly, we define two probability density functions (PDFs). Let~$f_U$ denote the user distribution with roots~$\alpha_{1}, \alpha_{2}$ and let~$f_A$ denote the attacker distribution with roots~$\beta_{1}, \beta_{2}$. Denote by $a, b, c$ and $d, e, f$ the quadratic coefficients of the user and attacker distributions, respectively, hence:
+\end{figure}
+
+Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:real_data})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005}. Accordingly, we define two probability density functions (PDFs). Let~$f_U$ denote the user distribution with roots~$\alpha_{1}, \alpha_{2}$ and let~$f_A$ denote the attacker distribution with roots~$\beta_{1}, \beta_{2}$. Denote by $a, b, c$ and $d, e, f$ the quadratic coefficients of the user and attacker distributions, respectively, hence:
 \[
 f_U(s) = 
 \left\{
@@ -835,7 +820,7 @@ f_A(s) =
     \end{array}
 \right.
 \]
-To reduce the degrees of freedom, we express the coefficients in terms of the roots and set the integral of each PDF over its roots interval to~1. This normalization condition ensures that the resulting error metrics~\FAR and~\FRR are bounded by~1, and determines the coefficients fully. The derivation of the coefficients is in Appendix~\ref{app:quad_opt_thr}. 
+We express the coefficients in terms of the roots and set the integral of each PDF over its roots interval to~1. The derivation of the coefficients is in the full version of this report~\cite{biometric_full_version}. 
 Therefore, we can write the quadratic PDFs as
 \begin{flalign*}
 &f_U(s) =
@@ -858,46 +843,22 @@ Therefore, we can write the quadratic PDFs as
 &&
 \end{flalign*}
 These distributions define the error metrics~\FAR and~\FRR as functions of the match threshold~$t$. Denote
-\begin{equation*}
-A(t)=
-\frac{
-\begin{aligned}
-&2(\beta_2^3-t^3)-3(\beta_1+\beta_2)(\beta_2^2-t^2)\\
-&\quad+6\beta_1\beta_2(\beta_2-t)
-\end{aligned}
-}{
-(\beta_1-\beta_2)^3
-},
-\end{equation*}
-\begin{equation*}
-U(t)=
-\frac{
-\begin{aligned}
-&2(t^3-\alpha_1^3)-3(\alpha_1+\alpha_2)(t^2-\alpha_1^2)\\
-&\quad+6\alpha_1\alpha_2(t-\alpha_1)
-\end{aligned}
-}{
-(\alpha_1-\alpha_2)^3
-}.
-\end{equation*}
-
-\begin{equation*}
-\FAR(t)=
+\begin{multline*}
+\FAR(t)=\\
 \begin{cases}
-1, & t \le \beta_1,\\
-A(t), & \beta_1 < t \le \beta_2,\\
+1, & t \le \beta_1,\\[8pt]
+\dfrac{\begin{aligned}&2(\beta_2^3-t^3)-3(\beta_1+\beta_2)(\beta_2^2-t^2)\\&\quad+6\beta_1\beta_2(\beta_2-t)\end{aligned}}{(\beta_1-\beta_2)^3}, & \beta_1 < t \le \beta_2,\\[16pt]
 0, & t > \beta_2,
 \end{cases}
-\end{equation*}
-\[\textit{and}\]
-\begin{equation*}
-\FRR(t)=
+\end{multline*}
+\begin{multline*}
+\FRR(t)=\\
 \begin{cases}
-0, & t \le \alpha_1,\\
-U(t), & \alpha_1 < t \le \alpha_2,\\
+0, & t \le \alpha_1,\\[8pt]
+\dfrac{\begin{aligned}&2(t^3-\alpha_1^3)-3(\alpha_1+\alpha_2)(t^2-\alpha_1^2)\\&\quad+6\alpha_1\alpha_2(t-\alpha_1)\end{aligned}}{(\alpha_1-\alpha_2)^3}, & \alpha_1 < t \le \alpha_2,\\[16pt]
 1, & t > \alpha_2.
 \end{cases}
-\end{equation*}
+\end{multline*}
 
 Similarly to the analysis of the uniform distribution, the x axis represents the matching score $s$. Genuine users are expected to produce higher matching scores than attackers, thus we analyze three different cases:
 
@@ -905,46 +866,37 @@ Similarly to the analysis of the uniform distribution, the x axis represents the
 
 (2)~$\alpha_{1} < \beta_{1} < \beta_{2} < \alpha_{2}$~(Figure~\ref{fig:quadratic_case2_pdf}): The attacker distribution bounds lie within the range of the user distribution bounds. The mechanism’s probability of success reduces to the safe probability of the biometric credential, which is given by Equation~\ref{eqn:safe_prob}.
 The~\FAR is one for any~$t \le \beta_1$ and zero for any~$t \ge \beta_2$. Thus
-\begin{equation*}
-\begin{aligned}
-G(t)=
--&\frac{
-(t-\alpha_2)^2(t-\beta_1)^2
-}{
-(\alpha_1-\alpha_2)^3(\beta_1-\beta_2)^3
-} \\
-&\cdot
-(2t-3\alpha_1+\alpha_2)
-(2t+\beta_1-3\beta_2).
-\end{aligned}
-\end{equation*}
 \begin{multline*}
 P_{\mathrm{success}}(t)=\\
 \begin{cases}
 0,
-& t<\beta_1 \lor t>\alpha_2,\\
-G(t),
-& \beta_1 \le t \le \beta_2,\\
+& t<\beta_1,\\[8pt]
+-\dfrac{\begin{aligned}&(t-\alpha_2)^2(t-\beta_1)^2\\&\quad\cdot(2t-3\alpha_1+\alpha_2)(2t+\beta_1-3\beta_2)\end{aligned}}{(\alpha_1-\alpha_2)^3(\beta_1-\beta_2)^3},
+& \beta_1 \le t \le \beta_2,\\[16pt]
 -\dfrac{(t-\alpha_2)^2(2t-3\alpha_1+\alpha_2)}
 {(\alpha_1-\alpha_2)^3},
-& \beta_2 \le t \le \alpha_2.
+& \beta_2 \le t \le \alpha_2,\\[8pt]
+0,
+& t>\alpha_2.
 \end{cases}
 \end{multline*}
 
-(3)~$\beta_{1} < \alpha_{1} < \beta_{2} < \alpha_{2}$~(Figure~\ref{fig:quadratic_case3_pdf}): The user and attacker distributions partially overlap. We maintain the same approach as in case~(2) to calculate the probability of success. The~\FAR is one for any~$t \le \beta_1$ and zero for any~$t \ge \beta_2$, and the~\FRR is zero for any~$t \le \alpha_1$ and one for any~$t \ge \alpha_2$. Thus, in this case, we obtain four regions of the success probability function
+(3)~$\beta_{1} < \alpha_{1} < \beta_{2} < \alpha_{2}$~(Figure~\ref{fig:quadratic_case3_pdf}): The user and attacker distributions partially overlap. We maintain the same approach as in case~(2) to calculate the probability of success. The~\FAR is one for any~$t \le \beta_1$ and zero for any~$t \ge \beta_2$, and the~\FRR is zero for any~$t \le \alpha_1$ and one for any~$t \ge \alpha_2$. Thus, in this case, we obtain five regions of the success probability function
 \begin{multline*}
 P_{\mathrm{success}}(t)=\\
 \begin{cases}
 0,
-& t<\beta_1 \lor t>\alpha_2,\\
+& t<\beta_1,\\[8pt]
 \dfrac{(t-\beta_1)^2(2t+\beta_1-3\beta_2)}
 {(\beta_1-\beta_2)^3},
-& \beta_1 \le t \le \alpha_1,\\
-G(t),
-& \alpha_1 \le t \le \beta_2,\\
+& \beta_1 \le t \le \alpha_1,\\[12pt]
+-\dfrac{\begin{aligned}&(t-\alpha_2)^2(t-\beta_1)^2\\&\quad\cdot(2t-3\alpha_1+\alpha_2)(2t+\beta_1-3\beta_2)\end{aligned}}{(\alpha_1-\alpha_2)^3(\beta_1-\beta_2)^3},
+& \alpha_1 \le t \le \beta_2,\\[16pt]
 -\dfrac{(t-\alpha_2)^2(2t-3\alpha_1+\alpha_2)}
 {(\alpha_1-\alpha_2)^3},
-& \beta_2 \le t \le \alpha_2.
+& \beta_2 \le t \le \alpha_2,\\[8pt]
+0,
+& t>\alpha_2.
 \end{cases}
 \end{multline*}
 The second and third intervals in case~(2) are identical to the third and fourth intervals in case~(3) and therefore, we analyze them together. 
