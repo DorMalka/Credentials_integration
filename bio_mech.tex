@@ -318,11 +318,11 @@ For example, in an \emph{AND mechanism}~\cite{Eyal2021}, the mechanism grants ac
 \section{Real Data and Approximations}
 \label{sec:real_data}
 \noindent
-We evaluate our model using~\textit{LivDet2015}, a real-world dataset~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}.
-It contains multiple fingerprint scans of each user, acquired using different types of sensors, as well as spoof samples produced from each user's fingerprints.
+We parameterize our model using~\textit{LivDet2015}, a real-world dataset~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}.
+It contains multiple fingerprint scans of 200 users, acquired using different types of sensors, as well as multiple spoof samples produced for each user's fingerprints.
 We divide each user's scans into reference scans and candidate scans. 
 To score the fingerprint scan images, we use a standard fingerprint verification algorithm, namely~\textit{SourceAFIS}~\cite{sourceafis}. 
-We compute a similarity score for each candidate scan by comparing it against every reference image, and retaining the maximum value as the candidate's score~\cite{hong1998,Cappelli2006,max_score2009}.
+We compute a similarity score for each candidate scan by comparing it against every reference image, and retain the maximum value as the candidate's score~\cite{hong1998,Cappelli2006,max_score2009}.
 For each of two attack scenarios, we produce histograms of genuine and impostor scores~\cite{Anil1997,Cappelli2006,Slob2005}, to obtain the empirical user and attacker score distributions.
 
 In the first scenario, an attacker authenticates using their own fingerprints. 
@@ -331,10 +331,10 @@ With an~\EER of~3.8\%, the algorithm’s performance is representative of state-
 In the second scenario, an attacker creates fake fingerprint samples using spoofing materials such as Gelatine, Woodglue, Latex and Ecoflex. We match each spoof sample against the spoofed user's reference images to obtain the impostor score distribution.
 
 To analyze different mechanisms, we approximate the empirical score distributions. 
-We evaluate the accuracy by fitting uniform, quadratic, and normal distributions to the genuine and impostor score histograms in both attack scenarios.
+We evaluate the accuracy by fitting uniform and quadratic distributions to the genuine and impostor score histograms in both attack scenarios.
 For each fitted distribution, we calculate the Kolmogorov-Smirnov~(KS) statistic~\cite{Massey1951} against the~\FRR and~\FAR curves.
 Figure~\ref{fig:approximations} presents the resulting~\FAR and~\FRR curves alongside the empirical values for both scenarios.
-The KS statistics range from~$0.04$ to~$0.07$ for the genuine scores and are~$0.17$ for the impostor scores, providing empirical support for using our theoretical models as approximations of the measured score distributions.
+For the genuine scores, the KS statistic is~$0.04$ for the quadratic distribution and~$0.07$ for the uniform distribution. For the impostor scores it is~$0.17$ for both. These values empirically support using these distributions as approximations of the measured scores.
 
 \begin{figure*}[t]
 \centering
