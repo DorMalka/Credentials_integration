@@ -3513,20 +3513,19 @@ The constraint applies to the complete policy.}
 \label{sec:sensors_review}
 \noindent
 We review manufacturers' specifications of commercially available biometric sensors, spanning fingerprints, face, iris and palm.
-We identify 32 device families from 21 manufacturers and classify each family according to three criteria that reflect our model's requirements.
+We identify 32 device families from 21 manufacturers.
 
-The first criterion is \emph{in-sensor decision}: whether the device performs matching and emits an accept/reject verdict itself, or merely captures a sample for a host matcher.
 Of the 32 families, 23 make an in-sensor decision while the remaining 9 are capture only.
 A capture-only sensor exposes the biometric sample or the matching score, which can facilitate hill-climbing attacks~\cite{Bringer2018PrivateByDesign} and creates privacy risks, as third parties may reuse the samples to identify users across services~\cite{FIDOPrivacyPrinciples}.
+We therefore focus on the remaining 23 families.
 
-The second criterion is \emph{threshold tuning}: whether the device allows the integrator to set a numeric match threshold.
-Only 2 of the 23 in-sensor decision families do, comprising 6 individual models.
+These 23 families differ in how much control they give the integrator over the decision.
+Only 2 of the 23 in-sensor decision families, comprising 6 individual models, allow setting a numeric match threshold.
 The remaining families offer weaker methods that do not permit setting a specific threshold: a target error rate within a predetermined range, a discrete security level such as~1--5 or High/Medium/Low, or no threshold parameter at all.
 In each case the integrator is left with a threshold the sensor derives internally and never exposes.
 
-The third criterion is \emph{error-rate exposure}: whether the manufacturer publishes the~\FAR and~\FRR functions for the device.
-Setting a threshold is necessary but not sufficient for optimization, since without these functions the integrator cannot determine the error rates a threshold induces.
-None of the 23 families satisfies this criterion.
+However, setting a threshold is necessary but not sufficient for optimization. 
+Without the~\FAR and~\FRR functions the integrator cannot determine the error rates a threshold induces, and no manufacturer publishes these functions.
 The detailed list is in Appendix~\ref{app:Bio_table}.
 
 The practical consequence is that today's authentication mechanisms cannot optimize the match threshold they inherit.
