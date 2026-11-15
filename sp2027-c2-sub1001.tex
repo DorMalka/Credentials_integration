@@ -748,97 +748,6 @@ table [x=s, y=PA_case3] {figs/fig_parabola/quadratic_three_cases.txt};
 \label{fig:quadratic_three_cases}
 \end{figure}
 
-% \begin{figure*}[t]
-% \centering
-
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$s$},
-%     ylabel={$P(s)$},
-%     xmin=1.5, xmax=4.5,
-%     ymin=-0.1, ymax=1.65,
-%     xtick={2,3,3.5,4},
-%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-%     ytick=\empty,
-%     legend to name=distlegend,
-%     legend columns=2,
-%     legend style={draw=black, fill=white}
-% ]
-% \addplot[blue, thick, mark=none]
-% table [x=s, y=PU] {figs/fig_parabola/parabola_case_a.txt};
-% \addlegendentry{User}
-
-% \addplot[red, thick, mark=none]
-% table [x=s, y=PA] {figs/fig_parabola/parabola_case_a.txt};
-% \addlegendentry{Attacker}
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with low variance.}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$s$},
-%     ylabel={$P(s)$},
-%     xmin=1, xmax=4.5,
-%     ymin=-0.1, ymax=1.65,
-%     xtick={1.2,3,3.5,4},
-%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-%     ytick=\empty
-% ]
-% \addplot[blue, thick, mark=none]
-% table [x=s, y=PU] {figs/fig_parabola/parabola_case_b.txt};
-
-% \addplot[red, thick, mark=none]
-% table [x=s, y=PA] {figs/fig_parabola/parabola_case_b.txt};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with medium variance.}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$s$},
-%     ylabel={$P(s)$},
-%     xmin=0.5, xmax=4.5,
-%     ymin=-0.1, ymax=1.65,
-%     xtick={0.6,3,3.5,4},
-%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-%     ytick=\empty
-% ]
-% \addplot[blue, thick, mark=none]
-% table [x=s, y=PU] {figs/fig_parabola/parabola_case_c.txt};
-
-% \addplot[red, thick, mark=none]
-% table [x=s, y=PA] {figs/fig_parabola/parabola_case_c.txt};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with high variance.}
-% \end{subfigure}
-
-% \medskip
-
-% \pgfplotslegendfromname{distlegend}
-
-% \caption{Quadratic user and attacker distributions.}
-% \label{fig:different_attackers_pdf_1_quadratic_cred}
-% \end{figure*}
-
 \begin{figure*}[t]
 \centering
 
@@ -935,132 +844,20 @@ table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_c_points.txt};
 \medskip
 
 \pgfplotslegendfromname{successlegend}
-
 \caption{Success probability for three quadratic attacker distributions.}
 \label{fig:success_per_attacker_1_quadratic_cred}
 \end{figure*}
 
-% \begin{figure*}[t]
-% \centering
-
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$\FRR(t)$},
-%     ylabel={$\FAR(t)$},
-%     xmin=0, xmax=1,
-%     ymin=0, ymax=1,
-%     grid=none,
-%     ytick =\empty,
-%     xtick =\empty,
-%     legend to name=farfrrlegend,
-%     legend columns=3,
-%     legend style={draw=black, fill=white}
-% ]
-% \addplot[thick, myPurple, mark=none]
-% table [x=FRR, y=FAR]
-% {figs/fig_parabola/parabola_case_a.txt};
-% \addlegendentry{Operating Curve}
-
-% \addplot[only marks, mark=*, mark size=1.3pt, blue]
-% table [x=FRR_opt, y=FAR_opt]
-% {figs/fig_parabola/parabola_case_a_points.txt};
-% \addlegendentry{Optimal Point}
-
-% \addplot[only marks, mark=*, mark size=1.3pt, red]
-% table [x=FRR_eer, y=FAR_eer]
-% {figs/fig_parabola/parabola_case_a_points.txt};
-% \addlegendentry{\EER Point}
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with low variance.}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$\FRR(t)$},
-%     ylabel={$\FAR(t)$},
-%     xmin=0, xmax=1,
-%     ymin=0, ymax=1,
-%     grid=none,
-%     ytick =\empty,
-%     xtick =\empty
-% ]
-% \addplot[thick, myPurple, mark=none]
-% table [x=FRR, y=FAR]
-% {figs/fig_parabola/parabola_case_b.txt};
-
-% \addplot[only marks, mark=*, mark size=1.3pt, blue]
-% table [x=FRR_opt, y=FAR_opt]
-% {figs/fig_parabola/parabola_case_b_points.txt};
-
-% \addplot[only marks, mark=*, mark size=1.3pt, red]
-% table [x=FRR_eer, y=FAR_eer]
-% {figs/fig_parabola/parabola_case_b_points.txt};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with medium variance.}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$\FRR(t)$},
-%     ylabel={$\FAR(t)$},
-%     xmin=0, xmax=1,
-%     ymin=0, ymax=1,
-%     grid=none,
-%     ytick =\empty,
-%     xtick =\empty
-% ]
-% \addplot[thick, myPurple, mark=none]
-% table [x=FRR, y=FAR]
-% {figs/fig_parabola/parabola_case_c.txt};
-
-% \addplot[only marks, mark=*, mark size=1.3pt, blue]
-% table [x=FRR_opt, y=FAR_opt]
-% {figs/fig_parabola/parabola_case_c_points.txt};
-
-% \addplot[only marks, mark=*, mark size=1.3pt, red]
-% table [x=FRR_eer, y=FAR_eer]
-% {figs/fig_parabola/parabola_case_c_points.txt};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with high variance.}
-% \end{subfigure}
-
-% \medskip
-
-% \pgfplotslegendfromname{farfrrlegend}
-
-% \caption{\FAR vs. \FRR operating curves for different attacker distributions.}
-% \label{fig:FAR_FRR_1_quadratic_cred}
-% \end{figure*}
-
 To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we computed the~\EER threshold as follows:
 \begin{equation*}
-t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2}
+t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2}.
 \end{equation*}
-We can observe that the two thresholds differ.
-To evaluate the difference between the~$t_{\text{opt}}$ and the~\EER, we consider different attacker distributions, each spanning a wider interval~$(\beta_1,\beta_2)$, which corresponds to increasing the variance.
-Comparing each case with its corresponding success probability curve, we observe that the optimal threshold~$t_{\text{opt}}$ becomes more distinct from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases and the more asymmetric the user and attacker distributions become. 
+We observe that the two thresholds differ.
+The optimal threshold~$t_{\text{opt}}$ becomes more distinct from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases and the more asymmetric the user and attacker distributions become. 
 
 Moreover, increasing the variance of an attacker distribution shifts the optimal threshold~$t_{\text{opt}}$ towards~$\alpha_1$, reducing the~\FRR to zero. In contrast, the~\EER threshold remains fixed balancing between the~\FAR and~\FRR. This shift indicates that when increasing the variance, the optimal threshold prioritizes minimizing the false rejection rate, rather than balancing both error rates, as shown in Figure~\ref{fig:success_per_attacker_1_quadratic_cred}.
 
-To quantify the effect of the variance on the deviation between the optimal threshold~$t_{\text{opt}}$ and~\EER threshold~$t_{\EER}$, we numerically computed this gap as a function of the attacker's variance. The simulation indicates that higher attacker variance enlarges the gap between the two success probabilities, as shown in Figure~\ref{fig:gap_vs_variance_parabola_success}. Operating at~$t_{\text{opt}}$ rather than the~\EER threshold is therefore most valuable when the attacker distribution spans a wide interval.
+To quantify the effect of the variance on the deviation between the optimal threshold~$t_{\text{opt}}$ and~\EER threshold~$t_{\EER}$, we numerically compute this gap as a function of the attacker's variance. Higher attacker variance enlarges the gap between the two success probabilities, as shown in Figure~\ref{fig:gap_vs_variance_parabola_success}. Operating at~$t_{\text{opt}}$ rather than the~\EER threshold is therefore most valuable when the attacker distribution spans a wide interval.
 
 \begin{figure}[t]
 \centering
@@ -1094,83 +891,24 @@ table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 \caption{Comparison between the optimal threshold and the \EER threshold as a function of the attacker's variance.}
 \label{fig:gap_vs_variance_parabola_success}
 \end{figure}
-
 \subsection{Empirical Evaluation}\label{sec:eval_single_cred}
 \noindent
-We first evaluate a mechanism that uses a biometric credential only under the baseline attack, where attackers authenticate using their own fingerprints. Calculating the mechanism’s success probability requires the biometric credential’s fault probabilities, which depend on the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of genuine and impostor comparisons, as shown in Figure~\ref{fig:sourceafis_histogram}and calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:approximations}.
+We first evaluate a mechanism that uses a biometric credential only under the different-pesron attack, where an attacker authenticates using his own fingerprints. Calculating the mechanism’s success probability requires the biometric credential’s fault probabilities, which depend on the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of genuine and impostor comparisons, as shown in Figure~\ref{fig:histograms} and calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:approximations}.
 
 Using these error rates, we calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the mechanism's success probability~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. However, the success probability of the mechanism, when operated at the optimal threshold, is not significantly greater than operating at the~\EER threshold.
 
-We next consider a more challenging scenario in which attackers use forged fingerprints to impersonate legitimate users. Unlike the baseline attack, spoofing samples can produce matching scores closer to those of genuine fingerprints, increasing the overlap between the distributions. In this evaluation, the~\EER increased significantly to 24.8\%, indicating that the biometric credential is less effective at distinguishing users from attackers. We therefore evaluate the mechanism's success probability under this attack, as shown in Figure~\ref{fig:livdet_sourceafis_success}. Nevertheless, despite the increased overlap between the user and the attacker distributions, the optimal and \EER thresholds differ, but the improvement in success probability remains small. Under the baseline attack, the success probability increases from 92.42\% to 92.54\%, while under spoofing attacks, it increases from 50.64\% to 50.88\%. Thus, the EER heuristic performs well for a single biometric credential mechanism in our evaluation.
+We next consider a more challenging scenario in which attackers use forged fingerprints to impersonate legitimate users. Unlike the different-person attack, spoofing samples can produce matching scores closer to those of genuine fingerprints, increasing the overlap between the distributions. In this evaluation, the~\EER increased significantly to 24.8\%, indicating that the biometric credential is less effective at distinguishing users from attackers. We therefore evaluate the mechanism's success probability under this attack, as shown in Figure~\ref{fig:livdet_sourceafis_success}. Nevertheless, despite the increased overlap between the user and the attacker distributions, the optimal and \EER thresholds differ, but the improvement in success probability remains small. Under the different-person attack, the success probability increases from 92.42\% to 92.54\%, while under spoofing attacks, it increases from 50.64\% to 50.88\%. Thus, the~\EER heuristic performs well for a single-attempt mechanism that uses a biometric credential only.
 
-
-\begin{figure*}[t]
-\centering
-
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    ybar,
-    legend to name=histogramlegend,
-    bar width=3pt,
-    width=0.86\linewidth,
-    height=0.40\linewidth,
-    xlabel={Normalized similarity score (\%)},
-    ylabel={Impostor count},
-    ylabel style={red},
-    grid=major,
-    xmin=0, xmax=100,
-    ymin=0, ymax=9000,
-    enlarge x limits=false,
-    enlarge y limits=false,
-    tick style={draw=none},
-    clip=true
-]
-\addplot+[ybar, fill=red, draw=black]
-table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
-\end{axis}
-
-\begin{axis}[
-    ybar,
-    bar width=3pt,
-    legend to name=histogramlegend,
-    legend columns=2,
-    width=0.86\linewidth,
-    height=0.40\linewidth,
-    xlabel={Normalized similarity score (\%)},
-    yticklabel pos=right,
-    ylabel={Genuine count},
-    ylabel style={blue},
-    grid=none,
-    xmin=0, xmax=100,
-    ymin=0, ymax=80,
-    enlarge x limits=false,
-    enlarge y limits=false,
-    tick style={draw=none},
-    clip=true
-]
-\addplot+[ybar, fill=blue, fill opacity=0.5]
-table [x=bin, y=genuine] {figs/fig_different_users_sourceafsi/sourceafis_histogram_data.txt};
-\addlegendentry{Genuine}
-
-\addlegendimage{fill=red, mark=none}
-\addlegendentry{Impostor}
-\end{axis}
-\end{tikzpicture}
-\medskip
-\pgfplotslegendfromname{histogramlegend}
-\caption{Score histogram for genuine and impostor comparisons.}
-\label{fig:sourceafis_histogram}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.48\textwidth}
+% ---------------------------------------------------------------------------
+% Different users: single-credential success.
+% ---------------------------------------------------------------------------
+\begin{figure}[t]
 \centering
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.82\linewidth,
-    height=0.40\linewidth,
+    width=0.82\columnwidth,
+    height=0.40\columnwidth,
     xlabel={Threshold (\%)},
     ylabel={Success Probability},
     xmin=0, xmax=100,
@@ -1201,84 +939,20 @@ table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_succe
 
 \end{axis}
 \end{tikzpicture}
-\caption{Single biometric credential mechanism's success.}
+\caption{Different users. Success probability of a mechanism that uses a biometric credential only.}
 \label{fig:bio_only_sourceafis_reg_scoring}
-\end{subfigure}
-
-\caption{Baseline attack evaluation of a mechanism that uses a biometric credential only.}
-\label{fig:sourceafis_success}
-\end{figure*}
+\end{figure}
 
 % ---------------------------------------------------------------------------
-% Spoofing attack: score histogram and single-credential success.
+% Spoofing attack: single-credential success.
 % ---------------------------------------------------------------------------
-\begin{figure*}[t]
-\centering
-
-\begin{subfigure}[t]{0.48\textwidth}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    ybar,
-    legend to name=livdethistogramlegend,
-    bar width=2pt,
-    width=0.86\linewidth,
-    height=0.40\linewidth,
-    xlabel={Normalized similarity score (\%)},
-    ylabel={Impostor count},
-    ylabel style={red},
-    grid=major,
-    xmin=0, xmax=100,
-    ymin=0, ymax=600,
-    enlarge x limits=false,
-    tick style={draw=none},
-    clip=true
-]
-\addplot+[ybar, fill=red, draw=black]
-table[x=score, y=impostor]
-{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
-\end{axis}
-
-\begin{axis}[
-    ybar,
-    legend to name=livdethistogramlegend,
-    legend columns=2,
-    bar width=2pt,
-    width=0.86\linewidth,
-    height=0.40\linewidth,
-    xlabel={Normalized similarity score (\%)},
-    ylabel={Genuine count},
-    ylabel style={blue},
-    yticklabel pos=right,
-    grid=none,
-    xmin=0, xmax=100,
-    ymin=0, ymax=80,
-    enlarge x limits=false,
-    tick style={draw=none},
-    clip=true
-]
-\addplot+[ybar, fill=blue, draw=blue, fill opacity=0.5]
-table[x=score, y=genuine]
-{figs/fig_spoofed_users/livdet_sourceafis_histogram_best_of_probes_data.txt};
-\addlegendentry{Genuine}
-
-\addlegendimage{fill=red, draw=black, mark=none}
-\addlegendentry{Impostor}
-\end{axis}
-\end{tikzpicture}
-\medskip
-\pgfplotslegendfromname{livdethistogramlegend}
-\caption{Score histogram for genuine and impostor comparisons.}
-\label{fig:livdet_sourceafis_histogram}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.48\textwidth}
+\begin{figure}[t]
 \centering
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.82\linewidth,
-    height=0.40\linewidth,
+    width=0.82\columnwidth,
+    height=0.40\columnwidth,
     xlabel={Threshold (\%)},
     ylabel={Success Probability},
     xmin=0, xmax=100,
@@ -1310,14 +984,9 @@ table [x=T_opt, y=P_opt] {figs/fig_spoofed_users/livdet_sourceafis_p_success_bes
 
 \end{axis}
 \end{tikzpicture}
-\caption{Single biometric credential mechanism's success.}
+\caption{Spoofing attack. Success probability of a mechanism that uses a biometric credential only.}
 \label{fig:livdet_sourceafis_success}
-\end{subfigure}
-
-\caption{Spoofing attack evaluation of a mechanism that uses a biometric credential only.}
-\label{fig:livdet_single_cred_panel}
-\end{figure*}
-
+\end{figure}
 
 \section{Two Credentials}\label{sec:two_cred}
 \noindent

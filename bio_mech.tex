@@ -197,7 +197,7 @@ In both optimization problems, the optimal thresholds differ at every attempt, l
 
 To assess whether commercial biometric sensors support threshold optimization, we review their specifications~$(\S\ref{sec:sensors_review})$. We examine 32 biometric device families from 21 manufacturers, covering different modalities, including fingerprints, face, iris, and palm recognition.  Nine of these are capture only: they expose the biometric sample or the matching score to a host matcher, which creates privacy and hill-climbing risks. Of the 23 that make in-sensor decisions, only two permit setting a numeric match threshold. The others let the integrator select a target error rate within a predetermined range or a discrete security level, or offer no threshold control at all. However, setting a threshold is necessary but not sufficient for optimization: the integrator must also know the~\FAR and~\FRR functions to choose a threshold. Consequently, no surveyed sensor supports threshold optimization, limiting the deployment of optimal authentication mechanisms.
 
-In summary~$(\S\ref{sec:conclusion})$, our contributions are both theoretical and practical: (1)~Formalization of the success probability function for authentication mechanisms using biometric and atomic credentials; (2)~Symbolic analysis of the optimal threshold for a mechanism using a biometric credential; (3)~Identification of the conditions under which adding a biometric credential improves the mechanism's success probability; (4)~Proof that any biometric credential satisfying these conditions improves the mechanism's success probability; (5)~Derivation of the mechanism's success probability under multiple authentication attempts; (6)~Formulation of constrained optimization problems balancing the mechanism's success probability and the mean number of authentication attempts; (7)~Empirical evaluation on public biometric data under baseline and spoofing attacks; (8)~Practical implication that biometric sensor manufacturers should enable threshold configuration and present the~\FAR and~\FRR functions.
+In summary~$(\S\ref{sec:conclusion})$, our contributions are both theoretical and practical: (1)~Formalization of the success probability function for authentication mechanisms using biometric and atomic credentials; (2)~Symbolic analysis of the optimal threshold for a mechanism using a biometric credential; (3)~Identification of the conditions under which adding a biometric credential improves the mechanism's success probability; (4)~Proof that any biometric credential satisfying these conditions improves the mechanism's success probability; (5)~Derivation of the mechanism's success probability under multiple authentication attempts; (6)~Formulation of constrained optimization problems balancing the mechanism's success probability and the mean number of authentication attempts; (7)~Empirical evaluation on public biometric data under different-person and spoofing attacks; (8)~Practical implication that biometric sensor manufacturers should enable threshold configuration and present the~\FAR and~\FRR functions.
 
 \section{Related Work}\label{sec:related}
 \noindent
@@ -744,95 +744,6 @@ table [x=s, y=PA_case3] {figs/fig_parabola/quadratic_three_cases.txt};
 \caption{Three distinct cases of quadratic attacker and user score distributions.}
 \label{fig:quadratic_three_cases}
 \end{figure}
-% \begin{figure*}[t]
-% \centering
-
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$s$},
-%     ylabel={$P(s)$},
-%     xmin=1.5, xmax=4.5,
-%     ymin=-0.1, ymax=1.65,
-%     xtick={2,3,3.5,4},
-%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-%     ytick=\empty,
-%     legend to name=distlegend,
-%     legend columns=2,
-%     legend style={draw=black, fill=white}
-% ]
-% \addplot[blue, thick, mark=none]
-% table [x=s, y=PU] {figs/fig_parabola/parabola_case_a.txt};
-% \addlegendentry{User}
-
-% \addplot[red, thick, mark=none]
-% table [x=s, y=PA] {figs/fig_parabola/parabola_case_a.txt};
-% \addlegendentry{Attacker}
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with low variance.}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$s$},
-%     ylabel={$P(s)$},
-%     xmin=1, xmax=4.5,
-%     ymin=-0.1, ymax=1.65,
-%     xtick={1.2,3,3.5,4},
-%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-%     ytick=\empty
-% ]
-% \addplot[blue, thick, mark=none]
-% table [x=s, y=PU] {figs/fig_parabola/parabola_case_b.txt};
-
-% \addplot[red, thick, mark=none]
-% table [x=s, y=PA] {figs/fig_parabola/parabola_case_b.txt};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with medium variance.}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$s$},
-%     ylabel={$P(s)$},
-%     xmin=0.5, xmax=4.5,
-%     ymin=-0.1, ymax=1.65,
-%     xtick={0.6,3,3.5,4},
-%     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
-%     ytick=\empty
-% ]
-% \addplot[blue, thick, mark=none]
-% table [x=s, y=PU] {figs/fig_parabola/parabola_case_c.txt};
-
-% \addplot[red, thick, mark=none]
-% table [x=s, y=PA] {figs/fig_parabola/parabola_case_c.txt};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with high variance.}
-% \end{subfigure}
-
-% \medskip
-
-% \pgfplotslegendfromname{distlegend}
-% \caption{Quadratic user and attacker distributions.}
-% \label{fig:different_attackers_pdf_1_quadratic_cred}
-% \end{figure*}
 
 \begin{figure*}[t]
 \centering
@@ -933,115 +844,6 @@ table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_c_points.txt};
 \caption{Success probability for three quadratic attacker distributions.}
 \label{fig:success_per_attacker_1_quadratic_cred}
 \end{figure*}
-
-% \begin{figure*}[t]
-% \centering
-
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$\FRR(t)$},
-%     ylabel={$\FAR(t)$},
-%     xmin=0, xmax=1,
-%     ymin=0, ymax=1,
-%     grid=none,
-%     ytick =\empty,
-%     xtick =\empty,
-%     legend to name=farfrrlegend,
-%     legend columns=3,
-%     legend style={draw=black, fill=white}
-% ]
-% \addplot[thick, myPurple, mark=none]
-% table [x=FRR, y=FAR]
-% {figs/fig_parabola/parabola_case_a.txt};
-% \addlegendentry{Operating Curve}
-
-% \addplot[only marks, mark=*, mark size=1.3pt, blue]
-% table [x=FRR_opt, y=FAR_opt]
-% {figs/fig_parabola/parabola_case_a_points.txt};
-% \addlegendentry{Optimal Point}
-
-% \addplot[only marks, mark=*, mark size=1.3pt, red]
-% table [x=FRR_eer, y=FAR_eer]
-% {figs/fig_parabola/parabola_case_a_points.txt};
-% \addlegendentry{\EER Point}
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with low variance.}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$\FRR(t)$},
-%     ylabel={$\FAR(t)$},
-%     xmin=0, xmax=1,
-%     ymin=0, ymax=1,
-%     grid=none,
-%     ytick =\empty,
-%     xtick =\empty
-% ]
-% \addplot[thick, myPurple, mark=none]
-% table [x=FRR, y=FAR]
-% {figs/fig_parabola/parabola_case_b.txt};
-
-% \addplot[only marks, mark=*, mark size=1.3pt, blue]
-% table [x=FRR_opt, y=FAR_opt]
-% {figs/fig_parabola/parabola_case_b_points.txt};
-
-% \addplot[only marks, mark=*, mark size=1.3pt, red]
-% table [x=FRR_eer, y=FAR_eer]
-% {figs/fig_parabola/parabola_case_b_points.txt};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with medium variance.}
-% \end{subfigure}
-% \hfill
-% \begin{subfigure}[t]{0.31\textwidth}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     scale only axis,
-%     width=0.8\linewidth,
-%     height=0.45\linewidth,
-%     xlabel={$\FRR(t)$},
-%     ylabel={$\FAR(t)$},
-%     xmin=0, xmax=1,
-%     ymin=0, ymax=1,
-%     grid=none,
-%     ytick =\empty,
-%     xtick =\empty
-% ]
-% \addplot[thick, myPurple, mark=none]
-% table [x=FRR, y=FAR]
-% {figs/fig_parabola/parabola_case_c.txt};
-
-% \addplot[only marks, mark=*, mark size=1.3pt, blue]
-% table [x=FRR_opt, y=FAR_opt]
-% {figs/fig_parabola/parabola_case_c_points.txt};
-
-% \addplot[only marks, mark=*, mark size=1.3pt, red]
-% table [x=FRR_eer, y=FAR_eer]
-% {figs/fig_parabola/parabola_case_c_points.txt};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Attacker with high variance.}
-% \end{subfigure}
-
-% \medskip
-
-% \pgfplotslegendfromname{farfrrlegend}
-% \caption{\FAR vs. \FRR operating curves for different attacker distributions.}
-% \label{fig:FAR_FRR_1_quadratic_cred}
-% \end{figure*}
 
 To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we computed the~\EER threshold as follows:
 \begin{equation*}
@@ -1326,7 +1128,7 @@ table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_succ
 
 \end{axis}
 \end{tikzpicture}
-\caption{Baseline attack. A biometric credential integrated with an atomic credential into AND and OR mechanisms. The AND and OR mechanisms achieve success probabilities of $0.78$ and $0.82$ at the \EER point, and $0.81$ and $0.84$ at their respective optimal operating points.}
+\caption{Different-person attack. A biometric credential integrated with an atomic credential into AND and OR mechanisms. The AND and OR mechanisms achieve success probabilities of $0.78$ and $0.82$ at the \EER point, and $0.81$ and $0.84$ at their respective optimal operating points.}
 \label{fig:bio_atm_sourceafis_reg_scoring}
 \end{figure}
 
