@@ -652,8 +652,8 @@ if __name__ == "__main__":
         fars,
         frrs,
         eer_threshold=eer_threshold,
-        P_safe=0.75,
-        P_leak=0.1,
+        P_safe=0.7,
+        P_leak=0.15,
         P_loss=0.1,
         P_theft=0.05,
     )

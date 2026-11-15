@@ -342,7 +342,7 @@ For the genuine scores, the KS statistic is~$0.04$ for the quadratic distributio
 \begin{axis}[
     ybar,
     legend to name=histogramlegend,
-    bar width=3pt,
+    bar width=2pt,
     width=0.90\linewidth,
     height=0.42\linewidth,
     xlabel={Normalized similarity score (\%)},
@@ -362,7 +362,7 @@ table [x=bin, y=impostor] {figs/fig_different_users_sourceafsi/sourceafis_histog
 
 \begin{axis}[
     ybar,
-    bar width=3pt,
+    bar width=2pt,
     legend to name=histogramlegend,
     legend columns=1,
     legend style={draw=black, fill=white, font=\scriptsize},
@@ -1063,40 +1063,36 @@ The full interval analysis and the resulting success probabilities are in the Ap
 \subsection{Empirical Evaluation}\label{sec:two_credentials_empirical_eval}
 \noindent
 We evaluate the mechanisms using the real biometric credential parameters obtained in~$(\S\ref{sec:real_data})$.
-We first consider the different-person attack scenario, where attackers use their own fingerprints to authenticate. The mechanisms combine this biometric credential with an atomic credential. Since no data is available on the fault probabilities of atomic credentials, we set them arbitrarily to~$P^1_{safe} = 0.75$, $P^1_{leak} = 0.1$, $P^1_{loss} = 0.1$, and $P^1_{stolen} = 0.05$. We illustrate  the success probabilities of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}) as functions of the threshold~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. Both mechanisms operating at their optimal thresholds achieve success probabilities that are~8-9\% higher than that of a mechanism using only the atomic credential, demonstrating the benefit of combining the two credentials.
+We first consider the different-person attack scenario, where attackers use their own fingerprints to authenticate. The mechanisms combine this biometric credential with an atomic credential. Since no data is available on the fault probabilities of atomic credentials, we set them arbitrarily to~$P^1_{safe} = 0.7$, $P^1_{leak} = 0.15$, $P^1_{loss} = 0.1$, and $P^1_{stolen} = 0.05$. We illustrate  the success probabilities of the \emph{AND mechanism}~(Equation~\ref{eqn:andsuccess}), and the \emph{OR mechanism}~(Equation~\ref{eqn:orsuccess}) as functions of the threshold~$t$ in Figure~\ref{fig:bio_atm_sourceafis_reg_scoring}. Both mechanisms operating at their optimal thresholds achieve success probabilities that are~11-16\% higher than that of a mechanism using only the atomic credential, demonstrating the benefit of combining the two credentials.
 
 However optimizing the thresholds provides only a small improvement over the \EER threshold for both mechanisms, since the biometric credential already has a very low \EER, due to the small overlap between the genuine and impostor distributions.
 
 The picture changes when the attacker is spoofing the fingerprints, since the overlap between the genuine and impostor score distributions grows. Figure~\ref{fig:livdet_and_or_success} shows the success probabilities of both mechanisms under this attack. The optimal threshold reduces the failure probability between~20\%-72\% compared to the~\EER threshold for the two mechanisms. Moreover, a mechanism combining both credentials at the~\EER threshold may achieve a lower success probability than a mechanism using either credential alone. These results demonstrate that using a non-optimal biometric threshold can reduce the success probability when combining credentials in an authentication mechanism. Table~\ref{tab:psafe_sweep_improvement} sweeps the atomic credential's fault probabilities and shows that the more reliable the atomic credential, the greater the improvement from optimizing the threshold, reaching~72\% when~$P^1_{safe} = 0.90$.
 
-% ===========================================================================
-% FIGURES AND TABLE FOR sec:two_credentials_empirical_eval
-% ===========================================================================
-
-% ---------------------------------------------------------------------------
-% Baseline attack: AND and OR mechanisms.
-% ---------------------------------------------------------------------------
 \begin{figure}[t]
+\centering
+\pgfplotsset{
+    andoraxis/.style={
+        scale only axis,
+        width=0.82\columnwidth,
+        height=0.36\columnwidth,
+        xlabel={Threshold (\%)},
+        ylabel={Success Probability},
+        xmin=0, xmax=100,
+        ymin=0, ymax=1,
+        grid=major,
+        filter discard warning=false
+    }
+}
+
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.36\columnwidth,
-    xlabel={Threshold (\%)},
-    ylabel={Success Probability},
-    xmin=0, xmax=100,
-    ymin=0, ymax=1,
-    grid=major,
-    legend style={
-        at={(0.5,-0.3)},
-        anchor=north,
-        legend columns=3,
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    },
-    filter discard warning=false
+    andoraxis,
+    legend to name=andorlegend,
+    legend columns=3,
+    legend style={draw=black, fill=white, font=\scriptsize}
 ]
 
 \addplot[thick, blue, mark=none]
@@ -1123,73 +1119,58 @@ table [x=T_eer, y=P_and_eer] {figs/fig_different_users_sourceafsi/sourceafis_suc
 table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_success_and_or_points.txt};
 \addlegendentry{OR at \EER}
 
-\addplot[thick, black, dashed, domain=0:100] {0.75};
+\addplot[thick, black, dashed, domain=0:100] {0.7};
 \addlegendentry{Atomic credential only}
 
 \end{axis}
 \end{tikzpicture}
-\caption{Different-person attack. A biometric credential integrated with an atomic credential into AND and OR mechanisms. The AND and OR mechanisms achieve success probabilities of $0.78$ and $0.82$ at the \EER point, and $0.81$ and $0.84$ at their respective optimal operating points.}
+\vspace{-0.4em}
+\caption{Different-person attack.}
 \label{fig:bio_atm_sourceafis_reg_scoring}
-\end{figure}
+\end{subfigure}
 
-% ---------------------------------------------------------------------------
-% Spoofing attack: AND and OR mechanisms.
-% ---------------------------------------------------------------------------
-\begin{figure}[t]
+\vspace{0.8em}
+
+\begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    scale only axis,
-    width=0.82\columnwidth,
-    height=0.36\columnwidth,
-    xlabel={Threshold (\%)},
-    ylabel={Success Probability},
-    xmin=0, xmax=100,
-    ymin=0, ymax=1,
-    grid=major,
-    legend style={
-        at={(0.5,-0.3)},
-        anchor=north,
-        legend columns=3,
-        draw=black,
-        fill=white,
-        font=\scriptsize
-    },
-    each nth point=2,
-    filter discard warning=false
+    andoraxis,
+    each nth point=2
 ]
 
 \addplot[thick, blue, mark=none]
 table [x=T, y=P_and] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{AND}}(t)$}
 
 \addplot[thick, myOrange, mark=none]
 table [x=T, y=P_or] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_data.txt};
-\addlegendentry{$P_{\mathrm{success}}^{\mathrm{OR}}(t)$}
 
 \addplot[only marks, mark=*, mark size=1.5pt, blue]
 table [x=T_and_opt, y=P_and_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
-\addlegendentry{AND optimal point}
 
 \addplot[only marks, mark=x, mark size=1.9pt, myOrange]
 table [x=T_or_opt, y=P_or_opt] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
-\addlegendentry{OR optimal point}
 
 \addplot[only marks, mark=square*, mark size=1.4pt, myGreen]
 table [x=T_eer, y=P_and_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
-\addlegendentry{AND at \EER}
 
 \addplot[only marks, mark=diamond*, mark size=1.5pt, myRed]
 table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_and_or_best_of_probes_points.txt};
-\addlegendentry{OR at \EER}
 
-\addplot[thick, black, dashed, domain=0:100] {0.8};
-\addlegendentry{Atomic credential only}
+\addplot[thick, black, dashed, domain=0:100] {0.7};
 
 \end{axis}
 \end{tikzpicture}
-\caption{Spoofing attack. A biometric credential integrated with an atomic credential into AND and OR mechanisms. The AND mechanism achieves a maximal success probability of $0.834$, while the OR mechanism achieves $0.816$. At the \EER operating point, the success probabilities are $0.713$ and $0.649$ for the AND and OR mechanisms, respectively.}
+\vspace{-0.4em}
+\caption{Spoofing attack.}
 \label{fig:livdet_and_or_success}
+\end{subfigure}
+
+\smallskip
+\pgfplotslegendfromname{andorlegend}
+
+\caption{A biometric credential integrated with an atomic credential into AND and OR mechanisms. Under the different-person attack the AND and OR mechanisms achieve success probabilities of $0.80$ and $0.76$ at the~\EER point, and $0.81$ and $0.78$ at their optimal operating points. Under the spoofing attack they achieve $0.57$ and $0.54$ at the~\EER point, and $0.72$ and $0.71$ at their optima.}
+\label{fig:and_or_success}
 \end{figure}
 
 % ---------------------------------------------------------------------------
@@ -1197,7 +1178,7 @@ table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_an
 % ---------------------------------------------------------------------------
 \begin{table*}[t]
 \centering
-\caption{Comparison between the success probabilities obtained at the EER threshold and the maximal success probabilities. Bold EER values indicate the worse composition, whereas bold maximal values indicate the best composition. The bold safe column indicating the success probability of a mechanism uses an atomic credential only. The improvement column shows the percentage of improvement between the failure probability at the optimal mechanism success and the failure probability at the maximal mechanism success at EER threshold.}
+\caption{Comparison between the success probabilities, under a spoofing attack, obtained at the EER threshold and the maximal success probabilities. Bold EER values indicate the worse composition, whereas bold maximal values indicate the best composition. The bold safe column indicating the success probability of a mechanism uses an atomic credential only. The improvement column shows the percentage of improvement between the failure probability at the optimal mechanism success and the failure probability at the maximal mechanism success at EER threshold.}
 \label{tab:psafe_sweep_improvement}
 \begin{tabular}{cccccccccc}
 \toprule
@@ -1464,7 +1445,7 @@ We are now interested not only in whether the user is eventually accepted, but a
 
 Let~$N_U$ denote the attempt number at which the user authenticates for the first time.
 If the mechanism rejects the user in all~$k$ attempts, we define~$N_U =\infty$.
-The event~$\{N_U=j\}$ means that the user is rejected in attempts~$1,\ldots,j-1$ and is then accepted at attempt~$j$.
+The event~${\{N_U=j\}}$ means that the user is rejected in attempts~$1,\ldots,j-1$ and is then accepted at attempt~$j$.
 Under the assumption that every authentication attempt is independent, the probability that the user authenticates for the first time at attempt~$j$ is therefore
 
 \begin{equation}\label{eq:fist_success}
@@ -1807,14 +1788,8 @@ table[x=Attempt, y=P_attacker_success_0_75] {\PolicyData};
 \label{fig:success_constraints_probabilities}
 \end{subfigure}
 
-\caption{Policies minimizing the conditional mean number of user
-authentication attempts subject to
-$P_{\mathrm{success}}\geq P'$, with $k=10$.
-The upper panel shows selected thresholds; the lower panel shows
-the probability of at least one user or attacker acceptance through
-each attempt. Line styles identify constraint values, while blue
-circles represent the user and red squares represent the attacker.
-The constraint applies to the complete policy.}
+\caption{Minimizing the conditional mean number of user authentication attempts subject to $P_{\mathrm{success}}\geq P'$, with $k=10$.
+The upper figure shows selected thresholds; the lower figure shows the probability of at least one user or attacker acceptance through each attempt. Blue curve with circles represents the user and red curve with squares represents the attacker.}
 \label{fig:success_constraints_comparison}
 \end{figure}
 
@@ -1891,14 +1866,8 @@ table[x=Attempt, y=P_attacker_success_2_4] {\PolicyData};
 \label{fig:mean_limits_probabilities}
 \end{subfigure}
 
-\caption{Policies maximizing the mechanism's success probability
-subject to $\mathbb{E}[N_U\mid N_U\leq k]\leq\mu'$,
-with $k=10$.
-The upper panel shows selected thresholds; the lower panel shows
-the probability of at least one user or attacker acceptance through
-each attempt. Line styles identify constraint values, while blue
-circles represent the user and red squares represent the attacker.
-The constraint applies to the complete policy.}
+\caption{Maximizing the mechanism's success probability subject to $\mathbb{E}[N_U\mid N_U\leq k]\leq\mu'$, with $k=10$.
+The upper figure shows selected thresholds; the lower figure shows the probability of at least one user or attacker acceptance through each attempt. Blue curve with circles represents the user and red curve with squares represents the attacker.}
 \label{fig:mean_limits_comparison}
 \end{figure}
 

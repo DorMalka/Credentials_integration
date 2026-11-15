@@ -4845,10 +4845,10 @@ if __name__ == "__main__":
         fars,
         frrs,
         eer_threshold=eer_threshold,
-        P_safe=0.8,
+        P_safe=0.7,
         P_leak=0.15,
-        P_loss=0.04,
-        P_theft=0.01,
+        P_loss=0.1,
+        P_theft=0.05,
     )
     export_p_success(thresholds, p_success, eer_threshold, max_success, max_threshold)
     print(f"[i] AND max P_success = {p_and[idx_and]:.4f} at T={thresholds[idx_and]:.4f}")
