@@ -127,7 +127,7 @@ The scores obtained by comparing users' samples against the reference follow the
 
 We parametrize our model using~\textit{LivDet2015}, a real-world dataset of fingerprints~$(\S\ref{sec:real_data})$~\cite{LivDet2015,LivDet2013,LivDet2011,LivDet2009}. We employ a standard fingerprint verification algorithm~\cite{sourceafis} to obtain the matching scores, and produce the genuine and impostor distributions under two attack scenarios. In the first, an attacker authenticates using his own fingerprints, and the resulting distributions share a small overlapping area with an~\EER of~$3.8\%$. In the second, an attacker creates fake fingerprint samples using spoofing materials. These samples produce matching scores that closely resemble those of the user, increasing the~\EER to~$24.8\%$. We approximate the empirical distributions with uniform and quadratic distributions which are used for qualitative analysis.
 
-To identify an optimal mechanism, we derive closed-form expressions for the mechanism's success probability, using first and second order approximations of both principals' biometric score distributions. We start by optimizing a single biometric credential mechanism~$(\S\ref{sec:mechanisms})$. Here, the mechanism success probability reduces to the probability that the credential is \emph{safe}, i.e., only the user can present the credential. We find the optimal threshold of the biometric credential and show that, in general, it differs from the commonly used~\EER threshold. However, evaluating this mechanism on the real data shows that optimizing the threshold yields only a small improvement over the~\EER threshold in both attack scenarios. This explains why, at first glance, the \EER threshold is satisfactory.
+To identify an optimal mechanism, we derive closed-form expressions for the mechanism's success probability, using first and second order approximations of both principals' biometric score distributions. We start by optimizing a single biometric credential mechanism~$(\S\ref{sec:mechanisms})$. Here, the mechanism success probability reduces to the probability that the credential is \emph{safe}, i.e., only the user can present the credential. We find the optimal threshold of the biometric credential and show that, in general, it differs from the commonly used~\EER threshold. However, evaluating this mechanism on the real data shows that optimizing the threshold yields only a small improvement over the~\EER threshold in both attack scenarios. This explains why, at first glance, the~\EER threshold is satisfactory.
 
 \begin{figure}[t]
 \centering
@@ -193,7 +193,7 @@ coordinates {(0.5,0) (0.5,4.2)};
 \label{fig:intro-fig}
 \end{figure}
 
-But now we extend our analysis to mechanisms that use an atomic credential and a biometric credential~$(\S\ref{sec:two_cred})$. Those are prevalent in real-world authentication systems; for example, Google~\cite{google_passkeys_2023} assumes (1)~possession of a trusted device like a phone or computer (Atomic credential) and (2)~a biometric credential. We derive closed-form expressions for the mechanism's success probability and find the optimal threshold. Our analysis reveals that the optimal threshold of the biometric credential is not, in general, the same as the optimal threshold if used individually and differs from the~\EER. This difference arises as a function of the atomic credential fault probabilities. Moreover, the relative influence of the atomic and biometric credentials on the mechanism's success probability depends on their individual properties. In particular, as one credential becomes increasingly reliable, the mechanism success probability depends mainly on that credential. Evaluating these mechanisms under the spoofing attack scenario, we find that optimizing the threshold reduces the mechanism's failure probability by~20-72\% compared to the~\EER threshold. 
+The picture changes as we extend our analysis to mechanisms that use an atomic credential and a biometric credential~$(\S\ref{sec:two_cred})$. Those are prevalent in real-world authentication systems; for example, Google~\cite{google_passkeys_2023} assumes (1)~possession of a trusted device like a phone or computer (Atomic credential) and (2)~a biometric credential. We derive closed-form expressions for the mechanism's success probability and find the optimal threshold. Our analysis reveals that the optimal threshold of the biometric credential is not, in general, the same as the optimal threshold if used individually and differs from the~\EER. This difference arises as a function of the atomic credential fault probabilities. Moreover, the relative influence of the atomic and biometric credentials on the mechanism's success probability depends on their individual properties. In particular, as one credential becomes increasingly reliable, the mechanism success probability depends mainly on that credential. Evaluating these mechanisms under the spoofing attack scenario, we find that optimizing the threshold reduces the mechanism's failure probability by~20-72\% compared to the~\EER threshold. 
 
 Motivated by this observation, we identify the conditions under which the integration of a biometric credential with an atomic credential enhances the mechanism's success probability. First, we show that when an atomic credential can only be \emph{safe} or \emph{stolen}, where only the attacker can present it, it is not worthwhile to use them both. This is because a mechanism that uses an atomic credential alone succeeds whenever the credential is safe. Adding a biometric credential could reject the user when the atomic credential is safe, and cannot help the mechanism when the atomic credential is stolen, since the attacker already satisfies it. Next, we consider atomic credentials that can also be~\emph{leaked}, where both the user and attacker can present the credential, or \emph{lost}, where neither can present it. We introduce a necessary and sufficient condition we call \emph{asymptotic separability} of a biometric credential: the~\FAR converges to zero for matching scores above a given threshold, or the~\FRR converges to zero for matching scores below it. This assumption is reasonable since biometric sensors aim to distinguish between users and attackers. Suppose the atomic credential has non-zero probabilities for the \emph{safe} state and for at least one of \emph{loss} or \emph{leak}, and any probability of \emph{stolen}. We prove that every \emph{asymptotically separable} biometric credential that is optimally integrated with such an atomic credential, yields a mechanism whose success probability dominates that of the atomic credential mechanism.
 
@@ -551,14 +551,13 @@ table[x=T, y=FRR_quadratic] {figs/fig_spoofed_users/livdet_sourceafis_far_frr_be
 \label{fig:approximations}
 \end{figure*}
 
-
 \section{Single Biometric Credential}\label{sec:mechanisms}
 \noindent
 We optimize mechanisms with a single biometric credential.
-We start with closed-form second order approximation~$(\S\ref{sec:quadratic_biocred})$, and then evaluate the mechanism on the biometric dataset~$(\S\ref{sec:eval_single_cred})$.
+We start with a closed-form approximation~$(\S\ref{sec:quadratic_biocred})$ and then evaluate the mechanism on the biometric dataset~$(\S\ref{sec:eval_single_cred})$.
 \subsection{Quadratic Distributed Credential}\label{sec:quadratic_biocred}
 \noindent
-Our goal is to model credentials whose distributions closely resemble those observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:real_data})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005}. Accordingly, we define two probability density functions (PDFs). Let~$f_U$ denote the user distribution with roots~$\alpha_{1}, \alpha_{2}$ and let~$f_A$ denote the attacker distribution with roots~$\beta_{1}, \beta_{2}$. Denote by $a, b, c$ and $d, e, f$ the quadratic coefficients of the user and attacker distributions, respectively, hence:
+Our goal is to obtain closed-form expressions that capture the qualitative behaviour of distributions observed in real measurement data. To this end, we analyze a quadratic probability distribution function, which provides a second order approximation of the biometric credential that can also be seen in real fingerprint measurement data~$(\S\ref{sec:real_data})$. This choice is also consistent with the findings of Slobodan et al.~\cite{Slob2005}. Accordingly, we define two probability density functions (PDFs). Let~$f_U$ denote the user distribution with roots~$\alpha_{1}, \alpha_{2}$ and let~$f_A$ denote the attacker distribution with roots~$\beta_{1}, \beta_{2}$. Denote by $a, b, c$ and $d, e, f$ the quadratic coefficients of the user and attacker distributions, respectively, hence:
 \[
 f_U(s) = 
 \left\{
@@ -617,7 +616,7 @@ These distributions define the error metrics~\FAR and~\FRR as functions of the m
 \end{cases}
 \end{multline*}
 
-The x axis represents the matching score $s$. Genuine users are expected to produce higher matching scores than attackers, thus we analyze three different cases:
+Genuine users are expected to produce higher matching scores than attackers, thus we analyze three different cases:
 
 (1)~$\beta_{2} < \alpha_{1}$~(Figure~\ref{fig:quadratic_case1_pdf}): The two distributions are separated. Any threshold $t$ chosen within the range~$\beta_{2} \le t \le \alpha_{1}$ yields zero~\FAR and~\FRR, and therefore achieves a mechanism success probability of~$1$.
 
@@ -657,7 +656,7 @@ P_{\mathrm{success}}(t)=\\
 \end{cases}
 \end{multline*}
 The second and third intervals in case~(2) are identical to the third and fourth intervals in case~(3) and therefore, we analyze them together. 
-We differentiate~$P_{\text{success}}(t)$ in every interval. In the second and fourth intervals the only critical points lie at~$t=\beta_1$ and~$t=\alpha_2$, where the derivative does not change sign in the required direction, and therefore these intervals contain no maximum. We turn to the third interval, where the derivative is a cubic polynomial multiplied by two linear factors that vanish outside the interval. Thus, the critical points depend solely on the cubic term, which reveals exactly one real root. The full analysis and the closed form are in Appendix~\ref{app:quad_opt_thr}.
+We differentiate~$P_{\text{success}}(t)$ in every interval. In the second and fourth intervals the only critical points lie at~$t=\beta_1$ and~$t=\alpha_2$, where the derivative does not change sign in the required direction, and therefore these intervals contain no maximum. We turn to the third interval, where the derivative is a cubic polynomial multiplied by two linear factors that vanish outside the interval. Thus, the critical points depend solely on the cubic term, which reveals exactly one real root. The full analysis is in Appendix~\ref{app:quad_opt_thr}.
 
 
 \begin{figure}[t]
@@ -852,12 +851,12 @@ table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_c_points.txt};
 \label{fig:success_per_attacker_1_quadratic_cred}
 \end{figure*}
 
-To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we computed the~\EER threshold as follows:
+To demonstrate that this optimal threshold differs from the Equal Error Rate (\EER) threshold, we compute the~\EER threshold as follows:
 \begin{equation*}
 t_{\EER} = \frac{\alpha_1 \beta_1 - \alpha_2 \beta_2}{\alpha_1 - \alpha_2 + \beta_1 - \beta_2}.
 \end{equation*}
 We observe that the two thresholds differ.
-The optimal threshold~$t_{\text{opt}}$ becomes more distinct from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases and the more asymmetric the user and attacker distributions become. 
+The optimal threshold~$t_{\text{opt}}$ moves farther from the~\EER threshold~$t_{\EER}$ as the variance of the attacker distribution increases and the more asymmetric the user and attacker distributions become. 
 
 Moreover, increasing the variance of an attacker distribution shifts the optimal threshold~$t_{\text{opt}}$ towards~$\alpha_1$, reducing the~\FRR to zero. In contrast, the~\EER threshold remains fixed balancing between the~\FAR and~\FRR. This shift indicates that when increasing the variance, the optimal threshold prioritizes minimizing the false rejection rate, rather than balancing both error rates, as shown in Figure~\ref{fig:success_per_attacker_1_quadratic_cred}.
 
@@ -869,7 +868,7 @@ To quantify the effect of the variance on the deviation between the optimal thre
 \begin{axis}[
     scale only axis,
     width=0.82\columnwidth,
-    height=0.48\columnwidth,
+    height=0.4\columnwidth,
     xlabel={Attacker Variance $\mathrm{Var}(s)$},
     ylabel={$P_{\mathrm{success}}$},
     xtick=\empty,
@@ -895,13 +894,14 @@ table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 \caption{Comparison between the optimal threshold and the \EER threshold as a function of the attacker's variance.}
 \label{fig:gap_vs_variance_parabola_success}
 \end{figure}
+
 \subsection{Empirical Evaluation}\label{sec:eval_single_cred}
 \noindent
-We first evaluate a mechanism that uses a biometric credential only under the different-pesron attack, where an attacker authenticates using his own fingerprints. Calculating the mechanism’s success probability requires the biometric credential’s fault probabilities, which depend on the~\FAR and~\FRR. We therefore follow the evaluation procedure used by Jain et al.~\cite{Anil1997}, Cappelli et al.~\cite{Cappelli2006} and Slobodan et al.~\cite{Slob2005}. We produce histograms of genuine and impostor comparisons, as shown in Figure~\ref{fig:histograms} and calculate the~\FAR and~\FRR as functions of the threshold~$t$, as shown in Figure~\ref{fig:approximations}.
+We compare the~\EER threshold and the optimal threshold in a mechanism that uses a biometric credential only, using the~\FAR and~\FRR obtained in~$(\S\ref{sec:real_data})$~(Figure~\ref{fig:approximations}). From these error rates we calculate the biometric credential’s fault probabilities~(Equation~\ref{eqn:safe_prob}) and the mechanism’s success probability~(Equation~\ref{eqn:safesuccess}).
 
-Using these error rates, we calculate the biometric credential fault probabilities~(Equation~\ref{eqn:safe_prob}) and the mechanism's success probability~(Equation~\ref{eqn:safesuccess}). We find that the optimal threshold differs from the~\EER point and achieves a higher success probability, as shown in Figure~\ref{fig:bio_only_sourceafis_reg_scoring}. However, the success probability of the mechanism, when operated at the optimal threshold, is not significantly greater than operating at the~\EER threshold.
+Under the different-person attack, where an attacker authenticates using his own fingerprints, the optimal threshold differs from the~\EER point and achieves a higher success probability~(Figure~\ref{fig:bio_only_sourceafis_reg_scoring}). However, the improvement is small: the success probability increases from~92.42\% to~92.54\%. We move to analyze the spoofing attack, where the~\EER rises significantly from~3.8\% to~24.8\%. Despite the increased overlap between the user and attacker distributions, the improvement from optimizing the threshold remains small~(Figure~\ref{fig:livdet_sourceafis_success}): the success probability increases from~50.64\% to~50.88\%. 
 
-We next consider a more challenging scenario in which attackers use forged fingerprints to impersonate legitimate users. Unlike the different-person attack, spoofing samples can produce matching scores closer to those of genuine fingerprints, increasing the overlap between the distributions. In this evaluation, the~\EER increased significantly to 24.8\%, indicating that the biometric credential is less effective at distinguishing users from attackers. We therefore evaluate the mechanism's success probability under this attack, as shown in Figure~\ref{fig:livdet_sourceafis_success}. Nevertheless, despite the increased overlap between the user and the attacker distributions, the optimal and \EER thresholds differ, but the improvement in success probability remains small. Under the different-person attack, the success probability increases from 92.42\% to 92.54\%, while under spoofing attacks, it increases from 50.64\% to 50.88\%. Thus, the~\EER heuristic performs well for a single-attempt mechanism that uses a biometric credential only.
+Across both attack scenarios, optimizing the threshold marginally improves the success probability. This explains why the~\EER heuristic has been sufficient in practice for a mechanism that uses a single biometric credential and a single attempt.
 
 % ---------------------------------------------------------------------------
 % Different users: single-credential success.
@@ -911,7 +911,7 @@ We next consider a more challenging scenario in which attackers use forged finge
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.82\columnwidth,
+    width=0.8\columnwidth,
     height=0.40\columnwidth,
     xlabel={Threshold (\%)},
     ylabel={Success Probability},
@@ -955,7 +955,7 @@ table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_succe
 \begin{tikzpicture}
 \begin{axis}[
     scale only axis,
-    width=0.82\columnwidth,
+    width=0.8\columnwidth,
     height=0.40\columnwidth,
     xlabel={Threshold (\%)},
     ylabel={Success Probability},
