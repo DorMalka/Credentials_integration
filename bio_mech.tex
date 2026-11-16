@@ -1351,7 +1351,7 @@ The mechanism’s success probability therefore rises with~$k$, reaching~$0.75$ 
 \begin{tikzpicture}
 \begin{axis}[
     width=0.95\linewidth,
-    height=0.65\linewidth,
+    height=0.52\linewidth,
     xlabel={Number of attempts, $k$},
     ylabel={Probability},
     xmin=1,
@@ -1363,7 +1363,7 @@ The mechanism’s success probability therefore rises with~$k$, reaching~$0.75$ 
     line width=1pt,
     mark size=1.6pt,
     legend style={
-        at={(0.5,-0.28)},
+        at={(0.5,-0.34)},
         anchor=north,
         legend columns=3,
         draw=black,
@@ -1401,7 +1401,7 @@ table[x=k, y=P_success_single_attempt_optimum]
 \begin{tikzpicture}
 \begin{axis}[
     width=0.95\columnwidth,
-    height=0.65\columnwidth,
+    height=0.52\columnwidth,
     xlabel={Number of attempts, $k$},
     ylabel={Overall success probability},
     xmin=1, xmax=200,
@@ -1410,7 +1410,7 @@ table[x=k, y=P_success_single_attempt_optimum]
     ytick={0,0.2,0.4,0.6,0.8,1},
     grid=major,
     legend style={
-        at={(0.5,-0.31)},
+        at={(0.5,-0.33)},
         anchor=north,
         legend columns=1,
         draw=black,
@@ -1442,7 +1442,7 @@ table[
 
 \subsection{Unbounded Attempts Number}\label{sec:optimization_mul_attempts}
 \noindent
-We identify two metrics that determine the security and usability of an authentication mechanism: (1)~the expected number of user authentication attempts, and (2)~the overall success probability. However, there is an inherent trade-off between these metrics: as the number of attempts grows, the overall success probability increases while usability degrades. 
+We identify two metrics that determine the security and usability of an authentication mechanism: (1)~the expected number of user authentication attempts, and (2)~the overall success probability. However, there is an inherent trade-off between these metrics: as the number of attempts grows, the overall success probability increases. 
 
 Let~$N_U$ denote the attempt at which the user first authenticates. Under the assumption that attempts are independent, the user is rejected in attempts~$1,\ldots,j-1$ and accepted at attempt~$j$ with probability
 \begin{equation}\label{eq:fist_success}
@@ -1617,8 +1617,6 @@ table[x=Attempt, y=Threshold_0_75] {\PolicyData};
 \label{fig:success_constraints_thresholds}
 \end{subfigure}
 
-\par\medskip
-
 % Lower: user and attacker success versus attempt
 \begin{subfigure}{\linewidth}
 \centering
@@ -1694,8 +1692,6 @@ table[x=Attempt, y=Threshold_2_4] {\PolicyData};
 \caption{Selected thresholds.}
 \label{fig:mean_limits_thresholds}
 \end{subfigure}
-
-\par\medskip
 
 % Lower: user and attacker success versus attempt
 \begin{subfigure}{\linewidth}
