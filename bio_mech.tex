@@ -198,12 +198,12 @@ Motivated by this observation, we identify the conditions under which the integr
 
 Biometric mechanisms typically use the same fixed heuristic threshold~\cite{biocred_fixed_threshold}. Motivated by this behaviour, we extend our analysis to a mechanism that uses a biometric credential only and allows multiple authentication attempts by each principal~$(\S\ref{sec:multiple_auth_attempts})$. In practice, biometric real-world authentication mechanisms allow principals to retry authentication following a failed attempt. Examples appear in Apple and Samsung devices~\cite{apple_biometric,samsung_biometric}. However, while additional sampling opportunities increase the legitimate user's success probability, they also provide attackers with additional opportunities to authenticate successfully. Under a bounded number of attempts mechanism, the mechanism succeeds if the user authenticates at least once while the attacker fails across all attempts. We derive closed-form expressions for the mechanism's success probability and optimize the match thresholds for each number of attempts. We evaluating this mechanism under a spoofing attack scenario and find that threshold optimization becomes consequential. Reusing a fixed threshold across all attempts, either the~\EER threshold or the single-attempt optimal threshold, reduces the mechanism's success probability as the number of attempts grows. Optimizing the threshold for the number of attempts reverses this: the success probability increases with the number of attempts and converges to one, reducing the failure probability by up to~$75\%$ compared to reusing the~\EER threshold.
 
-However, system designers may seek to limit the expected number of attempts required for the user to successfully authenticate. We therefore present two constrained optimization problems that, to our knowledge, have not been considered for deployed authentication mechanisms: we maximize the success probability subject to a bound on the mean number of attempts, and conversely minimize the mean number of attempts subject to a required success probability.
+However, system designers may seek to limit the expected number of attempts required for the user to successfully authenticate. We therefore present two constrained optimization problems that, to our knowledge, have not been considered for deployed authentication mechanisms: we maximize the success probability subject to a bound on the expected number of attempts, and conversely minimize the expected number of attempts subject to a required success probability.
 In both optimization problems, the optimal thresholds differ at every attempt, letting system designers balance security against usability.
 
 To assess whether commercial biometric sensors support threshold optimization, we review their specifications~$(\S\ref{sec:sensors_review})$. We examine 32 biometric device families from 21 manufacturers, covering different modalities, including fingerprints, face, iris, and palm recognition.  Nine of these are capture only: they expose the biometric sample or the matching score to a host matcher, which creates privacy and hill-climbing risks. Of the 23 that make in-sensor decisions, only two permit setting a numeric match threshold. The others let the integrator select a target error rate within a predetermined range or a discrete security level, or offer no threshold control at all. However, setting a threshold is necessary but not sufficient for optimization: the integrator must also know the~\FAR and~\FRR functions to choose a threshold. Consequently, no surveyed sensor supports threshold optimization, limiting the deployment of optimal authentication mechanisms.
 
-In summary~$(\S\ref{sec:conclusion})$, our contributions are both theoretical and practical: (1)~Formalization of the success probability function for authentication mechanisms using biometric and atomic credentials; (2)~Symbolic analysis of the optimal threshold for a mechanism using a biometric credential; (3)~Identification of the conditions under which adding a biometric credential improves the mechanism's success probability; (4)~Proof that any biometric credential satisfying these conditions improves the mechanism's success probability; (5)~Derivation of the mechanism's success probability under multiple authentication attempts; (6)~Formulation of constrained optimization problems balancing the mechanism's success probability and the mean number of authentication attempts; (7)~Empirical evaluation on public biometric data under different-person and spoofing attacks; (8)~Practical implication that biometric sensor manufacturers should enable threshold configuration and present the~\FAR and~\FRR functions.
+In summary~$(\S\ref{sec:conclusion})$, our contributions are both theoretical and practical: (1)~Formalization of the success probability function for authentication mechanisms using biometric and atomic credentials; (2)~Symbolic analysis of the optimal threshold for a mechanism using a biometric credential; (3)~Identification of the conditions under which adding a biometric credential improves the mechanism's success probability; (4)~Proof that any biometric credential satisfying these conditions improves the mechanism's success probability; (5)~Derivation of the mechanism's success probability under multiple authentication attempts; (6)~Formulation of constrained optimization problems balancing the mechanism's success probability and the expected number of authentication attempts; (7)~Empirical evaluation on public biometric data under different-person and spoofing attacks; (8)~Practical implication that biometric sensor manufacturers should enable threshold configuration and present the~\FAR and~\FRR functions.
 
 \section{Related Work}\label{sec:related}
 \noindent
@@ -1315,7 +1315,7 @@ Since biometric credentials often exhibit a more common behavior~\cite{Slob2005,
 \section{Multiple Attempts}
 \label{sec:multiple_auth_attempts}
 \noindent
-Real-world biometric mechanisms commonly allow a bounded number of attempts~\cite{Chen2023BrutePrint, typical_aut_attempts}. This raises the success probability of users and attackers alike, making the single attempt threshold suboptimal. We analyze such mechanisms and their optimal threshold~$(\S\ref{sec:equal_k_attempts})$. Beyond the mechanism's success probability, the mean number of user authentication attempts is a key metric.We derive this metric and examine its tradeoff with the success probability under different constraints~$(\S\ref{sec:optimization_mul_attempts})$.
+Real-world biometric mechanisms commonly allow a bounded number of attempts~\cite{Chen2023BrutePrint, typical_aut_attempts}. This raises the success probability of users and attackers alike, making the single attempt threshold suboptimal. We analyze such mechanisms and their optimal threshold~$(\S\ref{sec:equal_k_attempts})$. Beyond the mechanism's success probability, the expected number of user authentication attempts is a key metric. We therefore remove the bound and optimize the threshold at every attempt subject to constraints on each metric~$(\S\ref{sec:optimization_mul_attempts})$.
 
 \subsection{Predefined Numbers of Attempts}\label{sec:equal_k_attempts}
 \noindent
@@ -1440,9 +1440,9 @@ table[
 \label{fig:unconstrained_success_convergence}
 \end{figure}
 
-\subsection{Optimization Under Mean-Success Trade-Off}\label{sec:optimization_mul_attempts}
+\subsection{Unbounded Attempts Number}\label{sec:optimization_mul_attempts}
 \noindent
-We identify two metrics that determine the security and usability of an authentication mechanism: (1)~the mean number of user authentication attempts, and (2)~the overall success probability. However, there is an inherent trade-off between these metrics: as the number of attempts grows, the overall success probability increases while usability degrades. 
+We identify two metrics that determine the security and usability of an authentication mechanism: (1)~the expected number of user authentication attempts, and (2)~the overall success probability. However, there is an inherent trade-off between these metrics: as the number of attempts grows, the overall success probability increases while usability degrades. 
 
 Let~$N_U$ denote the attempt at which the user first authenticates. Under the assumption that attempts are independent, the user is rejected in attempts~$1,\ldots,j-1$ and accepted at attempt~$j$ with probability
 \begin{equation}\label{eq:fist_success}
@@ -1453,7 +1453,7 @@ Let~$N_U$ denote the attempt at which the user first authenticates. Under the as
 \right)
 \left(1-\FRR(t_j)\right).
 \end{equation}
-The mean number of attempts a user requires is therefore
+The expected number of attempts a user requires is therefore
 \begin{equation}\label{eq:mean_attempts}
 \mathbb{E}[N_U]
 =
@@ -1465,9 +1465,9 @@ j
 \left(1-\FRR(t_j)\right).
 \end{equation}
 
-A mechanism that allows unbounded retries extends the threshold vector to~$\mathbf{t}=(t_1,t_2,\ldots)$. We consider two optimization problems over this vector: one that minimizes the mean number of user authentication attempts subject to a constraint on the success probability, and another that maximizes the success probability subject to a constraint on the mean number of attempts.
+A mechanism that allows unbounded retries extends the threshold vector to~$\mathbf{t}=(t_1,t_2,\ldots)$. We consider two optimization problems over this vector: one that minimizes the expected number of user authentication attempts subject to a constraint on the success probability, and another that maximizes the success probability subject to a constraint on the expected number of attempts.
 
-We start by minimizing the mean number of user authentication attempts. Thus
+We start by minimizing the expected number of user authentication attempts. Thus
 \begin{equation*}
 \begin{aligned}
 \underset{\mathbf{t}}{\operatorname{minimize}}
@@ -1493,9 +1493,9 @@ Equivalently, the constraint is
 \geq
 P'.
 \end{equation*}
-Without the constraint, this problem has a trivial solution: set every threshold to accept everything, and the user always succeeds on the first attempt. The mean is then~1, but so is the attacker’s success rate. The constraint~$P'$ rules this out. At the optimum, the constraint holds with equality. Any solution with a strictly higher success probability could trade that slack for a more permissive threshold and a lower mean. Thus, this optimization enforces a minimum security level while maximizing the usability within it. 
+Without the constraint, this problem has a trivial solution: set every threshold to accept everything, and the user always succeeds on the first attempt. The expected is then~1, but so is the attacker’s success rate. The constraint~$P'$ rules this out. At the optimum, the constraint holds with equality. Any solution with a strictly higher success probability could trade that slack for a more permissive threshold and a lower expected. Thus, this optimization enforces a minimum security level while maximizing the usability within it. 
 
-We next maximize the mechanism's success probability subject to an upper bound~$\mu'$ on the mean number of user authentication attempts. Thus
+We next maximize the mechanism's success probability subject to an upper bound~$\mu'$ on the expected number of user authentication attempts. Thus
 \begin{equation*}
 \begin{aligned}
 \underset{\mathbf{t}}{\operatorname{maximize}}
@@ -1508,7 +1508,7 @@ P_{\mathrm{success}}(\mathbf{t})
 \leq \mu'.
 \end{aligned}
 \end{equation*}
-Substituting the success probability and the conditional mean gives
+Substituting the success probability and the expected gives
 \begin{equation*}
 \begin{aligned}
 \underset{\mathbf{t}}{\operatorname{maximize}}
@@ -1526,11 +1526,11 @@ j\left(\prod_{i=1}^{j-1}\FRR(t_i)\right)
 \leq \mu'.
 \end{aligned}
 \end{equation*}
-Here the constraint plays a different role. Without the constraint, the optimization balances both the~\FRR and~\FAR, leading to a non trivial solution as described in~$(\S\ref{sec:equal_k_attempts})$. Unlike the optimization that constraint on the success probability, the mean constraint may not bind at all: if the optimal threshold vector already lets users authenticate within~$\mu'$ attempts on average, nothing changes. When it does bind, the optimization enforces thresholds more permissive than the unconstrained problem, leading to a reduction in the overall success probability.
+Here the constraint plays a different role. Without the constraint, the optimization balances both the~\FRR and~\FAR, leading to a non trivial solution as described in~$(\S\ref{sec:equal_k_attempts})$. Unlike the optimization that constraint on the success probability, the expected attempts constraint may not bind at all: if the optimal threshold vector already lets users authenticate within~$\mu'$ attempts on average, nothing changes. When it does bind, the optimization enforces thresholds more permissive than the unconstrained problem, leading to a reduction in the overall success probability.
 
-We evaluate both optimization problems on the same spoofing attack data. First, we identify the optimal threshold selections that minimize the mean number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the greater the required success probability~$P'$, the greater the mean number of user authentication attempts~$\mathbb{E}[N_U]$ required to achieve it. Moreover, as presented in the theoretical analysis, the mechanism's success probability is equal to the success constraint. In addition, our findings reveal that a higher success probability constraint leads to a greater cumulative user success probability and a lower cumulative attacker success probability. These findings are summarized in Figure~\ref{fig:success_constraints_comparison}.
+We evaluate both optimization problems on the same spoofing attack data. First, we identify the optimal threshold selections that minimize the expected number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the greater the required success probability~$P'$, the greater the expected number of user authentication attempts~$\mathbb{E}[N_U]$ required to achieve it. Moreover, as presented in the theoretical analysis, the mechanism's success probability is equal to the success constraint. In addition, our findings reveal that a higher success probability constraint leads to a greater cumulative user success probability and a lower cumulative attacker success probability. These findings are summarized in Figure~\ref{fig:success_constraints_comparison}.
 
-We also analyze the reverse direction, in which a system designer seeks to maximize the achievable success probability under a mean constraint. We find that allowing a greater mean number of user authentication attempts~$\mathbb{E}[N_U]$ leads to a lower cumulative success probability for the attacker. We evaluate the first~$k=10$ attempts, beyond which the optimal thresholds and the resulting probabilities change negligibly. These findings are shown in Figure~\ref{fig:mean_limits_comparison}.
+We also analyze the reverse direction, in which a system designer seeks to maximize the achievable success probability under a expected attempts constraint. We find that allowing a greater expected number of user authentication attempts~$\mathbb{E}[N_U]$ leads to a lower cumulative success probability for the attacker. We evaluate the first~$k=10$ attempts, beyond which the optimal thresholds and the resulting probabilities change negligibly. These findings are shown in Figure~\ref{fig:mean_limits_comparison}.
 
 Unlike the unconstrained problem~(\S\ref{sec:equal_k_attempts}), where a single threshold is optimal for all attempts, both constrained problems select a different threshold at every attempt.
 The selected thresholds become stricter as the attempt index increases. 
@@ -1657,7 +1657,7 @@ table[x=Attempt, y=P_attacker_success_0_75] {\PolicyData};
 \label{fig:success_constraints_probabilities}
 \end{subfigure}
 
-\caption{Minimizing the mean number of attempts subject to $P_{\mathrm{success}}\geq P'$.
+\caption{Minimizing the expected number of attempts subject to $P_{\mathrm{success}}\geq P'$.
 The upper figure shows selected thresholds; the lower figure shows cumulative acceptance for the user (blue circles) and attacker (red squares).}
 \label{fig:success_constraints_comparison}
 \end{figure}
