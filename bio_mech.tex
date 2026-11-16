@@ -134,16 +134,21 @@ To identify an optimal mechanism, we derive closed-form expressions for the mech
 \begin{axis}[
     scale only axis,
     width=0.8\columnwidth,
-    height=0.50\columnwidth,
+    height=0.35\columnwidth,
     xlabel={Matching Score},
     ylabel={Probability Density},
     xmin=0, xmax=1,
-    ymin=0,
+    ymin=0, ymax=4.2,
     xtick=\empty,
     ytick=\empty,
     grid=none,
-    legend style={draw=black, fill=white},
-    legend pos=north west,
+    legend style={
+        at={(0.5,-0.3)},
+        anchor=north,
+        legend columns=3,
+        draw=black,
+        fill=white
+    },
 ]
 
 % FRR shaded area: user rejected
@@ -1763,7 +1768,7 @@ This would allow integrators to select thresholds according to their requirement
 \noindent
 In a single-attempt mechanism using a biometric credential alone, optimizing the threshold yields only small improvements. But when the credential is combined with other credentials or used across multiple attempts, the optimal threshold depends on the mechanism and differs from the heuristic one. We characterize a condition under which adding a biometric credential always improves the mechanism’s success, and find that the optimal threshold depends on the number of allowed attempts. Simulating spoofing attacks, threshold optimization reduces the failure probability by~20-72\%, and increases the success probability by~$\times$25 over reusing the heuristic threshold across attempts.
 
-However, our survey finds that only two device families allow setting a numeric match threshold, and none publishes the error-rate functions required to choose one. We therefore propose that manufacturers expose both, so integrators can select thresholds for their mechanisms. This paves the way for new authentication protocols based on threshold selection, such as per-user thresholds, and may enhance the security of users' digital and physical assets worldwide.
+However, our survey finds that only two device families allow setting a numeric match threshold, and none publishes the error-rate functions required to optimize. We therefore propose that manufacturers expose both, so integrators can deploy optimal mechanisms.
 {
 \raggedright
 \emergencystretch=3em
