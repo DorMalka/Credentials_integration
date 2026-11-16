@@ -9,7 +9,7 @@
 \begin{tikzpicture}
 \begin{axis}[width=0.95\linewidth,height=0.55\linewidth,
 xlabel={Attempt},ylabel={Threshold},
-xmin=0.5,xmax=10.5,xtick={1,...,10},grid=major,
+xmin=0.5,xmax=20.5,xtick={1,...,20},grid=major,
 legend style={at={(0.5,-0.28)},anchor=north,legend columns=3,
 font=\scriptsize,draw=black,fill=white},legend cell align=left,
 ymin=0,ymax=100]
@@ -35,7 +35,7 @@ table[x=Attempt,y=Threshold_0_6]
 \begin{tikzpicture}
 \begin{axis}[width=0.95\linewidth,height=0.55\linewidth,
 xlabel={Attempt},ylabel={Cumulative success probability},
-xmin=0.5,xmax=10.5,xtick={1,...,10},grid=major,
+xmin=0.5,xmax=20.5,xtick={1,...,20},grid=major,
 legend style={at={(0.5,-0.28)},anchor=north,legend columns=2,
 font=\scriptsize,draw=black,fill=white},legend cell align=left,
 ymin=0,ymax=1]
@@ -68,7 +68,7 @@ table[x=Attempt,y=P_attacker_success_0_6]
 \caption{Cumulative user and attacker acceptance probabilities.}
 \end{subfigure}
 \par\medskip
-\caption{Policies minimizing conditional mean user attempts under three joint-success lower bounds $P'$. Here $k_u=10$ and $k_a=10$.
+\caption{Policies minimizing conditional mean user attempts under three joint-success lower bounds $P'$. Here $k_u=20$ and $k_a=20$.
 Upper panels show thresholds; lower panels show user and attacker acceptance.
 Colors identify constraints; solid circles denote the user and dashed squares the attacker.
 Each curve uses one optimized full-horizon threshold sequence.

@@ -1441,9 +1441,9 @@ table[
 \label{fig:unconstrained_success_convergence}
 \end{figure}
 
-\subsection{Unbounded Attempts Number}\label{sec:optimization_mul_attempts}
+\subsection{Unbounded Number Of Attempts}\label{sec:optimization_mul_attempts}
 \noindent
-We identify two metrics that determine the security and usability of an authentication mechanism: (1)~the expected number of user authentication attempts, and (2)~the overall success probability. However, there is an inherent trade-off between these metrics: as the number of attempts grows, the overall success probability increases. 
+We identify two metrics that determine the security and usability of an authentication mechanism: (1)~the expected number of user authentication attempts, and (2)~the overall success probability. An inherent trade-off arises when optimizing these metrics: as the expected number of attempts grows, the overall success probability increases. 
 
 Let~$N_U$ denote the attempt at which the user first authenticates. Under the assumption that attempts are independent, the user is rejected in attempts~$1,\ldots,j-1$ and accepted at attempt~$j$ with probability
 \begin{equation}\label{eq:fist_success}
@@ -1466,9 +1466,9 @@ j
 \left(1-\FRR(t_j)\right).
 \end{equation}
 
-A mechanism that allows unbounded retries extends the threshold vector to~$\mathbf{t}=(t_1,t_2,\ldots)$. We consider two optimization problems over this vector: one that minimizes the expected number of user authentication attempts subject to a constraint on the success probability, and another that maximizes the success probability subject to a constraint on the expected number of attempts.
+A mechanism that allows unbounded retries extends the threshold vector to~$\mathbf{t}=(t_1,t_2,\ldots)$. We consider two optimization problems over this vector.
 
-We start by minimizing the expected number of user authentication attempts. Thus
+First, we minimize the expected number of user authentication attempts given a lower bound on the success probability. Thus
 \begin{equation*}
 \begin{aligned}
 \underset{\mathbf{t}}{\operatorname{minimize}}
@@ -1509,7 +1509,7 @@ P_{\mathrm{success}}(\mathbf{t})
 \leq \mu'.
 \end{aligned}
 \end{equation*}
-Substituting the success probability and the expected gives
+Substituting the success probability and the expected number of attempts gives
 \begin{equation*}
 \begin{aligned}
 \underset{\mathbf{t}}{\operatorname{maximize}}
@@ -1527,62 +1527,40 @@ j\left(\prod_{i=1}^{j-1}\FRR(t_i)\right)
 \leq \mu'.
 \end{aligned}
 \end{equation*}
-Here the constraint plays a different role. Without the constraint, the optimization balances both the~\FRR and~\FAR, leading to a non trivial solution as described in~$(\S\ref{sec:equal_k_attempts})$. Unlike the optimization that constraint on the success probability, the expected attempts constraint may not bind at all: if the optimal threshold vector already lets users authenticate within~$\mu'$ attempts on average, nothing changes. When it does bind, the optimization enforces thresholds more permissive than the unconstrained problem, leading to a reduction in the overall success probability.
+Here the constraint plays a different role. Without the constraint, the optimization balances both the~\FRR and~\FAR, leading to a non trivial solution as described in~$(\S\ref{sec:equal_k_attempts})$. Unlike the first optimization problem, the bound may not affect the optimization: if the optimal thresholds already let users authenticate within~$\mu'$ attempts on average, they remain unchanged similar to the unconstrained problem. When the bound does take affect, the optimization enforces thresholds more permissive than the unconstrained problem, leading to a reduction in the overall success probability.
 
-We evaluate both optimization problems on the same spoofing attack data. First, we identify the optimal threshold selections that minimize the expected number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the greater the required success probability~$P'$, the greater the expected number of user authentication attempts~$\mathbb{E}[N_U]$ required to achieve it. Moreover, as presented in the theoretical analysis, the mechanism's success probability is equal to the success constraint. In addition, our findings reveal that a higher success probability constraint leads to a greater cumulative user success probability and a lower cumulative attacker success probability. These findings are summarized in Figure~\ref{fig:success_constraints_comparison}.
+We evaluate both optimization problems on the spoofing attack data. First, we identify the optimal threshold selections that minimize the expected number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the greater the required success probability~$P'$, the greater the expected number of user authentication attempts~$\mathbb{E}[N_U]$: raising~$P'$ from~$0.6$ to~$0.75$ raises~$\mathbb{E}[N_U]$ from~$1.33$ to~$2.99$. As our analysis shows, the mechanism's success probability indeed equals~$P'$~(Figure~\ref{fig:success_constraints_comparison}).
 
-We also analyze the reverse direction, in which a system designer seeks to maximize the achievable success probability under a expected attempts constraint. We find that allowing a greater expected number of user authentication attempts~$\mathbb{E}[N_U]$ leads to a lower cumulative success probability for the attacker. We evaluate the first~$k=10$ attempts, beyond which the optimal thresholds and the resulting probabilities change negligibly. These findings are shown in Figure~\ref{fig:mean_limits_comparison}.
+We also analyze the reverse direction, in which a system designer seeks to maximize the achievable success probability under a constraint on the expected number of attempts. We find that allowing a greater expected number of user authentication attempts~$\mathbb{E}[N_U]$ yields a higher success probability, rising from~$0.62$ at~$\mu'=1.5$ to~$0.71$ at~$\mu'=2.4$~(Figure~\ref{fig:mean_limits_comparison}).
 
-Unlike the unconstrained problem~(\S\ref{sec:equal_k_attempts}), where a single threshold is optimal for all attempts, both constrained problems select a different threshold at every attempt.
-The selected thresholds become stricter as the attempt index increases. 
-In this way, the mechanism accepts the user in the initial attempts, while limiting the probability of a successful spoofing attack as the attempts accumulate.
-
+Unlike the unconstrained problem~(\S\ref{sec:equal_k_attempts}), where a single threshold is optimal for all attempts, both constrained problems select a different threshold at every attempt. The thresholds rise gradually over the first attempts, giving the user the opportunity to authenticate. Once the mechanism reaches close to the bound, it switches to a threshold that rejects every sample, denying the attacker any further opportunity. The attempt at which this switch occurs grows with the constraint: from the third attempt at~$P'=0.6$ to the eighth at~$P'=0.75$. We evaluate the first~$k=15$ attempts, beyond which changes in the thresholds and probabilities are negligible.
 
 \pgfplotsset{compat=1.18}
 
 \pgfplotsset{
     constraint axis/.style={
-        width=0.9\linewidth,
-        height=0.5\linewidth,
+        width=\linewidth,
+        height=0.55\linewidth,
         xlabel={Attempt},
-        xmin=1, xmax=10,
-        xtick={1,...,10},
+        xmin=1, xmax=15,
+        xtick={1,...,15},
         grid=major,
         mark size=2pt,
         legend style={
             at={(0.5,-0.38)},
             anchor=north,
+            legend columns=3,
             draw=black,
             fill=white,
             font=\scriptsize
         },
         legend cell align=left
     },
-    player axis/.style={
+    success axis/.style={
         constraint axis,
-        ylabel={Cumulative success probability},
-        ymin=0, ymax=1,
-        legend columns=3,
-        every axis plot/.append style={forget plot}
+        ylabel={Success probability},
+        ymin=0, ymax=1
     }
-}
-
-% Two-row legend:
-% Row 1: three constraint values and their line styles.
-% Row 2: user and attacker markers.
-\newcommand{\TwoRowConstraintLegend}[3]{%
-    \addlegendimage{black, thick, solid, mark=none}
-    \addlegendentry{#1}
-    \addlegendimage{black, thick, densely dotted, mark=none}
-    \addlegendentry{#2}
-    \addlegendimage{black, thick, dashed, mark=none}
-    \addlegendentry{#3}
-    \addlegendimage{blue, only marks, mark=o, mark size=2pt}
-    \addlegendentry{User}
-    \addlegendimage{red, only marks, mark=square, mark size=2pt}
-    \addlegendentry{Attacker}
-    \addlegendimage{empty legend}
-    \addlegendentry{}
 }
 
 % =========================================================
@@ -1593,7 +1571,6 @@ In this way, the mechanism accepts the user in the initial attempts, while limit
 \centering
 \def\PolicyData{figs/fig_spoofed_users/livdet_success_constraints_comparison.txt}
 
-% Upper: threshold versus attempt
 \begin{subfigure}{\linewidth}
 \centering
 \begin{tikzpicture}
@@ -1620,42 +1597,28 @@ table[x=Attempt, y=Threshold_0_75] {\PolicyData};
 \begin{subfigure}{\linewidth}
 \centering
 \begin{tikzpicture}
-\begin{axis}[player axis]
+\begin{axis}[success axis]
 
-% Lowest constraint: solid
 \addplot[blue, thick, solid, mark=o, mark options={solid}]
-table[x=Attempt, y=P_user_success_0_6] {\PolicyData};
-
-\addplot[red, thick, solid, mark=square, mark options={solid}]
-table[x=Attempt, y=P_attacker_success_0_6] {\PolicyData};
-
-% Middle constraint: dotted
-\addplot[blue, thick, densely dotted, mark=o, mark options={solid}]
-table[x=Attempt, y=P_user_success_0_7] {\PolicyData};
+table[x=Attempt, y=P_success_0_6] {\PolicyData};
+\addlegendentry{$P'=0.6$}
 
 \addplot[red, thick, densely dotted, mark=square, mark options={solid}]
-table[x=Attempt, y=P_attacker_success_0_7] {\PolicyData};
+table[x=Attempt, y=P_success_0_7] {\PolicyData};
+\addlegendentry{$P'=0.7$}
 
-% Highest constraint: dashed
-\addplot[blue, thick, dashed, mark=o, mark options={solid}]
-table[x=Attempt, y=P_user_success_0_75] {\PolicyData};
-
-\addplot[red, thick, dashed, mark=square, mark options={solid}]
-table[x=Attempt, y=P_attacker_success_0_75] {\PolicyData};
-
-\TwoRowConstraintLegend
-    {$P'=0.6$}
-    {$P'=0.7$}
-    {$P'=0.75$}
+\addplot[teal!70!black, thick, dashed, mark=triangle, mark options={solid}]
+table[x=Attempt, y=P_success_0_75] {\PolicyData};
+\addlegendentry{$P'=0.75$}
 
 \end{axis}
 \end{tikzpicture}
-\caption{Cumulative user and attacker acceptance probabilities.}
+\caption{Mechanism success probability.}
 \label{fig:success_constraints_probabilities}
 \end{subfigure}
 
 \caption{Minimizing the expected number of attempts subject to $P_{\mathrm{success}}\geq P'$.
-The upper figure shows selected thresholds; the lower figure shows cumulative acceptance for the user (blue circles) and attacker (red squares).}
+The upper figure shows selected thresholds; the lower figure shows the mechanism's success probability through each attempt.}
 \label{fig:success_constraints_comparison}
 \end{figure}
 
@@ -1667,7 +1630,6 @@ The upper figure shows selected thresholds; the lower figure shows cumulative ac
 \centering
 \def\PolicyData{figs/fig_spoofed_users/livdet_mean_limits_comparison.txt}
 
-% Upper: threshold versus attempt
 \begin{subfigure}{\linewidth}
 \centering
 \begin{tikzpicture}
@@ -1694,42 +1656,28 @@ table[x=Attempt, y=Threshold_2_4] {\PolicyData};
 \begin{subfigure}{\linewidth}
 \centering
 \begin{tikzpicture}
-\begin{axis}[player axis]
+\begin{axis}[success axis]
 
-% Lowest constraint: solid
 \addplot[blue, thick, solid, mark=o, mark options={solid}]
-table[x=Attempt, y=P_user_success_1_5] {\PolicyData};
-
-\addplot[red, thick, solid, mark=square, mark options={solid}]
-table[x=Attempt, y=P_attacker_success_1_5] {\PolicyData};
-
-% Middle constraint: dotted
-\addplot[blue, thick, densely dotted, mark=o, mark options={solid}]
-table[x=Attempt, y=P_user_success_1_9] {\PolicyData};
+table[x=Attempt, y=P_success_1_5] {\PolicyData};
+\addlegendentry{$\mu'=1.5$}
 
 \addplot[red, thick, densely dotted, mark=square, mark options={solid}]
-table[x=Attempt, y=P_attacker_success_1_9] {\PolicyData};
+table[x=Attempt, y=P_success_1_9] {\PolicyData};
+\addlegendentry{$\mu'=1.9$}
 
-% Highest constraint: dashed
-\addplot[blue, thick, dashed, mark=o, mark options={solid}]
-table[x=Attempt, y=P_user_success_2_4] {\PolicyData};
-
-\addplot[red, thick, dashed, mark=square, mark options={solid}]
-table[x=Attempt, y=P_attacker_success_2_4] {\PolicyData};
-
-\TwoRowConstraintLegend
-    {$\mu'=1.5$}
-    {$\mu'=1.9$}
-    {$\mu'=2.4$}
+\addplot[teal!70!black, thick, dashed, mark=triangle, mark options={solid}]
+table[x=Attempt, y=P_success_2_4] {\PolicyData};
+\addlegendentry{$\mu'=2.4$}
 
 \end{axis}
 \end{tikzpicture}
-\caption{Cumulative user and attacker acceptance probabilities.}
+\caption{Mechanism success probability.}
 \label{fig:mean_limits_probabilities}
 \end{subfigure}
 
-\caption{Maximizing the mechanism’s success probability subject to $\mathbb{E}[N_U]\leq\mu'$.
-The upper figure shows selected thresholds; the lower figure shows the cumulative acceptance probability for the user (blue circles) and the attacker (red squares).}
+\caption{Maximizing the mechanism's success probability subject to $\mathbb{E}[N_U]\leq\mu'$.
+The upper figure shows selected thresholds; the lower figure shows the mechanism's success probability through each attempt.}
 \label{fig:mean_limits_comparison}
 \end{figure}
 
