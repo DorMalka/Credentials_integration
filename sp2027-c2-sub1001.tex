@@ -1487,7 +1487,9 @@ Equivalently, the constraint is
 \geq
 P'.
 \end{equation*}
-Without the constraint, this problem has a trivial solution: set every threshold to accept everything, and the user always succeeds on the first attempt. The expected is then~1, but so is the attacker’s success rate. The constraint~$P'$ rules this out. At the optimum, the constraint holds with equality. Any solution with a strictly higher success probability could trade that slack for a more permissive threshold and a lower expected. Thus, this optimization enforces a minimum security level while maximizing the usability within it. 
+Without the constraint, this problem has a trivial solution: set every threshold to accept everything, and the user is always accepted on the first attempt, but so is the attacker. The constraint~$P'$ rules this out. 
+
+At the optimum, the constraint holds with equality. Any solution with a strictly higher success probability could trade that slack for a more permissive threshold and a lower expected number of attempts. Thus, this optimization enforces a minimum security level while maximizing usability within it. 
 
 We next maximize the mechanism's success probability subject to an upper bound~$\mu'$ on the expected number of user authentication attempts. Thus
 \begin{equation*}
@@ -1520,13 +1522,14 @@ j\left(\prod_{i=1}^{j-1}\FRR(t_i)\right)
 \leq \mu'.
 \end{aligned}
 \end{equation*}
-Here the constraint plays a different role. Without the constraint, the optimization balances both the~\FRR and~\FAR, leading to a non trivial solution as described in~$(\S\ref{sec:equal_k_attempts})$. Unlike the first optimization problem, the bound may not affect the optimization: if the mechanism already accepts users within~$\mu'$ attempts on average using the unconstrained optimal thresholds, those thresholds remain unchanged. When the bound does take affect, the optimization enforces thresholds more permissive than the unconstrained problem, leading to a reduction in the overall success probability.
+Here the constraint plays a different role as it may not affect the optimization: if the mechanism already accepts users within~$\mu'$ attempts on average using the unconstrained optimal thresholds, those thresholds remain unchanged. When the bound does take effect, the optimization enforces much lower thresholds than the unconstrained problem, leading to a reduction in the overall success probability.
 
-We evaluate both optimization problems on the spoofing attack data. First, we identify the optimal threshold selections that minimize the expected number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the greater the required success probability~$P'$, the greater the expected number of user authentication attempts~$\mathbb{E}[N_U]$: raising~$P'$ from~$0.6$ to~$0.75$ raises~$\mathbb{E}[N_U]$ from~$1.33$ to~$2.99$. As our analysis shows, the mechanism's success probability indeed equals~$P'$~(Figure~\ref{fig:success_constraints_comparison}).
+We evaluate both optimization problems on the spoofing attack data. First, we identify the optimal threshold selections that minimize the expected number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the expected number of user authentication attempts~$\mathbb{E}[N_U]$ grows with the success probability~$P'$: raising~$P'$ from~$0.6$ to~$0.75$ raises~$\mathbb{E}[N_U]$ from~$1.33$ to~$2.99$. In all cases, the mechanism's success probability indeed equals~$P'$~(Figure~\ref{fig:success_constraints_comparison}).
 
 We also analyze the reverse direction, in which a system designer seeks to maximize the achievable success probability under a constraint on the expected number of attempts. We find that allowing a greater expected number of user authentication attempts~$\mathbb{E}[N_U]$ yields a higher success probability, rising from~$0.62$ at~$\mu'=1.5$ to~$0.71$ at~$\mu'=2.4$~(Figure~\ref{fig:mean_limits_comparison}).
 
-Unlike the unconstrained problem~(\S\ref{sec:equal_k_attempts}), where a single threshold is optimal for all attempts, both constrained problems select a different threshold at every attempt. The thresholds rise gradually over the first attempts, giving the user the opportunity to be accepted. Once the mechanism reaches close to the bound, it switches to a threshold that rejects every sample, denying the attacker any further opportunity. The attempt at which this switch occurs grows with the constraint: from the third attempt at~$P'=0.6$ to the eighth at~$P'=0.75$. We evaluate the first~$k=15$ attempts, beyond which changes in the probabilities are negligible.
+Unlike the unconstrained problem~(\S\ref{sec:equal_k_attempts}), where a single threshold is optimal for all attempts, both constrained problems select a different threshold at every attempt. The thresholds rise gradually over the first attempts, giving users the opportunity to be accepted.
+As the mechanism approaches the bound, the thresholds jump to higher values, rejecting most attacker samples and accepting only high-score samples. Once the bound is reached, the threshold switches to rejecting every sample, denying the attacker any further opportunity. The attempt at which the first switch occurs grows with the constraint: from the third attempt at~$P'=0.6$ to the eighth at~$P'=0.75$. We evaluate the first~$k=15$ attempts, beyond which changes in the probabilities are negligible.
 
 \pgfplotsset{compat=1.18}
 
