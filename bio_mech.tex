@@ -1554,10 +1554,6 @@ Unlike the unconstrained problem~(\S\ref{sec:equal_k_attempts}), where a single 
     }
 }
 
-% =========================================================
-% Figure 1: minimize mean attempts under success constraints
-% =========================================================
-
 \begin{figure}[t]
 \centering
 \def\PolicyData{figs/fig_spoofed_users/livdet_success_constraints_comparison.txt}
@@ -1608,7 +1604,7 @@ table[x=Attempt, y=P_success_0_75] {\PolicyData};
 \label{fig:success_constraints_probabilities}
 \end{subfigure}
 
-\caption{Minimizing the expected number of attempts subject to $P_{\mathrm{success}}\geq P'$.
+\caption{Minimizing the expected number of attempts subject to success probability bound.
 The upper figure shows selected thresholds; the lower figure shows the mechanism's success probability through each attempt.}
 \label{fig:success_constraints_comparison}
 \end{figure}
@@ -1667,7 +1663,7 @@ table[x=Attempt, y=P_success_2_4] {\PolicyData};
 \label{fig:mean_limits_probabilities}
 \end{subfigure}
 
-\caption{Maximizing the mechanism's success probability subject to $\mathbb{E}[N_U]\leq\mu'$.
+\caption{Maximizing the mechanism's success probability subject to expected number of attempts bound.
 The upper figure shows selected thresholds; the lower figure shows the mechanism's success probability through each attempt.}
 \label{fig:mean_limits_comparison}
 \end{figure}
