@@ -35,7 +35,6 @@
 
 \title{Biometric Authentication Mechanisms}
 \maketitle
-% \tableofcontents
 
 \begin{abstract}
 Modern authentication commonly uses \emph{biometric credentials} such as fingerprints and faces: 
@@ -671,9 +670,7 @@ We differentiate~$P_{\text{success}}(t)$ in every interval. In the second and fo
         ymin=0, ymax=7,
         grid=major,
         ytick=\empty,
-        ylabel={Density},
-        ylabel style={font=\small},
-        xticklabel style={font=\small}
+        ylabel={Density}
     }
 }
 
@@ -760,7 +757,7 @@ table [x=s, y=PA_case3] {figs/fig_parabola/quadratic_three_cases.txt};
 \begin{axis}[
     scale only axis,
     width=0.8\linewidth,
-    height=0.45\linewidth,
+    height=0.35\linewidth,
     xlabel={$t$},
     ylabel={$P_{\mathrm{success}}(t)$},
     xmin=1.5, xmax=4.5,
@@ -794,7 +791,7 @@ table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_a_points.txt};
 \begin{axis}[
     scale only axis,
     width=0.8\linewidth,
-    height=0.45\linewidth,
+    height=0.35\linewidth,
     xlabel={$t$},
     ylabel={$P_{\mathrm{success}}(t)$},
     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
@@ -822,7 +819,7 @@ table [x=T_eer, y=Ps_eer] {figs/fig_parabola/parabola_case_b_points.txt};
 \begin{axis}[
     scale only axis,
     width=0.8\linewidth,
-    height=0.45\linewidth,
+    height=0.35\linewidth,
     xlabel={$t$},
     ylabel={$P_{\mathrm{success}}(t)$},
     xticklabels={$\beta_1$,$\alpha_1$,$\beta_2$,$\alpha_2$},
@@ -868,7 +865,7 @@ To quantify the effect of the variance on the deviation between the optimal thre
 \begin{axis}[
     scale only axis,
     width=0.82\columnwidth,
-    height=0.4\columnwidth,
+    height=0.35\columnwidth,
     xlabel={Attacker Variance $\mathrm{Var}(s)$},
     ylabel={$P_{\mathrm{success}}$},
     xtick=\empty,
@@ -897,7 +894,7 @@ table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 
 \subsection{Empirical Evaluation}\label{sec:eval_single_cred}
 \noindent
-We compare the~\EER threshold and the optimal threshold in a mechanism that uses a biometric credential only, using the~\FAR and~\FRR obtained in~$(\S\ref{sec:real_data})$~(Figure~\ref{fig:approximations}). From these error rates we calculate the biometric credential’s fault probabilities~(Equation~\ref{eqn:safe_prob}) and the mechanism’s success probability~(Equation~\ref{eqn:safesuccess}).
+We compare the~\EER threshold and the optimal threshold in a mechanism that uses only a biometric credential, using the~\FAR and~\FRR obtained in~$(\S\ref{sec:real_data})$~(Figure~\ref{fig:approximations}). From these error rates we calculate the biometric credential’s fault probabilities~(Equation~\ref{eqn:safe_prob}) and the mechanism’s success probability~(Equation~\ref{eqn:safesuccess}).
 
 Under the different-person attack, where an attacker authenticates using his own fingerprints, the optimal threshold differs from the~\EER point and achieves a higher success probability~(Figure~\ref{fig:bio_only_sourceafis_reg_scoring}). However, the improvement is small: the success probability increases from~92.42\% to~92.54\%. We move to analyze the spoofing attack, where the~\EER rises significantly from~3.8\% to~24.8\%. Despite the increased overlap between the user and attacker distributions, the improvement from optimizing the threshold remains small~(Figure~\ref{fig:livdet_sourceafis_success}): the success probability increases from~50.64\% to~50.88\%. 
 
@@ -912,14 +909,14 @@ Across both attack scenarios, optimizing the threshold marginally improves the s
 \begin{axis}[
     scale only axis,
     width=0.8\columnwidth,
-    height=0.40\columnwidth,
+    height=0.35\columnwidth,
     xlabel={Threshold (\%)},
     ylabel={Success Probability},
     xmin=0, xmax=100,
     ymin=0, ymax=1,
     grid=major,
     legend style={
-        at={(0.5,-0.30)},
+        at={(0.5,-0.31)},
         anchor=north,
         legend columns=3,
         draw=black,
@@ -956,7 +953,7 @@ table [x=T_opt, y=P_opt] {figs/fig_different_users_sourceafsi/sourceafis_p_succe
 \begin{axis}[
     scale only axis,
     width=0.8\columnwidth,
-    height=0.40\columnwidth,
+    height=0.35\columnwidth,
     xlabel={Threshold (\%)},
     ylabel={Success Probability},
     xmin=0, xmax=100,
@@ -1052,7 +1049,7 @@ As the variance of the attacker distribution increases,~$t_{\text{opt}}^{\mathrm
 An atomic credential with high~$P^1_{safe}$ and low~$P^1_{leak}$ shifts it toward $u_1$ as well, and the mechanism's success then depends mainly on the atomic credential.
 Conversely, high~$P^1_{leak}$ and low~$P^1_{safe}$ shift it toward the upper boundary~$a_2$, and the mechanism relies more heavily on the biometric credential.
 
-A similar analysis of the \emph{OR} mechanismshows its global optimum lies in the same third interval:
+A similar analysis of the \emph{OR} mechanism shows its global optimum lies in the same third interval:
 \begin{equation*}
 \hat{t}
 =
@@ -1082,7 +1079,7 @@ The picture changes when the attacker is spoofing the fingerprints, since the ov
     andoraxis/.style={
         scale only axis,
         width=0.82\columnwidth,
-        height=0.36\columnwidth,
+        height=0.35\columnwidth,
         xlabel={Threshold (\%)},
         ylabel={Success Probability},
         xmin=0, xmax=100,
@@ -1131,13 +1128,9 @@ table [x=T_eer, y=P_or_eer] {figs/fig_different_users_sourceafsi/sourceafis_succ
 
 \end{axis}
 \end{tikzpicture}
-\vspace{-0.4em}
 \caption{Different-person attack.}
 \label{fig:bio_atm_sourceafis_reg_scoring}
 \end{subfigure}
-
-\vspace{0.8em}
-
 \begin{subfigure}{\columnwidth}
 \centering
 \begin{tikzpicture}
@@ -1168,7 +1161,6 @@ table [x=T_eer, y=P_or_eer] {figs/fig_spoofed_users/livdet_sourceafis_success_an
 
 \end{axis}
 \end{tikzpicture}
-\vspace{-0.4em}
 \caption{Spoofing attack.}
 \label{fig:livdet_and_or_success}
 \end{subfigure}
@@ -2425,7 +2417,7 @@ The \emph{asymptotically dominated} condition reflects practical scenarios, as f
 
 \section{Biometric Sensors Survey Table}\label{app:Bio_table}
 \noindent
-Table~\ref{tab:device_survey} shows all the commercially available devices we surveyed. Rows are grouped by threshold exposure, from devices permitting an arbitrary match threshold down to those exposing none, followed by the capture-only devices outside our scope. The~\emph{On-sensor} column indicates whether the device performs matching and emits an accept/reject verdict itself. The~\emph{Threshold exposure} column gives the mechanism, if any, by which an integrator may influence the decision boundary. Families from one manufacturer sharing a modality and threshold mechanism are listed on a single row, so the family counts in the group headings exceed the number of rows. Each entry cites the vendor documentation from which its classification was drawn.
+Table~\ref{tab:device_survey} shows all the commercially available devices we surveyed. Rows are grouped by threshold exposure, from devices permitting an arbitrary match threshold down to those exposing none, followed by the capture-only devices outside our scope. The~\emph{On-sensor} column indicates whether the device performs matching and emits an accept/reject verdict itself. The~\emph{Threshold exposure} column gives the mechanism, if any, by which an integrator may influence the decision boundary. Families from one manufacturer sharing a modality and threshold mechanism are listed on a single row, so the family counts in the group headings exceed the number of rows. Each entry cites the manufacturer documentation from which its classification was drawn.
 % ---------------------------------------------------------------------------
 % Comparison of surveyed biometric device families.
 % Requires: booktabs only. Spans both columns (table*).
