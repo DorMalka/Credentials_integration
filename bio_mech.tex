@@ -894,7 +894,7 @@ table [x=variance, y=PEER] {figs/fig_parabola/gap_vs_variance_parabola.txt};
 
 \subsection{Empirical Evaluation}\label{sec:eval_single_cred}
 \noindent
-We compare the~\EER threshold and the optimal threshold in a mechanism that uses only a biometric credential, using the~\FAR and~\FRR obtained in~$(\S\ref{sec:real_data})$~(Figure~\ref{fig:approximations}). From these error rates we calculate the biometric credential’s fault probabilities~(Equation~\ref{eqn:safe_prob}) and the mechanism’s success probability~(Equation~\ref{eqn:safesuccess}).
+We compare the~\EER threshold and the optimal threshold in a mechanism that uses only a biometric credential, using the~\FAR and~\FRR obtained in~$(\S\ref{sec:real_data})$~(Figure~\ref{fig:approximations}). From these error rates we calculate the biometric credential’s fault probabilities~(Equation~\ref{eqn:safe_prob}), and the mechanism’s success probability, which in this case is simply~$P_{safe}$.
 
 Under the different-person attack, where an attacker uses his own fingerprints, the optimal threshold differs from the~\EER point and achieves a higher success probability~(Figure~\ref{fig:bio_only_sourceafis_reg_scoring}). However, the improvement is small: the success probability increases from~92.42\% to~92.54\%. We move to analyze the spoofing attack, where the~\EER rises significantly from~3.8\% to~24.8\%. Despite the increased overlap between the user and attacker distributions, the improvement from optimizing the threshold remains small~(Figure~\ref{fig:livdet_sourceafis_success}): the success probability increases from~50.64\% to~50.88\%. 
 
