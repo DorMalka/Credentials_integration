@@ -1749,7 +1749,15 @@ Let~$c_1$ be an atomic credential with~$P^1_\text{safe} > 0$ and at least one of
 \begin{proof}
 The success probability of a mechanism comprising an atomic credential only is~$P^{1}_\textit{safe}$~(Equation~\ref{eqn:safesuccess}). A biometric credential is characterized by four state probabilities that are functions of~\FAR and~\FRR
 \contprobabilities
-We previously observed that a sufficient condition for producing a new mechanism with greater success is described by Equation~\ref{eqn:FRRineq} and Equation~\ref{eqn:FARineq}. Thus, we need to show that there exists an operating threshold $t$ such that either
+We observed that a sufficient condition for producing a new mechanism with greater success is described by:
+\begin{equation}\label{eqn:FRRineq}
+\frac{\FRR(t)}{1-\FAR(t)} < \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}}
+\end{equation}
+and
+\begin{equation}\label{eqn:FARineq}
+    \frac{\FAR(t)}{1-\FRR(t)} < \frac{P^{1}_{\text{loss}}}{P^{1}_{\text{safe}}+P^{1}_{\text{loss}}}
+\end{equation}
+Thus, we need to show that there exists an operating threshold $t$ such that either
 \begin{equation*}
     \begin{aligned}
     &\frac{\FRR(t)}{1-\FAR(t)} < \frac{P^{1}_{\text{leak}}}{P^{1}_{\text{safe}}+P^{1}_{\text{leak}}} \textit{, or } \\
