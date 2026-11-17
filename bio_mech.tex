@@ -193,7 +193,7 @@ coordinates {(0.5,0) (0.5,4.2)};
 
 The picture changes as we extend our analysis to mechanisms that use an atomic credential and a biometric credential~$(\S\ref{sec:two_cred})$. Those are prevalent in real-world authentication systems; for example, Google~\cite{google_passkeys_2023} assumes (1)~possession of a trusted device like a phone or computer (Atomic credential) and (2)~a biometric credential. We derive closed-form expressions for the mechanism's success probability and find the optimal threshold. Our analysis reveals that the optimal threshold of the biometric credential is not, in general, the same as the optimal threshold if used individually and differs from the~\EER. This difference arises as a function of the atomic credential fault probabilities. Moreover, the relative influence of the atomic and biometric credentials on the mechanism's success probability depends on their individual properties. In particular, as one credential becomes increasingly reliable, the mechanism success probability depends mainly on that credential. Evaluating these mechanisms under the spoofing attack scenario, we find that optimizing the threshold reduces the mechanism's failure probability by~20-72\% compared to the~\EER threshold. 
 
-Motivated by this observation, we identify the conditions under which the integration of a biometric credential with an atomic credential enhances the mechanism's success probability. First, we show that when an atomic credential can only be \emph{safe} or \emph{stolen}~(only the attacker can present it), it is not worthwhile to use them both. This is because a mechanism that uses an atomic credential alone succeeds whenever the credential is safe. Adding a biometric credential could reject the user when the atomic credential is safe, and cannot help the mechanism when the atomic credential is stolen, since the user cannot satisfy the mechanism either way. So, we consider atomic credentials that can also be~\emph{leaked}, where both the user and attacker can present the credential, or \emph{lost}, where neither can present it. We introduce a necessary and sufficient condition we call \emph{asymptotic separability} of a biometric credential: the~\FAR converges to zero for matching scores above a given threshold, or the~\FRR converges to zero for matching scores below it. This assumption is reasonable since biometric sensors aim to distinguish between users and attackers. Suppose the atomic credential has non-zero probabilities for the \emph{safe} state and for at least one of \emph{loss} or \emph{leak}, and any probability of \emph{stolen}. We prove that every \emph{asymptotically separable} biometric credential that is optimally integrated with such an atomic credential, yields a mechanism whose success probability dominates that of the atomic credential mechanism.
+Motivated by this observation, we identify the conditions under which the integration of a biometric credential with an atomic credential enhances the mechanism's success probability. First, we show that when an atomic credential can only be \emph{safe} or \emph{stolen}~(only the attacker can present it), it is not worthwhile to use them both. This is because a mechanism that uses an atomic credential alone succeeds whenever the credential is safe, while any two-credential mechanism still succeeds only when this atomic credential is safe. So, we consider atomic credentials that can also be~\emph{leaked}, where both the user and attacker can present the credential, or \emph{lost}, where neither can present it. We introduce a necessary and sufficient condition we call \emph{asymptotic separability} of a biometric credential: the~\FAR converges to zero for matching scores above a given threshold, or the~\FRR converges to zero for matching scores below it. This assumption is reasonable since biometric sensors aim to distinguish between users and attackers. Suppose the atomic credential has non-zero probabilities for the \emph{safe} state and for at least one of \emph{loss} or \emph{leak}, and any probability of \emph{stolen}. We prove that every \emph{asymptotically separable} biometric credential that is optimally integrated with such an atomic credential, yields a mechanism whose success probability dominates that of the atomic credential mechanism.
 
 Our analysis so far assumes a single authentication attempt. In practice, biometric mechanisms typically reuse a single fixed threshold~\cite{biocred_fixed_threshold}, even when they allow a principal to retry after a failed attempt, as in Apple and Samsung devices~\cite{apple_biometric,samsung_biometric}. We therefore extend our analysis to mechanisms that use a biometric credential only but allow multiple authentication attempts by each principal~$(\S\ref{sec:multiple_auth_attempts})$. While additional sampling opportunities increase the legitimate user's success probability, they also provide attackers with more opportunities. Under a bounded number of attempts, the mechanism succeeds if the user is accepted at least once while the attacker is rejected across all attempts. We derive closed-form expressions for the mechanism’s success probability and optimize the match thresholds for a given number of attempts~$k$. We find that the same threshold is optimal at every attempt, and that its value grows with~$k$. We evaluate this mechanism under a spoofing attack scenario. Reusing a threshold chosen without regard to the number of attempts, either the~\EER threshold or the single-attempt optimal threshold, reduces the mechanism's success probability as the number of attempts grows. Optimizing the threshold for the number of attempts reverses this: the success probability increases with the number of attempts and converges to one, reducing the failure probability by~$75\%$ compared to reusing the~\EER threshold with ten attempts.
 
@@ -575,7 +575,7 @@ f_A(s) =
     \end{array}
 \right.
 \]
-We express the coefficients in terms of the roots and set the integral of each PDF over its roots interval to~1. The derivation of the coefficients is in the full version of this report~\cite{biometric_full_version}. 
+We express the coefficients in terms of the roots and set the integral of each PDF over its roots interval to~1. The derivation of the coefficients is in the Appendix~\ref{app:quad_opt_thr}. 
 Therefore, we can write the quadratic PDFs as
 \begin{flalign*}
 &f_U(s) =
@@ -1338,7 +1338,7 @@ We find that reusing a single threshold in all~$k$ attempts reduces the mechanis
 At~$k=10$ the success probability falls to~$0.03$ when reusing the~\EER threshold and to~$0.02$ when reusing the single-attempt optimal threshold. 
 This reduction indicates that when the threshold is fixed without regard to~$k$, the attacker is more likely to succeed in spoofing the biometric credential as the number of attempts increases. 
 In contrast, the optimization reveals that, given~$k$, the optimal thresholds are equal across all~$k$ attempts, and that this threshold increases with~$k$.
-The mechanism’s success probability therefore rises with~$k$, reaching~$0.75$ at~$k=10$ and converging to~1(Figure~\ref{fig:unconstrained_success_convergence}). 
+The mechanism’s success probability therefore rises with~$k$, reaching~$0.75$ at~$k=10$ and converging to~1~(Figure~\ref{fig:unconstrained_success_convergence}). 
 
 \begin{figure}[t]
 \centering
@@ -1467,9 +1467,7 @@ First, we minimize the expected number of user authentication attempts given a l
 \underset{\mathbf{t}}{\operatorname{minimize}}
 \quad&
 \mathbb{E}[N_U]
-\\
-\text{subject to}
-\quad&
+\text{, subject to }
 P_{\mathrm{success}}(\mathbf{t})
 \geq
 P'.
@@ -1497,9 +1495,7 @@ We next maximize the mechanism's success probability subject to an upper bound~$
 \underset{\mathbf{t}}{\operatorname{maximize}}
 \quad&
 P_{\mathrm{success}}(\mathbf{t})
-\\
-\text{subject to}
-\quad&
+\text{, subject to }
 \mathbb{E}[N_U]
 \leq \mu'.
 \end{aligned}
@@ -1522,14 +1518,13 @@ j\left(\prod_{i=1}^{j-1}\FRR(t_i)\right)
 \leq \mu'.
 \end{aligned}
 \end{equation*}
-Here the constraint plays a different role as it may not affect the optimization: if the mechanism already accepts users within~$\mu'$ attempts on average using the unconstrained optimal thresholds, those thresholds remain unchanged. When the bound does take effect, the optimization enforces much lower thresholds than the unconstrained problem, leading to a reduction in the overall success probability.
+Here the constraint plays a different role as it might not affect the optimization: if the mechanism already accepts users within~$\mu'$ attempts on average using the unconstrained optimal thresholds, those thresholds remain unchanged. When the bound does take effect, the optimization enforces much lower thresholds than the unconstrained problem, leading to a reduction in the overall success probability, as we show next.
 
-We evaluate both optimization problems on the spoofing attack data. First, we identify the optimal threshold selections that minimize the expected number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the expected number of user authentication attempts~$\mathbb{E}[N_U]$ grows with the success probability~$P'$: raising~$P'$ from~$0.6$ to~$0.75$ raises~$\mathbb{E}[N_U]$ from~$1.33$ to~$2.99$. In all cases, the mechanism's success probability indeed equals~$P'$~(Figure~\ref{fig:success_constraints_comparison}).
+We evaluate both optimization problems on the spoofing attack data. We pick three representative values for each constraint, derived from the unconstrained optimization, which reaches a success probability of~$0.76$ at~$3.8$ expected attempts. First, we identify the optimal threshold selections that minimize the expected number of user authentication attempts, while requiring the mechanism's success probability to exceed~$P'$. This analysis shows that the expected number of user authentication attempts~$\mathbb{E}[N_U]$ grows with the success probability~$P'$: raising~$P'$ from~$0.6$ to~$0.75$ raises~$\mathbb{E}[N_U]$ from~$1.33$ to~$2.99$. In all cases, the mechanism's success probability indeed equals~$P'$~(Figure~\ref{fig:success_constraints_comparison}).
 
-We also analyze the reverse direction, in which a system designer seeks to maximize the achievable success probability under a constraint on the expected number of attempts. We find that allowing a greater expected number of user authentication attempts~$\mathbb{E}[N_U]$ yields a higher success probability, rising from~$0.62$ at~$\mu'=1.5$ to~$0.71$ at~$\mu'=2.4$~(Figure~\ref{fig:mean_limits_comparison}).
+In the reverse direction, a system designer seeks to maximize the achievable success probability under a constraint on the expected number of attempts. Allowing a greater expected number of user authentication attempts~$\mathbb{E}[N_U]$ yields a higher success probability, rising from~$0.62$ at~$\mu'=1.5$ to~$0.71$ at~$\mu'=2.4$~(Figure~\ref{fig:mean_limits_comparison}).
 
-Unlike the unconstrained problem~(\S\ref{sec:equal_k_attempts}), where a single threshold is optimal for all attempts, both constrained problems select a different threshold at every attempt. The thresholds rise gradually over the first attempts, giving users the opportunity to be accepted.
-As the mechanism approaches the bound, the thresholds jump to higher values, rejecting most attacker samples and accepting only high-score samples. Once the bound is reached, the threshold switches to rejecting every sample, denying the attacker any further opportunity. The attempt at which the first switch occurs grows with the constraint: from the third attempt at~$P'=0.6$ to the eighth at~$P'=0.75$. We evaluate the first~$k=15$ attempts, beyond which changes in the probabilities are negligible.
+Unlike the unconstrained problem~(\S\ref{sec:equal_k_attempts}), where a single threshold is optimal for all attempts, both constrained problems select a different threshold at every attempt. When minimizing the expected number of attempts, the thresholds rise gradually at first, giving users the opportunity to be accepted. As the mechanism approaches the bound, the thresholds grow stricter to accept only high-score samples until they reject every sample, denying the attacker any further opportunity. The attempt at which the mechanism approaches the bound grows with the constraint: from the third attempt at~$P'=0.6$ to the eighth at~$P'=0.75$. We evaluate the first~$k=15$ attempts, beyond which changes in the probabilities are negligible.
 
 \pgfplotsset{compat=1.18}
 
@@ -1689,7 +1684,7 @@ We therefore focus on the remaining 23 families.
 
 These 23 families differ in how much control they give the integrator over the decision.
 Only 2 of the 23 in-sensor decision families, comprising 6 individual models, allow setting a numeric match threshold.
-The remaining families offer weaker methods that do not permit setting a specific threshold: a target error rate within a predetermined range, a discrete security level such as~1--5 or High/Medium/Low, or no threshold parameter at all.
+The remaining families offer weaker methods that do not permit setting a specific threshold: a target error rate within a predetermined range, a discrete security level such as~1-5 or High/Medium/Low, or no threshold parameter at all.
 In each case the integrator is left with a threshold the sensor derives internally and never exposes.
 
 However, setting a threshold is necessary but not sufficient for optimization. 
